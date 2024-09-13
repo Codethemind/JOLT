@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #e8d7b4;
+            color: #fff;
+            padding-top: 1rem;
+            position: fixed;
+        }
+        .sidebar a {
+            color: #000000;
+            text-decoration: none;
+            padding: 0.75rem;
+        }
+        .sidebar a:hover {
+            background-color: #7fdf9a;
+        }
+        .content {
+            margin-left: 220px;
+            padding: 2rem;
+        }
+        .navbar {
+            margin-bottom: 0;
+            background-color: #f8f9fa;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+        }
+        .container-fluid {
+            padding-top: 60px; /* Adjust for fixed navbar */
+        }
+        .btn-edit, .btn-delete {
+            display: flex;
+            align-items: center;
+            font-size: 0.875rem;
+        }
+        .btn-edit i {
+            margin-right: 0.5rem;
+        }
+        .btn-delete i {
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-user"></i> Admin
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-shopping-cart"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-sliders-h"></i> Category
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-briefcase"></i> Brand
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-tag"></i> Coupon
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-credit-card"></i> Payment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main role="main" class="col-md-10 content">
+                <div class="container my-5">
+                    <h2 class="text-center mb-4">Product Management</h2>
+                    
+                    <!-- Add Product Button -->
+                    <div class="mb-3">
+                        <a class="btn btn-primary" href="/admin/admin_addproduct">Add Product</a>
+                    </div>
+                    
+                    <!-- Product Table -->
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Category</th>
+                                <th>Images</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody">
+                            <!-- Product data will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Example product data with images
+        let products = [
+            { id: 1, name: 'Laptop', price: 1200, category: 'Electronics', images: ['image1.jpg', 'image2.jpg', 'image3.jpg'] },
+            { id: 2, name: 'Phone', price: 800, category: 'Electronics', images: ['image4.jpg', 'image5.jpg', 'image6.jpg'] },
+            { id: 3, name: 'Shoes', price: 100, category: 'Fashion', images: ['image7.jpg', 'image8.jpg', 'image9.jpg'] }
+        ];
+
+        const productTableBody = document.getElementById('productTableBody');
+
+        // Function to render products in the table
+        function renderProducts(productsList) {
+            productTableBody.innerHTML = '';
+            productsList.forEach(product => {
+                const imagesHtml = product.images.map(img => `<img src="/images/${img}" alt="${product.name}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 5px;" />`).join('');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${product.id}</td>
+                    <td>${product.name}</td>
+                    <td>${product.price}</td>
+                    <td>${product.category}</td>
+                    <td>${imagesHtml}</td>
+                    <td>
+                        <a href="/admin/editproduct/${product.id}" class="btn btn-warning btn-sm btn-edit">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <button class="btn btn-danger btn-sm btn-delete" onclick="softDeleteProduct(${product.id})">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </td>
+                `;
+                productTableBody.appendChild(row);
+            });
+        }
+
+        // Initial rendering of products
+        renderProducts(products);
+
+        // Soft delete function (simulated)
+        function softDeleteProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (confirm(`Are you sure you want to delete ${product.name}?`)) {
+                product.deleted = true; // Mark product as deleted
+                renderProducts(products.filter(p => !p.deleted)); // Render remaining products
+            }
+        }
+    </script>
+
+    <!-- JavaScript dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>

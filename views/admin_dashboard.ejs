@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #e8d7b4;
+            color: #fff;
+            padding-top: 1rem;
+        }
+        .sidebar a {
+            color: #000000;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color:  #7fdf9a;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .navbar {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Admin Dashboard</a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-user"></i> Admin
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/admin_usermanagment">
+                            <i class="fas fa-users"></i> Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/admin_productmanagment">
+                            <i class="fas fa-box"></i> Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-shopping-cart"></i> Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/admin_catagorymanagment">
+                            <i class="fas fa-sliders-h"></i> Category
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/admin_brandmanagment">
+                            <i class="fas fa-briefcase"></i> Brand
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-tag"></i> Coupen
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-credit-card"></i> Payment
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <!-- Main Content -->
+            <main role="main" class="col-md-10 content">
+                <div class="container">
+                    <h1>Dashboard</h1>
+                    <div class="row">
+                        <!-- Example Chart -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    Sales Overview
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="salesChart"></canvas>
+                                    <!-- View and Download Report Buttons -->
+                                    <button class="btn btn-primary mt-3" id="viewReportBtn">View Report</button>
+                                    <a href="#" class="btn btn-success mt-3" id="downloadReportBtn" download="sales_report.csv">Download Report</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Example Table -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    Recent Orders
+                                </div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Order ID</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>1</td>
+                                                <td>#001</td>
+                                                <td>2024-09-01</td>
+                                                <td>Shipped</td>
+                                            </tr>
+                                            <tr>
+                                                <td>2</td>
+                                                <td>#002</td>
+                                                <td>2024-09-02</td>
+                                                <td>Processing</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- JavaScript dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Sales Chart Script -->
+    <script>
+        var ctx = document.getElementById('salesChart').getContext('2d');
+        var salesChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+                datasets: [{
+                    label: 'Sales',
+                    data: [10, 20, 30, 40, 50, 60],
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Generate and Download CSV Report
+        document.getElementById('downloadReportBtn').addEventListener('click', function () {
+            var csvContent = "data:text/csv;charset=utf-8,Month,Sales\n" +
+                "January,10\n" +
+                "February,20\n" +
+                "March,30\n" +
+                "April,40\n" +
+                "May,50\n" +
+                "June,60\n";
+            
+            var encodedUri = encodeURI(csvContent);
+            this.setAttribute("href", encodedUri);
+        });
+
+        // View Report Button Logic
+        document.getElementById('viewReportBtn').addEventListener('click', function () {
+            alert("Sales Report:\nJanuary: 10\nFebruary: 20\nMarch: 30\nApril: 40\nMay: 50\nJune: 60");
+        });
+    </script>
+</body>
+</html>
+

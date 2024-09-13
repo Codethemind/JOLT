@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    
+</head>
+<body>
+    <div class="container-fluid bg-image" style="background: url('/images/diverse-shoppers-using-mobile-app-online-shopping-convenience_309199-16447.avif') no-repeat center center fixed; background-size: cover; height: 100vh;">
+        <div class="row justify-content-center align-items-center vh-100">
+            <div class="col-md-4 col-sm-6 col-10">
+                <div class="login-form bg-white p-4 rounded shadow text-center">
+                    <!-- Logo with inline CSS to center it -->
+                    <img src="/images/demos/demo-4/logo.png" alt="Logo" class="logo mb-4" style="max-width: 150px; display: block; margin-left: auto; margin-right: auto;">
+                    <h2 class="mb-4">Admin Login</h2>
+                    <form class="text-left" action="/admin/admin_login" method="post">
+                        <div class="form-group">
+                            <label for="username">Email</label>
+                            <input type="text" class="form-control" id="email" name="email" required>
+                            <p class="text-danger"><%= locals.notexist?notexist:null  %> </p>
+                        </div>
+                      
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                            <p class="text-danger"><%= locals.error?error:null  %> </p>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
