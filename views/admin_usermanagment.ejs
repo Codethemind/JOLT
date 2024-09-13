@@ -141,7 +141,7 @@
                                         <td>
                                             <button
                                                 class="btn btn-sm <%= element.isBlock ? 'btn-unblock' : 'btn-block' %> btn-icon"
-                                                onclick="toggleBlockUnblock('<%= element._id %>', <%= element.isBlock %>)"
+                                                onclick="toggleBlockUnblock('<%= element._id %>',' <%= element.isBlock %>')"
                                             >
                                                 <i class="fas <%= element.isBlock ? 'fa-user-times' : 'fa-user-check' %>"></i>
                                                 <%= element.isBlock ? 'Unblock' : 'Block' %>
