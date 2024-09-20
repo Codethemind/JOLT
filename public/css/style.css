@@ -1,6 +1,110 @@
 ﻿@import url("https://fonts.googleapis.com/css?family=Poppins:200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800");
 
 
+#quantity {
+    max-width: 150px; /* Adjust the width as needed */
+}
+
+.form-label {
+    margin-right: 10px; /* Add space between label and input */
+   
+}
+
+.main-image-container {
+    width: 100%;
+    height: auto;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.main-image-container img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.main-image-container img.zoomed {
+    transform: scale(1.5);
+}
+
+.product-thumbnails {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 80px;
+    border-radius: 5px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: border 0.3s ease;
+}
+
+.thumbnail:hover {
+    border: 1px solid #007bff;
+}
+
+#product .border {
+    padding: 20px;
+    border-radius: 10px;
+    height: 100%;
+}
+
+#product h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#product .badge {
+    font-size: 16px;
+}
+
+#product .form-label {
+    font-weight: bold;
+}
+
+#product select, #product input {
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+#product h5 {
+    font-size: 16px;
+    margin-top: 20px;
+    font-weight: bold;
+}
+
+#product .btn {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.d-flex {
+    gap: 10px;
+}
+
+@media (min-width: 992px) {
+    .row.equal-height {
+        display: flex;
+        align-items: stretch;
+    }
+
+    .row.equal-height > .col-lg-6 {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+}
+
 
 html {
     font-size: 62.5%;

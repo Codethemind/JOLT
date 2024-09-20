@@ -1,0 +1,394 @@
+<%- include('./partial/header') %>
+
+    <div class="page-wrapper">
+        <header class="header">
+            <div class="header-top">
+                <div class="container">
+                    <div class="header-left">
+                        <div class="header-dropdown">
+                            <a href="#">Usd</a>
+                            <div class="header-menu">
+                                <ul>
+                                    <li><a href="#">Eur</a></li>
+                                    <li><a href="#">Usd</a></li>
+                                </ul>
+                            </div><!-- End .header-menu -->
+                        </div><!-- End .header-dropdown -->
+
+                        <div class="header-dropdown">
+                            <a href="#">Eng</a>
+                            <div class="header-menu">
+                                <ul>
+                                    <li><a href="#">English</a></li>
+                                    <li><a href="#">French</a></li>
+                                    <li><a href="#">Spanish</a></li>
+                                </ul>
+                            </div><!-- End .header-menu -->
+                        </div><!-- End .header-dropdown -->
+                    </div><!-- End .header-left -->
+
+                    <div class="header-right">
+                        <ul class="top-menu">
+                            <li>
+                                <a href="#">Links</a>
+                                <ul>
+                                    <li><a href="tel:#"><i class="icon-phone"></i>Call: +0123 456 789</a></li>
+                                    <li><a href="wishlist.html"><i class="icon-heart-o"></i>Wishlist <span>(3)</span></a></li>
+                                    <li><a href="about.html">About Us</a></li>
+                                    <li><a href="contact.html">Contact Us</a></li>
+                                    <li>   <a href="/user/logout">Log out</a></li>
+                                </ul>
+                            </li>
+                        </ul><!-- End .top-menu -->
+                    </div><!-- End .header-right -->
+                </div><!-- End .container -->
+            </div><!-- End .header-top -->
+
+            <div class="header-middle sticky-header">
+                <div class="container">
+                    <div class="header-left">
+                        <button class="mobile-menu-toggler">
+                            <span class="sr-only">Toggle mobile menu</span>
+                            <i class="icon-bars"></i>
+                        </button>
+
+                        <a href="index.html" class="logo">
+                            <img src="/images/demos/demo-4/logo.png" alt="Molla Logo" width="105" height="25">
+                        </a>
+
+                        <nav class="main-nav">
+                            <ul class="menu sf-arrows">
+                              <li class="megamenu-container active">
+                                <a href="/user/home" class="">Home</a>
+                              </li>
+                
+                              <li>
+                                <a href="/user/productpage" class="">Product</a>
+                              </li>
+                              <li>
+                                <a href="#" class="sf-with-ul">Pages</a>
+                
+                                <ul>
+                                  <li>
+                                    <a href="/user/about" class="">About</a>
+                                  </li>
+                                  <li>
+                                    <a href="/user/contact" class="">Contact</a>
+                                  </li>
+                                  <!-- <li><a href="login.html">Login</a></li> -->
+                                  <li><a href="/user/faq">FAQs</a></li>
+                                  <li><a href="/user/error">Error 404</a></li>
+                                  <!-- <li><a href="coming-soon.html">Coming Soon</a></li> -->
+                                </ul>
+                              </li>
+                            </ul>
+                            <!-- End .menu -->
+                          </nav>
+                    </div><!-- End .header-left -->
+
+                    <div class="header-right">
+                        <div class="header-search">
+                            <a href="#" class="search-toggle" role="button" title="Search"><i class="icon-search"></i></a>
+                            <form action="#" method="get">
+                                <div class="header-search-wrapper">
+                                    <label for="q" class="sr-only">Search</label>
+                                    <input type="search" class="form-control" name="q" id="q" placeholder="Search in..." required>
+                                </div><!-- End .header-search-wrapper -->
+                            </form>
+                        </div><!-- End .header-search -->
+                        <div class="dropdown compare-dropdown">
+                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static" title="Compare Products" aria-label="Compare Products">
+                                <i class="icon-random"></i>
+                            </a>
+
+
+                        <div class="dropdown cart-dropdown">
+                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
+                                <i class="icon-shopping-cart"></i>
+                                <span class="cart-count">2</span>
+                            </a>
+
+                          
+                        </div><!-- End .cart-dropdown -->
+                    </div><!-- End .header-right -->
+                </div><!-- End .container -->
+            </div><!-- End .header-middle -->
+        </header><!-- End .header -->
+
+
+<!-- ***** Header Area End ***** -->
+  <!-- ***** Main Banner Area Start ***** -->
+  <div class="page-heading" id="top">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="inner-content"> 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ***** Main Banner Area End ***** -->
+
+
+<!-- ------------------breadcrumbs starts----------------- -->
+
+
+
+<div class="container">
+    <ol class="breadcrumb breadcrumb-arrow mb-4">
+        <li class="breadcrumb-item"><a href="/user/home">Home</a></li>
+        <li class="breadcrumb-item"><a href="/user/category/<%= category._id %>"><%= category.name %></a>
+        </li>
+        <li class="breadcrumb-item active" aria-current="page"><span><%= product.product_name %></span></li>
+    </ol>
+</div>
+
+<!-- ------------------breadcrumbs ends----------------- -->
+
+<!-- ***** Product Area Starts ***** -->
+<section class="section" id="product">
+    <div class="container">
+        <div class="row equal-height">
+            <div class="col-lg-8">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <!-- Thumbnail images -->
+                        <div class="product-thumbnails">
+                            <img src="/<%= product.variants[0].images[0] %>" alt="Thumbnail 1" class="thumbnail" onclick="changeImage(this)" style="height: 200px;width: 150px;">
+                            <img src="/<%= product.variants[0].images[1] %>" alt="Thumbnail 2" class="thumbnail" onclick="changeImage(this)" style="height: 200px;width: 150px;">
+                            <img src="/<%= product.variants[0].images[2] %>" alt="Thumbnail 3" class="thumbnail" onclick="changeImage(this)"style="height: 200px;width: 150px;">
+                            <img src="/<%= product.variants[0].images[3] %>" alt="Thumbnail 4" class="thumbnail" onclick="changeImage(this)"style="height: 200px;width: 150px;">
+                        </div>
+                    </div>
+                
+                    <div class="col-lg-9">
+                        <!-- Main product image with zoom functionality -->
+                        <div class="main-image-container">
+                            <img id="main-product-image" src="/<%= product.variants[0].images[0] %>" alt="Main Product Image" class="zoom-img"style="height: 850px;width: 600px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="border p-4 rounded bg-light">
+                    <h3 class="mb-3"><%= product.product_name %></h3>
+                    <div class="mb-3">
+                        <span class="badge bg-warning text-dark">4.5 ★</span>
+                        <span>(150 Reviews)</span>
+                    </div>
+                    <h4 class="text-primary mb-3">INR <%= product.variants[0].price %></h4>
+                    <p><%= product.product_highlights %></p>
+            
+                    <!-- Colors -->
+                    <div class="mb-3">
+                        <label for="colors" class="form-label">Colours:</label>
+                        <select id="colors" class="form-select">
+                            <option selected><%= product.variants[0].color %></option>
+                            <option>Black</option>
+                        </select>
+                    </div>
+            
+                    <!-- Storage -->
+                    <div class="mb-3">
+                        <label for="size" class="form-label">Storage:</label>
+                        <select id="size" class="form-select">
+                            <option>64GB</option>
+                            <option>128GB</option>
+                            <option>256GB</option>
+                            <option selected>64GB</option>
+                            <option>512GB</option>
+                            <option>1TB</option>
+                            <option>2TB</option>
+                        </select>
+                    </div>
+            
+                    <!-- Stock Info -->
+                    <h5 class="<%= product.variants[0].stock > 0 ? 'text-success' : 'text-danger' %>">
+                        <%= product.variants[0].stock > 0 ? `${product.variants[0].stock} In Stock` : 'Out of Stock' %>
+                    </h5>
+            
+                  <!-- Quantity -->
+         <div class="mb-3 mt-3 d-flex align-items-center">
+            <label for="quantity" class="form-label me-3">Quantity:</label>
+            <input type="number" id="quantity" class="form-control w-25" value="2" min="1">
+         </div>
+
+            
+                    <!-- Buy/Notify Button -->
+                    <div class="mb-3">
+                        <% if(product.variants[0].stock > 0) { %>
+                            <button class="btn btn-primary w-100">Buy Now</button>
+                        <% } else { %>
+                            <button class="btn btn-danger w-100">Notify me</button>
+                        <% } %>
+                    </div>
+            
+                    <!-- Delivery Info -->
+                    <div class="d-flex justify-content-between mb-2">
+                        <div>
+                            <strong>Free Delivery</strong>
+                            <small>Enter your postal code for delivery availability</small>
+                        </div>
+                        <div>
+                            <strong>Return Delivery</strong>
+                            <small>Free 30 Days Delivery Returns. Details</small>
+                        </div>
+                    </div>
+            
+                    <!-- Coupon Form -->
+                    <form action="" class="">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <input type="text" id="coupon" name="coupon" class="form-control" placeholder="Enter Coupon">
+                            </div>
+                            <div class="col-12 ">
+                                <button type="submit" value="submit" class="btn btn-dark w-100">Apply Coupon</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+<!-- ***** Product Area Ends ***** -->
+
+
+ <!-- Related Items -->
+        <div class="section-heading mt-5">
+            <h2 class="text-center">Related Products</h2>
+        </div>
+        <div class="container d-flex">
+        <div class="row  d-flex justify-content-center">
+            <% relatableProduct.forEach((element)=>{ %>
+                <% if(element.product_name != product.product_name){ %>
+                    <div class="col-md-4 mt-4 d-flex justify-content-center">
+                        <div class="card" style="height: 70vh;">
+                            <a href="/user/product?id=<%= element._id %>"><img src="/<%= element.variants[0].images[0] %>" class="card-img-top" style="height: 300px; width: 500px; object-fit: cover;" alt="Related Item 1"  ></a>
+                            <div class="card-body text-center">
+                                <h5 class="card-title"><%= element.product_name %></h5>
+                                <p class="card-text text-danger"><small><del><%= element.variants[0].price+320 %></del></small> <%= element.variants[0].price %></p>
+                                <span class="badge bg-warning text-dark">4.5 ★ (88)</span>
+                            </div>
+                        </div>
+                    </div>
+               <% } %>
+           <% }) %>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+ </div> 
+</section>
+
+
+
+
+
+
+
+        <footer class="footer">
+        	<div class="footer-middle">
+	            <div class="container">
+	            	<div class="row">
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget widget-about">
+	            				<img src="/images/demos/demo-4/logo.png" class="footer-logo" alt="Footer Logo" width="105" height="25">
+	            				<p>Praesent dapibus, neque id cursus ucibus, tortor neque egestas augue, eu vulputate magna eros eu erat. </p>
+
+	            				<div class="social-icons">
+	            					<a href="#" class="social-icon" target="_blank" title="Facebook"><i class="icon-facebook-f"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Twitter"><i class="icon-twitter"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Instagram"><i class="icon-instagram"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Youtube"><i class="icon-youtube"></i></a>
+	            					<a href="#" class="social-icon" target="_blank" title="Pinterest"><i class="icon-pinterest"></i></a>
+	            				</div><!-- End .soial-icons -->
+	            			</div><!-- End .widget about-widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget">
+	            				<h4 class="widget-title">Useful Links</h4><!-- End .widget-title -->
+
+	            				<ul class="widget-list">
+	            					<li><a href="about.html">About JOLT</a></li>
+	            					<li><a href="#">How to shop on JOLT</a></li>
+	            					<li><a href="#">FAQ</a></li>
+	            					<li><a href="contact.html">Contact us</a></li>
+	            					<li><a href="login.html">Log in</a></li>
+	            				</ul><!-- End .widget-list -->
+	            			</div><!-- End .widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget">
+	            				<h4 class="widget-title">Customer Service</h4><!-- End .widget-title -->
+
+	            				<ul class="widget-list">
+	            					<li><a href="#">Payment Methods</a></li>
+	            					<li><a href="#">Money-back guarantee!</a></li>
+	            					<li><a href="#">Returns</a></li>
+	            					<li><a href="#">Shipping</a></li>
+	            					<li><a href="#">Terms and conditions</a></li>
+	            					<li><a href="#">Privacy Policy</a></li>
+	            				</ul><!-- End .widget-list -->
+	            			</div><!-- End .widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+
+	            		<div class="col-sm-6 col-lg-3">
+	            			<div class="widget">
+	            				<h4 class="widget-title">My Account</h4><!-- End .widget-title -->
+
+	            				<ul class="widget-list">
+	            					<li><a href="#">Sign In</a></li>
+	            					<li><a href="cart.html">View Cart</a></li>
+	            					<li><a href="#">My Wishlist</a></li>
+	            					<li><a href="#">Track My Order</a></li>
+	            					<li><a href="#">Help</a></li>
+	            				</ul><!-- End .widget-list -->
+	            			</div><!-- End .widget -->
+	            		</div><!-- End .col-sm-6 col-lg-3 -->
+	            	</div><!-- End .row -->
+	            </div><!-- End .container -->
+	        </div><!-- End .footer-middle -->
+
+	        <div class="footer-bottom">
+	        	<div class="container">
+	        		<p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p><!-- End .footer-copyright -->
+	        		<figure class="footer-payments">
+	        			<img src="/images/payments.png" alt="Payment methods" width="272" height="20">
+	        		</figure><!-- End .footer-payments -->
+	        	</div><!-- End .container -->
+	        </div><!-- End .footer-bottom -->
+        </footer><!-- End .footer -->
+    </div><!-- End .page-wrapper -->
+    <button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
+
+
+
+ <script>
+// Function to change the main image when a thumbnail is clicked
+function changeImage(thumbnail) {
+    var mainImage = document.getElementById('main-product-image');
+    mainImage.src = thumbnail.src;
+}
+
+// Zoom functionality for the main product image
+var mainImage = document.getElementById('main-product-image');
+mainImage.addEventListener('click', function() {
+    if (mainImage.classList.contains('zoomed')) {
+        mainImage.classList.remove('zoomed');
+    } else {
+        mainImage.classList.add('zoomed');
+    }
+});
+
+ </script>
+
+    <%- include('./partial/footer') %>

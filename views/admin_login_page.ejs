@@ -16,6 +16,7 @@
                     <!-- Logo with inline CSS to center it -->
                     <img src="/images/demos/demo-4/logo.png" alt="Logo" class="logo mb-4" style="max-width: 150px; display: block; margin-left: auto; margin-right: auto;">
                     <h2 class="mb-4">Admin Login</h2>
+                    <p class="text-danger"><%= locals.notadmin?notadmin:null  %> </p>
                     <form class="text-left" action="/admin/admin_login" method="post">
                         <div class="form-group">
                             <label for="username">Email</label>
@@ -26,7 +27,7 @@
                         <div class="form-group">
                             <label for="password">Password</label>
                             <input type="password" class="form-control" id="password" name="password" required>
-                            <p class="text-danger"><%= locals.error?error:null  %> </p>
+                            <p class="text-danger"><%= locals.passNo?passNo:null  %> </p>
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Login</button>
                     </form>

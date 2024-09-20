@@ -1,28 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.5/cropper.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+    <link href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet">
+
+
     <style>
-        body {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+         body {
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1030;
         }
         .sidebar {
-            height: 100vh;
+            position: fixed;
+            top: 56px; /* Height of the navbar */
+            left: 0;
+            height: calc(100vh - 56px); /* Full height minus the height of the navbar */
             background-color: #e8d7b4;
             color: #fff;
             padding-top: 1rem;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 200px;
+            width: 250px; /* Adjust the width of the sidebar */
+            overflow-y: auto; /* Add scrolling if content exceeds height */
         }
         .sidebar a {
             color: #000000;
@@ -31,83 +39,68 @@
         .sidebar a:hover {
             background-color: #7fdf9a;
         }
+        .content {
+            margin-left: 100px; /* Offset for the sidebar */
+        }
         .navbar {
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
             margin-bottom: 0;
         }
-        .content {
-            margin-left: 200px;
-            margin-top: 56px;
-            padding: 2rem;
-            height: 100vh;
-            overflow-y: auto;
-        }
-        .form-section {
-            padding: 1.5rem;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            margin-bottom: 2rem;
-        }
-        .form-section h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: #495057;
-        }
-        .form-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-        .form-label {
-            flex: 1;
-            margin-right: 1rem;
-            font-weight: bold;
-        }
-        .form-control {
-            flex: 2;
-            padding: 0.5rem;
-            font-size: 1rem;
-        }
-        .small-label .form-label {
-            font-size: 0.9rem;
-            font-weight: normal;
-        }
-        .image-upload-group {
-            display: flex;
-            gap: 1rem;
-            flex-wrap: wrap;
-        }
-        .image-upload {
-            flex: 1 1 22%;
-        }
-        .image-upload input[type="file"] {
-            padding: 0.4rem;
-        }
-        .cropper-modal {
-            display: none;
+        .sidebar {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
+            height: 100vh;
+            background-color: #e8d7b4;
+            color: #fff;
+            padding-top: 1rem;
+        }
+        .sidebar a {
+            color: #000000;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #7fdf9a;
+        }
+        .content {
+            padding: 2rem;
+        }
+        .navbar {
+            margin-bottom: 0;
+        }
+        .btn-block, .btn-unblock {
+            display: flex;
             align-items: center;
+            font-size: 0.875rem; /* Adjust font size */
+            padding: 0.5rem 1rem; /* Adjust padding */
+            border-radius: 0.375rem; /* Rounded corners */
+            color: #fff;
         }
-        .cropper-modal .modal-content {
-            background: #fff;
-            padding: 1rem;
-            position: relative;
+        .btn-block {
+            background-color: #dc3545; /* Red background for block */
+            border: none;
         }
-        .cropper-modal .modal-content img {
+        .btn-unblock {
+            background-color: #28a745; /* Green background for unblock */
+            border: none;
+        }
+        .btn-block:hover, .btn-unblock:hover {
+            opacity: 0.8; /* Slightly transparent on hover */
+        }
+        .btn-icon {
+            margin-right: 0.5rem; /* Space between icon and text */
+        }
+        .image-preview{
+            object-fit: cover;
+            margin-bottom: 10px;
+            max-width: 50%;
+        }
+     
+        .modal-body-custom {
+            text-align: center;
+        }
+        .img-fluid {
             max-width: 100%;
+            height: auto;
         }
-        .cropper-modal .modal-content .btn {
-            margin-top: 1rem;
-        }
+
     </style>
 </head>
 <body>
@@ -117,9 +110,7 @@
         <div class="collapse navbar-collapse justify-content-end">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-user"></i> Admin
-                    </a>
+                    <a class="nav-link" href="#"> <i class="fas fa-user"></i> Admin </a>
                 </li>
             </ul>
         </div>
@@ -127,21 +118,21 @@
 
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
-            <nav class="col-md-2 sidebar">
+               <!-- Sidebar -->
+               <nav class="col-md-2 sidebar">
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">
+                        <a class="nav-link active" href="/admin/admin_dashbord">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="/admin/admin_usermanagment">
                             <i class="fas fa-users"></i> Users
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="/admin/admin_productmanagment">
                             <i class="fas fa-box"></i> Products
                         </a>
                     </li>
@@ -151,18 +142,18 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="/admin/admin_catagorymanagment">
                             <i class="fas fa-sliders-h"></i> Category
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="/admin/admin_brandmanagment">
                             <i class="fas fa-briefcase"></i> Brand
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#">
-                            <i class="fas fa-tag"></i> Coupon
+                            <i class="fas fa-tag"></i> Coupen
                         </a>
                     </li>
                     <li class="nav-item">
@@ -171,7 +162,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" href="/admin/logout">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </li>
@@ -180,189 +171,360 @@
 
             <!-- Main Content -->
             <main role="main" class="col-md-10 content">
-                <div class="container my-5">
-                    <h2 class="text-center mb-4">Add Product</h2>
-
-                    <!-- Product Information Section -->
-                    <div class="form-section">
-                        <h3>Product Information</h3>
-                        <div class="form-group">
-                            <label for="name" class="form-label">Product Name</label>
-                            <input type="text" id="name" name="name" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="category" class="form-label">Category Name</label>
-                            <input type="text" id="category" name="category" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="brand" class="form-label">Brand</label>
-                            <input type="text" id="brand" name="brand" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <!-- Product Attributes Section -->
-                    <div class="form-section small-label">
-                        <h3>Product Attributes</h3>
-                        <div class="form-group">
-                            <label for="size" class="form-label">Size</label>
-                            <input type="text" id="size" name="size" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="color" class="form-label">Color</label>
-                            <input type="text" id="color" name="color" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="price" class="form-label">Price</label>
-                            <input type="number" id="price" name="price" class="form-control" step="0.01" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="stock" class="form-label">Stock</label>
-                            <input type="number" id="stock" name="stock" class="form-control" required>
-                        </div>
-                    </div>
-
-                    <!-- Product Details Section -->
-                    <div class="form-section">
-                        <h3>Product Details</h3>
-                        <div class="form-group">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea id="description" name="description" class="form-control" rows="3" required></textarea>
-                        </div>
-
-                        <!-- Image Upload Options -->
-                        <div class="form-group">
-                            <label class="form-label">Upload Product Images (max 3)</label>
-                            <div class="image-upload-group" id="images-container">
-                                <!-- Image upload fields will be added dynamically here -->
+                <div class="container-fluid main-area">
+                    <div class="content">
+                      <h2 class="mb-4">Add Product</h2>
+                      <div class="card shadow-sm">
+                        <div class="card-body">
+                          <form action="/admin/add_products" method="post" enctype="multipart/form-data">
+                            <!-- Product Information -->
+                            <div class="row mb-3">
+                              <div class="col-md-6">
+                                <label for="productName" class="form-label">Product Name</label>
+                                <p class="text-danger">
+                                  <%= locals.exist ? exist : null %>
+                                </p>
+                                <input type="text" class="form-control" name="productName" id="productName" required />
+                              </div>
+                              <div class="col-md-6">
+                                <label for="productHighlights" class="form-label">Product Highlights</label>
+                                <input type="text" class="form-control" name="productHighlights" id="productHighlights" required />
+                              </div>
                             </div>
-                            <button type="button" id="add-image" class="btn btn-primary mt-2">Add Image</button>
-                        </div>
-
-                        <!-- Variants Section -->
-                        <div class="form-group">
-                            <label class="form-label">Product Variants</label>
-                            <div id="variants-container">
-                                <!-- Variant fields will be added dynamically here -->
+                  
+                            <!-- Category and Brand Selection -->
+                            <div class="row mb-3">
+                              <div class="col-md-6">
+                                <label for="productCategory" class="form-label">Category</label>
+                                <select class="form-select form-control" name="productCategory" id="productCategory" required>
+                                  <option selected disabled>Select Category</option>
+                                  <% if (typeof category !== 'undefined' && category.length > 0) { %>
+                                    <% category.forEach((cat) => { %>
+                                      <option value="<%= cat._id %>"><%= cat.name %></option>
+                                    <% }); %>
+                                  <% } else { %>
+                                    <option disabled>No available categories</option>
+                                  <% } %>
+                                </select>
+                              </div>
+                              <div class="col-md-6">
+                                <label for="productBrand" class="form-label">Brand</label>
+                                <select class="form-select form-control" name="productBrand" id="productBrand" required>
+                                  <option selected disabled>Select Brand</option>
+                                  <% if (typeof brand !== 'undefined' && brand.length > 0) { %>
+                                    <% brand.forEach((brd) => { %>
+                                      <option value="<%= brd._id %>"><%= brd.brand_name %></option>
+                                    <% }); %>
+                                  <% } else { %>
+                                    <option disabled>No available brands</option>
+                                  <% } %>
+                                </select>
+                              </div>
                             </div>
-                            <button type="button" id="add-variant" class="btn btn-primary mt-2">Add Variant</button>
+                  
+                            <!-- Product Variants -->
+                            <div id="variant-container">
+                              <!-- Initial Variant Row -->
+                              <div class="variant-row row mb-3 mt-3">
+                                <div class="col-md-3">
+                                  <label for="productSize-1" class="form-label">Size</label>
+                                  <select class="form-select form-control" name="productSize[1]" id="productSize-1">
+                                    <option selected disabled>Storage</option>
+                                    <option value="64GB">64GB</option>
+                                    <option value="128GB">128GB</option>
+                                    <option value="256GB">256GB</option>
+                                    <option value="512GB">512GB</option>
+                                    <option value="1TB">1TB</option>
+                                    <option value="2TB">2TB</option>
+                                   
+                                   
+                                  </select>
+                                </div>
+                                <div class="col-md-3">
+                                  <label for="productColor-1" class="form-label">Color</label>
+                                  <select class="form-select form-control" name="productColor[1]" id="productColor-1" required>
+                                    <option selected disabled>Color</option>
+                                    <option value="RED">RED</option>
+                                    <option value="BLUE">BLUE</option>
+                                    <option value="YELLOW">YELLOW</option>
+                                    <option value="BLACK">BLACK</option>
+                                    <option value="WHITE">WHITE</option>
+                                    <option value="PINK">PINK</option>
+                                    <option value="PURPLE">PURPLE</option>
+                                    <option value="ORANGE">ORANGE</option>
+                                    <option value="NAVY">NAVY</option>
+                                    <option value="MAROON">Space Black</option>
+                                  </select>
+                                </div>
+                                <div class="col-md-3">
+                                  <label for="productPrice-1" class="form-label">Price</label>
+                                  <input type="number" class="form-control" name="productPrice[1]" id="productPrice-1" placeholder="Price" required />
+                                </div>
+                                <div class="col-md-3">
+                                  <label for="productStock-1" class="form-label">Stock</label>
+                                  <input type="number" class="form-control" name="productStock[1]" id="productStock-1" placeholder="Stock" required />
+                                </div>
+                  
+                                <!-- Image Upload -->
+                                <div class="container mt-4">
+                                  <div class="col-md-12 mt-3">
+                                      <label class="form-label">Upload Images</label>
+                                      <div class="row">
+                                          <div class="col-md-6">
+                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-1" class="image-preview" />
+                                              <input class="form-control image-form" type="file" name="productImage[1][1]" id="productImage-1-1" onchange="previewImage(this, 'preview-1-1')" required />
+                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-1', 'productImage-1-1')">Crop Image</button>
+                                          </div>
+                                          <div class="col-md-6">
+                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-2" class="image-preview" />
+                                              <input class="form-control image-form" type="file" name="productImage[1][2]" id="productImage-1-2" onchange="previewImage(this, 'preview-1-2')" required />
+                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-2', 'productImage-1-2')">Crop Image</button>
+                                          </div>
+                                          <div class="col-md-6">
+                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-3" class="image-preview" />
+                                              <input class="form-control image-form" type="file" name="productImage[1][3]" id="productImage-1-3" onchange="previewImage(this, 'preview-1-3')" required />
+                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-3', 'productImage-1-3')">Crop Image</button>
+                                          </div>
+                                          <div class="col-md-6">
+                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-4" class="image-preview" />
+                                              <input class="form-control image-form" type="file" name="productImage[1][4]" id="productImage-1-4" onchange="previewImage(this, 'preview-1-4')" required />
+                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-4', 'productImage-1-4')">Crop Image</button>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                              </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                  <label for="productDescription" class="form-label">Product Description</label>
+                                  <textarea class="form-control" name="productDescription" id="productDescription" rows="4" required></textarea>
+                                </div>
+                              </div>
+                  
+                            <!-- Buttons -->
+                            <button type="button" class="btn btn-outline-primary" id="addVariantButton">Add Another Variant</button>
+                            <input type="hidden" id="variant_count" name="variant_count" value="1" />
+                            <div class="mt-4 text-end">
+
+                              <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                          </form>
                         </div>
+                      </div>
                     </div>
-                </div>
+                  </div>
+                  
             </main>
         </div>
     </div>
+     <!-- Modal for Image Cropping -->
+ <!-- Cropper Modal -->
+<!-- Modal for Cropping -->
+<div class="modal fade" id="cropperModal" tabindex="-1" role="dialog" aria-labelledby="cropperModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cropperModalLabel">Crop Image</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body modal-body-custom">
+              <img id="image-to-crop" class="img-fluid" alt="Image to crop">
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="crop-btn" onclick="cropAndSave()">Crop</button>
+          </div>
+      </div>
+  </div>
+</div>
+<!-- Load jQuery (optional, if you need it for other parts) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Cropper Modal -->
-    <div class="cropper-modal" id="cropper-modal">
-        <div class="modal-content">
-            <img id="cropper-image" src="" alt="Image to Crop">
-            <button type="button" id="crop-image" class="btn btn-primary">Crop Image</button>
-            <button type="button" id="close-cropper" class="btn btn-secondary">Cancel</button>
-        </div>
-    </div>
+<!-- Load Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- JavaScript -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.5/cropper.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const addImageButton = document.getElementById('add-image');
-            const imagesContainer = document.getElementById('images-container');
-            const addVariantButton = document.getElementById('add-variant');
-            const variantsContainer = document.getElementById('variants-container');
-            const cropperModal = document.getElementById('cropper-modal');
-            const cropperImage = document.getElementById('cropper-image');
-            const cropImageButton = document.getElementById('crop-image');
-            const closeCropperButton = document.getElementById('close-cropper');
-            let imageCount = 0;
-            let variantCount = 0;
-            let cropper;
+<!-- Load Cropper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
-            // Add Image
-            addImageButton.addEventListener('click', function() {
-                if (imageCount >= 3) {
-                    alert('You can only add up to 3 images.');
-                    return;
-                }
+ 
+<script>
+  function addVariantRow() {
+      const variantSection = document.getElementById("variant-container");
+      const variantCount = document.getElementById("variant_count");
+      const newVariantIndex = parseInt(variantCount.value) + 1;
+      variantCount.value = newVariantIndex;
 
-                imageCount++;
+      const newVariantRow = document.createElement("div");
+      newVariantRow.classList.add("variant-row", "row", "mb-3", "mt-3");
+      newVariantRow.innerHTML = `
+          <div class="col-md-3">
+              <select class="form-select form-control form-edge" name="productSize[${newVariantIndex}]" id="productSize-${newVariantIndex}" required>
+                  <option selected disabled>Storage</option>
+                  <option value="64GB">64GB</option>
+                  <option value="128GB">128GB</option>
+                  <option value="256GB">256GB</option>
+                  <option value="512GB">512GB</option>
+                  <option value="1TB">1TB</option>
+                  <option value="2TB">2TB</option>
+              </select>
+          </div>
+          <div class="col-md-3">
+              <select class="form-select form-control form-edge" name="productColor[${newVariantIndex}]" id="productColor-${newVariantIndex}" required>
+                  <option selected disabled>Color</option>
+                  <option value="RED">RED</option>
+                  <option value="BLUE">BLUE</option>
+                  <option value="YELLOW">YELLOW</option>
+                  <option value="BLACK">BLACK</option>
+                  <option value="WHITE">WHITE</option>
+                  <option value="PINK">PINK</option>
+                  <option value="PURPLE">PURPLE</option>
+                  <option value="ORANGE">ORANGE</option>
+                  <option value="NAVY">NAVY</option>
+                  <option value="MAROON">Space Black</option>
+              </select>
+          </div>
+          <div class="col-md-3">
+              <input type="number" class="form-control form-edge" name="productPrice[${newVariantIndex}]" id="productPrice-${newVariantIndex}" placeholder="Price" required>
+          </div>
+          <div class="col-md-3">
+              <input type="number" class="form-control form-edge" name="productStock[${newVariantIndex}]" id="productStock-${newVariantIndex}" placeholder="Stock" required>
+          </div>
+          <div class="col-md-12 mt-3">
+              <label for="productImage-${newVariantIndex}" class="form-label">Upload Images</label>
+              <div class="row">
+                  <div class="col-md-6">
+                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-1" class="image-preview">
+                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][1]" id="productImage-${newVariantIndex}-1" onchange="previewImage(this, 'preview-${newVariantIndex}-1')" required>
+                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-1', 'productImage-${newVariantIndex}-1')">Crop Image</button>
+                  </div>
+                  <div class="col-md-6">
+                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-2" class="image-preview">
+                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][2]" id="productImage-${newVariantIndex}-2" onchange="previewImage(this, 'preview-${newVariantIndex}-2')" required>
+                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-2', 'productImage-${newVariantIndex}-2')">Crop Image</button>
+                  </div>
+                  <div class="col-md-6">
+                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-3" class="image-preview">
+                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][3]" id="productImage-${newVariantIndex}-3" onchange="previewImage(this, 'preview-${newVariantIndex}-3')" required>
+                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-3', 'productImage-${newVariantIndex}-3')">Crop Image</button>
+                  </div>
+                  <div class="col-md-6">
+                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-4" class="image-preview">
+                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][4]" id="productImage-${newVariantIndex}-4" onchange="previewImage(this, 'preview-${newVariantIndex}-4')" required>
+                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-4', 'productImage-${newVariantIndex}-4')">Crop Image</button>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-12 text-end mt-2">
+              <button type="button" class="btn btn-outline-danger remove-variant" data-index="${newVariantIndex}">Remove</button>
+          </div>
+      `;
 
-                const imageDiv = document.createElement('div');
-                imageDiv.classList.add('image-upload');
-                imageDiv.innerHTML = `
-                    <div class="form-group">
-                        <label for="image-${imageCount}" class="form-label">Image ${imageCount}</label>
-                        <input type="file" id="image-${imageCount}" name="image-${imageCount}" class="form-control" accept="image/*">
-                    </div>
-                `;
+      newVariantRow.querySelector(".remove-variant").addEventListener("click", function () {
+          newVariantRow.remove();
+          updateVariantCount();
+      });
 
-                imagesContainer.appendChild(imageDiv);
+      variantSection.appendChild(newVariantRow);
+  }
 
-                const fileInput = imageDiv.querySelector('input[type="file"]');
-                fileInput.addEventListener('change', function(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            cropperImage.src = e.target.result;
-                            cropperModal.style.display = 'flex';
+  function updateVariantCount() {
+      const variantRows = document.querySelectorAll(".variant-row");
+      document.getElementById("variant_count").value = variantRows.length;
+  }
 
-                            if (cropper) {
-                                cropper.destroy();
-                            }
+  document.getElementById("addVariantButton").addEventListener("click", addVariantRow);
+</script>
 
-                            cropper = new Cropper(cropperImage, {
-                                aspectRatio: 16 / 9,
-                                viewMode: 1,
-                                autoCropArea: 1
-                            });
 
-                            cropImageButton.onclick = function() {
-                                if (cropper) {
-                                    const canvas = cropper.getCroppedCanvas();
-                                    const dataUrl = canvas.toDataURL('image/jpeg');
-                                    const img = new Image();
-                                    img.src = dataUrl;
+<!-- Load jQuery (optional, if you need it for other parts) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-                                    // Replace the input with the cropped image
-                                    imageDiv.innerHTML = '';
-                                    imageDiv.appendChild(img);
+<!-- Load Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
-                                    cropperModal.style.display = 'none';
-                                }
-                            };
+<!-- Load Cropper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
-                            closeCropperButton.onclick = function() {
-                                cropperModal.style.display = 'none';
-                            };
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            });
+<!-- Your custom script should come AFTER the libraries -->
+<script>
+    let cropper;
+    let currentPreviewId = '';
+    let currentFileInputId = '';
 
-            // Add Variant
-            addVariantButton.addEventListener('click', function() {
-                variantCount++;
+    function previewImage(input, previewId) {
+        const preview = document.getElementById(previewId);
+        const file = input.files[0];
+        const reader = new FileReader();
 
-                const variantDiv = document.createElement('div');
-                variantDiv.classList.add('form-group');
-                variantDiv.innerHTML = `
-                    <div class="form-group">
-                        <label for="variant-${variantCount}-name" class="form-label">Variant ${variantCount} Name</label>
-                        <input type="text" id="variant-${variantCount}-name" name="variant-${variantCount}-name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="variant-${variantCount}-value" class="form-label">Variant ${variantCount} Value</label>
-                        <input type="text" id="variant-${variantCount}-value" name="variant-${variantCount}-value" class="form-control" required>
-                    </div>
-                `;
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        };
 
-                variantsContainer.appendChild(variantDiv);
-            });
+        reader.readAsDataURL(file);
+    }
+
+    function openCroppingModal(previewId, fileInputId) {
+        console.log(12);  // Debugging log to verify the function is triggered
+        currentPreviewId = previewId;
+        currentFileInputId = fileInputId;
+
+        const modalElement = document.getElementById('cropperModal');
+        const modal = new bootstrap.Modal(modalElement);  // This is where the error occurs
+        const imageToCrop = document.getElementById('image-to-crop');
+        const preview = document.getElementById(previewId);
+
+        // Set the source of the image to crop
+        imageToCrop.src = preview.src;
+
+        // Destroy any existing cropper instance
+        if (cropper) {
+            cropper.destroy();
+        }
+
+        // Initialize a new Cropper instance
+        cropper = new Cropper(imageToCrop, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 1,
         });
-    </script>
-</body>
+
+        // Show the modal
+        modal.show();
+    }
+
+    function cropAndSave() {
+        if (!cropper) return;
+
+        const croppedCanvas = cropper.getCroppedCanvas();
+        const preview = document.getElementById(currentPreviewId);
+
+        // Update the preview image
+        preview.src = croppedCanvas.toDataURL('image/jpeg');
+
+        // Convert the cropped image to Blob and update the file input
+        croppedCanvas.toBlob(function (blob) {
+            const fileInput = document.getElementById(currentFileInputId);
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(new File([blob], `cropped-${currentPreviewId}.jpg`, { type: 'image/jpeg' }));
+            fileInput.files = dataTransfer.files;
+        });
+
+        // Hide the modal after cropping
+        const modalElement = document.getElementById('cropperModal');
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+
+        // Destroy the cropper instance
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+    }
+</script>
+
+ </body>
 </html>
+

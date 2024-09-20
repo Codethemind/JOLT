@@ -1,5 +1,9 @@
 const user =require('../models/usercollection')
 const OTP =require('../models/otpcollection')
+const Category =require('../models/catagorycollection')
+const Product=require('../models/poductcollection')
+
+
 const bcrypt=require('bcrypt')
 const path = require("path");
 const otpGenerator = require("otp-generator");
@@ -18,9 +22,47 @@ const otps = {};
 const get_interface= (req, res) => {
     res.render("interface");
   }
-const get_home=(req, res) => {
-    res.render("home");
-  }
+
+
+  const get_home = async (req, res) => {
+    const categoryId = req.query.category; // Get category ID from query
+
+    let query = {}; // Default to an empty query to fetch all products
+
+    if (categoryId) {
+        query = { category_id: categoryId }; // If a category is selected, filter products by category
+    }
+
+    // Fetch products with category and brand populated
+    const product = await Product.find(query,{isDelete:false}).populate('category_id').populate('brand_id');
+
+    // Fetch all categories for the navigation bar
+    const categories = await Category.find({ isDeleted: false });
+
+    // Render the home page, passing categories, products, and the selected category
+    const top = await Product.find({'variants.stock': { $lt: 4 },isDelete:false});
+
+    const category = await Category.findOne({ name: 'Cameras' }).exec();
+    if (!category) {
+      throw new Error('Category not found');
+    }
+    const categoryId1 = category._id;
+    const onsale = await Product.find({ category_id: categoryId1,isDelete:false }).populate('category_id').exec();
+
+    
+    
+
+            res.render("home", {
+        categories,       // All available categories
+        product, 
+        top, 
+        onsale,        // Filtered or all products
+        queryCategory: categoryId // The selected category ID, if any
+    });
+};
+
+  
+  
 
   const get_wishlist=(req, res) => {
     res.render("wishlist");
@@ -47,6 +89,8 @@ const get_home=(req, res) => {
   const post_signup=async (req, res) => {
     const { name, email, password } = req.body;
     try {
+      console.log(64);
+      
       const existingUser = await user.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ error: "This email already exists" });
@@ -92,14 +136,14 @@ const get_home=(req, res) => {
       if (!userRecord) {
         return res.status(404).json({ error: "User not found" });
       }
-      console.log("User record:", userRecord);
-
-      console.log("Password from request body:", req.body.password); // Log the plain text password
-    console.log("Password from database:", userRecord.password); // Log the hashed password
-
+     
+      if(userRecord.isBlock){
+        return res.status(404).json({ error: "User blocked" });
+      }
       // Compare the provided password with the hashed password in the database
       const isPasswordValid = await bcrypt.compare(req.body.password,userRecord.password);
       if (isPasswordValid) {
+        req.session.username=true;
         // Password is correct, redirect to the home page
         return res.status(200).json({ success: true,successRedirectUrl: "/home", });
       } else {
@@ -196,9 +240,55 @@ const get_home=(req, res) => {
       res.status(500).json({ error: 'Failed to resend OTP' });
     }
   };
+
+  const get_productpage=async (req,res)=>{
+    const product=await Product.find({isDelete:false})
+    res.render('productpage',{product})
+  }
   
+  const get_singleproduct=async(req,res)=>{
+    const id = req.query.id
+    const product = await Product.findOne({_id:id,isDelete:false}).populate('category_id')
+    const category = product.category_id;
+    const relatableProduct = await Product.find({category_id:category,isDelete:false})
+    res.render('singleproduct',{product,relatableProduct,category})
+  }
+
+
+ const category = async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        // Fetch products by category ID
+        const products = await Product.find({ category_id: id ,isDelete:false}).populate('category_id');
+        
+        // Fetch the category by ID
+        const category = await Category.findById(id);
+
+        if (!category) {
+            return res.status(404).send('Category not found');
+        }
+
+        res.render('category', {
+            products,  // List of products
+            category   // Single category object
+        });
+    } catch (error) {
+        console.error('Error fetching category:', error);
+        res.status(500).send('Server Error');
+    }
+};
+
+const getlogout=(req,res)=>{
+  req.session.destroy(err=>{
+    if(err){
+      console.log(err);
+    }else{
+      res.redirect('/')
+    }
+  })
+}
 
 
 
-
-  module.exports={get_interface, get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp};
+  module.exports={get_interface, get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_productpage,get_singleproduct,category,getlogout};
