@@ -1,0 +1,304 @@
+<%- include('./partial/admin_header') %>
+
+
+    <div class="container-fluid">
+        <div class="row">
+       
+
+            <!-- Main Content -->
+            <main role="main" class="col-md-10 content">
+                <div class="container">
+                    <h2 class="text-center ">Order Management</h2>
+
+                  
+
+                   <!-- order Table -->
+
+                   <div class="container mt-4 ">
+                   
+                    <table class="table mt-5">
+                      <thead>
+                        <tr>
+                          <th scope="col">Order ID</th>
+                          <th scope="col">User ID</th>
+                          <th scope="col">Payment Type</th>
+                          <th scope="col">Order Status</th>
+                          <th scope="col">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% if(order && order.length > 0){ %>
+                    
+                          <% 
+                          // Sort orders by createdAt or updatedAt, assuming it exists in the order object
+                          order.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Most recent first
+                          %>
+                    
+                          <!-- First, show "new" orders (Pending, Processing) -->
+                          <% order.forEach((element) => { %>
+                            <% if (element.orderStatus === 'Pending' || element.orderStatus === 'Processing') { %> <!-- New orders filter -->
+                              <!-- Order Main Row -->
+                              <tr class="order-row">
+                                <td>
+                                  <%= element.orderId %>
+                                  <input type="hidden" value="<%= element._id %>" id="orderId">
+                                </td>
+                                <td>
+                                  <%= element.user.name %>
+                                </td>
+                                <td>
+                                  <%= element.paymentMethod %>
+                                </td>
+                                <td>
+                                  <button class="btn 
+                                    <%= element.orderStatus === 'Pending' ? 'btn-outline-warning' : 
+                                        element.orderStatus === 'Processing' ? 'btn-outline-primary' : '' %>" disabled>
+                                    <%= element.orderStatus %>
+                                  </button>
+                                </td>
+                                <td>
+                                  <!-- Details Button -->
+                                  <button class="btn btn-outline-secondary toggle-details-btn" title="View Details" data-bs-toggle="tooltip">
+                                      <i class="bi bi-info-circle-fill"></i>
+                                      <span class="ms-1">Details</span>
+                                  </button>
+                    
+                                  <!-- Edit Button (visible for all statuses except Cancelled) -->
+                                  <% if (element.orderStatus !== 'Cancelled') { %>
+                                      <button class="btn btn-outline-success edit-status-btn" 
+                                              data-order-id="<%= element._id %>" 
+                                              data-toggle="modal" 
+                                              data-target="#orderStatusModal" 
+                                              title="Edit Status" data-bs-toggle="tooltip">
+                                          <i class="bi bi-pencil-square"></i>
+                                          <span class="ms-1">Edit</span>
+                                      </button>
+                                  <% } %>
+                                </td>
+                              </tr>
+                    
+                              <!-- Order Details Row -->
+                              <tr class="order-details-row" style="display: none;">
+                                <td colspan="5">
+                                  <div class="order-details-container">
+                                    <h5>Order Details</h5>
+                                    <table class="table table-bordered">
+                                      <tbody>
+                                          <% element.items.forEach(item => { %>
+                                              <% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId.toString()) : null; %>
+                                              <% if (variant) { %>
+                                                <tr>
+                                                  <td><img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 150px; height: 180px; object-fit: cover;"></td>
+                                                  <td>
+                                                    <p><strong>Product:</strong> <%= item.product.product_name %></p>
+                                                    <p><strong>Color:</strong> <%= variant.color %></p>
+                                                    <p><strong>Size:</strong> <%= variant.size %></p>
+                                                    <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                                                  </td>
+                                                  <td>
+                                                    <h5>Delivery Address</h5>
+                                                    <div class="address-info mt-3">
+                                                      <p><strong><%= element.address.fullName %></strong></p>
+                                                      <p><%= element.address.streetAddress %>, <%= element.address.city %></p>
+                                                      <p>Phone number: <%= element.address.phone %></p>
+                                                    </div>
+                                                  </td>
+                                                </tr>
+                                              <% } else { %>
+                                                <tr>
+                                                  <td colspan="3">Product details not available</td>
+                                                </tr>
+                                              <% } %>
+                                            <% }) %>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </td>
+                              </tr>
+                            <% } %> <!-- End of filtering New orders -->
+                          <% }) %>
+                    
+                          <!-- Now, show the rest of the orders (Shipped, Delivered, Cancelled) -->
+                          <% order.forEach((element) => { %>
+                            <% if (element.orderStatus !== 'Pending' && element.orderStatus !== 'Processing') { %> <!-- Old orders filter -->
+                              <!-- Order Main Row -->
+                              <tr class="order-row">
+                                <td>
+                                  <%= element.orderId %>
+                                  <input type="hidden" value="<%= element._id %>" id="orderId">
+                                </td>
+                                <td>
+                                  <%= element.user.name %>
+                                </td>
+                                <td>
+                                  <%= element.paymentMethod %>
+                                </td>
+                                <td>
+                                  <button class="btn 
+                                    <%= element.orderStatus === 'Shipped' ? 'btn-outline-info' : 
+                                        element.orderStatus === 'Delivered' ? 'btn-outline-success' : 
+                                        element.orderStatus === 'Cancelled' ? 'btn-outline-danger' : '' %>" disabled>
+                                    <%= element.orderStatus %>
+                                  </button>
+                                </td>
+                                <td>
+                                  <!-- Details Button -->
+                                  <button class="btn btn-outline-secondary toggle-details-btn" title="View Details" data-bs-toggle="tooltip">
+                                      <i class="bi bi-info-circle-fill"></i>
+                                      <span class="ms-1">Details</span>
+                                  </button>
+                    
+                                  <!-- Edit Button (visible for all statuses except Cancelled) -->
+                                  <% if (element.orderStatus !== 'Cancelled') { %>
+                                      <button class="btn btn-outline-success edit-status-btn" 
+                                              data-order-id="<%= element._id %>" 
+                                              data-toggle="modal" 
+                                              data-target="#orderStatusModal" 
+                                              title="Edit Status" data-bs-toggle="tooltip">
+                                          <i class="bi bi-pencil-square"></i>
+                                          <span class="ms-1">Edit</span>
+                                      </button>
+                                  <% } %>
+                                </td>
+                              </tr>
+                    
+                              <!-- Order Details Row -->
+                              <tr class="order-details-row" style="display: none;">
+                                <td colspan="5">
+                                  <div class="order-details-container">
+                                    <h5>Order Details</h5>
+                                    <table class="table table-bordered">
+                                      <tbody>
+                                          <% element.items.forEach(item => { %>
+                                              <% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId.toString()) : null; %>
+                                              <% if (variant) { %>
+                                                <tr>
+                                                  <td><img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 150px; height: 180px; object-fit: cover;"></td>
+                                                  <td>
+                                                    <p><strong>Product:</strong> <%= item.product.product_name %></p>
+                                                    <p><strong>Color:</strong> <%= variant.color %></p>
+                                                    <p><strong>Size:</strong> <%= variant.size %></p>
+                                                    <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                                                  </td>
+                                                  <td>
+                                                    <h5>Delivery Address</h5>
+                                                    <div class="address-info mt-3">
+                                                      <p><strong><%= element.address.fullName %></strong></p>
+                                                      <p><%= element.address.streetAddress %>, <%= element.address.city %></p>
+                                                      <p>Phone number: <%= element.address.phone %></p>
+                                                    </div>
+                                                  </td>
+                                                </tr>
+                                              <% } else { %>
+                                                <tr>
+                                                  <td colspan="3">Product details not available</td>
+                                                </tr>
+                                              <% } %>
+                                            <% }) %>
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                </td>
+                              </tr>
+                            <% } %> <!-- End of filtering Old orders -->
+                          <% }) %>
+                    
+                        <% } else { %>
+                          <tr>
+                            <td colspan="5" class="text-center">No orders available</td>
+                          </tr>
+                        <% } %>
+                      </tbody>
+                    </table>
+                    
+                    
+                  </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    <!-- Modal for editing status -->
+<div class="modal fade" id="orderStatusModal" tabindex="-1" role="dialog" aria-labelledby="orderStatusModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="orderStatusModalLabel">Edit Order Status</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="orderStatusForm">
+          <input type="hidden" id="editOrderId" name="orderId">
+          <div class="form-group">
+            <label for="orderStatus">Select New Status:</label>
+            <select id="orderStatus" class="form-control">
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Shipped">Shipped</option>
+              <option value="Delivered">Delivered</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="saveStatusBtn">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // Toggle order details
+        document.querySelectorAll(".toggle-details-btn").forEach(button => {
+          button.addEventListener("click", function() {
+            const row = this.closest("tr").nextElementSibling;
+            row.style.display = row.style.display === "none" ? "table-row" : "none";
+          });
+        });
+    
+        // Open modal and set the order ID
+        document.querySelectorAll(".edit-status-btn").forEach(button => {
+          button.addEventListener("click", function() {
+            const orderId = this.getAttribute("data-order-id");
+            document.getElementById("editOrderId").value = orderId;
+          });
+        });
+    
+        // Handle status change
+        document.getElementById("saveStatusBtn").addEventListener("click", async function() {
+          const orderId = document.getElementById("editOrderId").value;
+          const newStatus = document.getElementById("orderStatus").value;
+          try {
+            const response = await fetch(`/admin/update-status/${orderId}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ status: newStatus })
+            });
+            const result = await response.json();
+            if (result.success) {
+              alert("Order status updated successfully");
+              window.location.reload(); // Reload the page to reflect changes
+            } else {
+              alert("Failed to update order status");
+            }
+          } catch (error) {
+            console.error("Error updating order status:", error);
+          }
+        });
+      });
+    </script>
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert/1.1.3/sweetalert.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+ 
+</body>
+</html>

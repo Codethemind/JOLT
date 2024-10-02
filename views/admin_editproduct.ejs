@@ -1,209 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Product</title>
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-
-    <link href="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.css" rel="stylesheet">
-
-  
-
-    <style>
-        /* Sidebar styles */
-        .sidebar {
-            height: 100vh;
-            background-color: #e8d7b4;
-            padding-top: 1rem;
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 220px;
-        }
-
-        .sidebar a {
-            color: #000000;
-            text-decoration: none;
-            padding: 0.75rem;
-            display: block;
-            font-size: 1rem;
-        }
-
-        .sidebar a:hover {
-            background-color: #7fdf9a;
-        }
-
-        .content {
-            margin-left: 220px;
-            padding: 2rem;
-            background-color: #f8f9fa;
-            min-height: 100vh;
-        }
-
-        /* Navbar styles */
-        .navbar {
-            background-color: #f8f9fa;
-            margin-bottom: 0;
-            position: fixed;
-            width: 100%;
-            z-index: 1000;
-        }
-
-        .container-fluid {
-            padding-top: 60px;
-        }
-
-        .btn-edit,
-        .btn-delete {
-            display: flex;
-            align-items: center;
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .btn-edit {
-            background-color: #ffc107;
-            color: #fff;
-        }
-
-        .btn-delete {
-            background-color: #dc3545;
-            color: #fff;
-        }
-
-        .btn-edit:hover {
-            background-color: #e0a800;
-        }
-
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-
-        /* Form styles */
-        form {
-            background-color: #ffffff;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        form h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        label {
-            font-weight: bold;
-        }
-
-        input,
-        textarea {
-            margin-bottom: 1rem;
-            width: 100%;
-            padding: 0.5rem;
-            border-radius: 5px;
-            border: 1px solid #ced4da;
-        }
-
-        .variant {
-            background-color: #f1f3f5;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-        }
-
-        .remove-variant {
-            background-color: #dc3545;
-            color: white;
-            padding: 0.5rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 1rem;
-        }
-
-        .remove-variant:hover {
-            background-color: #c82333;
-        }
-
-        .add-variant-btn {
-            background-color: #28a745;
-            color: white;
-            padding: 0.5rem;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .add-variant-btn:hover {
-            background-color: #218838;
-        }
-
-
-        
-    </style>
-</head>
-
-<body>
-
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="#">Admin Dashboard</a>
-        <div class="collapse navbar-collapse justify-content-end">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        <i class="fas fa-user"></i> Admin
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </nav>
-
-    <!-- Sidebar -->
-    <nav class="sidebar">
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="/admin/admin_dashbord">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/admin_usermanagment">
-                    <i class="fas fa-users"></i> Users
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/admin_productmanagment">
-                    <i class="fas fa-box"></i> Products
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/admin_catagorymanagment">
-                    <i class="fas fa-sliders-h"></i> Category
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="/admin/admin_brandmanagment">
-                    <i class="fas fa-briefcase"></i> Brand
-                </a>
-            </li>
-        </ul>
-    </nav>
-
+<%- include('./partial/admin_header') %>
     <!-- Main Content -->
     <main class="content">
-      <h1 class="mt-3">Edit Product</h1>
+      <h1 class="mt-5">Edit Product</h1>
      
 
       <form id="product-form" data-product-id="<%= product._id %>" enctype="multipart/form-data">
@@ -310,6 +108,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
       let cropper;
       let currentPreviewId = '';
@@ -512,13 +311,31 @@ document.getElementById('product-form').addEventListener('submit', function(even
     .then(response => response.json())
     .then(data => {
       if(data.success){
-        window.alert(data.message);
-        window.location.href = '/admin/admin_productmanagment'; // Redirect after success
+        Swal.fire({
+          title: 'Success!',
+          text: data.message,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        }).then(() => {
+          window.location.href = '/admin/admin_productmanagment'; // Redirect after success
+        });
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to update the product. Please try again.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
       }
     })
     .catch(error => {
       console.error('Error updating product:', error);
-      alert('There was an error updating the product.');
+      Swal.fire({
+        title: 'Error',
+        text: 'There was an error updating the product.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
     });
 });
 

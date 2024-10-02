@@ -176,140 +176,137 @@
                       <h2 class="mb-4">Add Product</h2>
                       <div class="card shadow-sm">
                         <div class="card-body">
-                          <form action="/admin/add_products" method="post" enctype="multipart/form-data">
-                            <!-- Product Information -->
-                            <div class="row mb-3">
-                              <div class="col-md-6">
-                                <label for="productName" class="form-label">Product Name</label>
-                                <p class="text-danger">
-                                  <%= locals.exist ? exist : null %>
-                                </p>
-                                <input type="text" class="form-control" name="productName" id="productName" required />
-                              </div>
-                              <div class="col-md-6">
-                                <label for="productHighlights" class="form-label">Product Highlights</label>
-                                <input type="text" class="form-control" name="productHighlights" id="productHighlights" required />
-                              </div>
-                            </div>
-                  
-                            <!-- Category and Brand Selection -->
-                            <div class="row mb-3">
-                              <div class="col-md-6">
-                                <label for="productCategory" class="form-label">Category</label>
-                                <select class="form-select form-control" name="productCategory" id="productCategory" required>
-                                  <option selected disabled>Select Category</option>
-                                  <% if (typeof category !== 'undefined' && category.length > 0) { %>
-                                    <% category.forEach((cat) => { %>
-                                      <option value="<%= cat._id %>"><%= cat.name %></option>
-                                    <% }); %>
-                                  <% } else { %>
-                                    <option disabled>No available categories</option>
-                                  <% } %>
-                                </select>
-                              </div>
-                              <div class="col-md-6">
-                                <label for="productBrand" class="form-label">Brand</label>
-                                <select class="form-select form-control" name="productBrand" id="productBrand" required>
-                                  <option selected disabled>Select Brand</option>
-                                  <% if (typeof brand !== 'undefined' && brand.length > 0) { %>
-                                    <% brand.forEach((brd) => { %>
-                                      <option value="<%= brd._id %>"><%= brd.brand_name %></option>
-                                    <% }); %>
-                                  <% } else { %>
-                                    <option disabled>No available brands</option>
-                                  <% } %>
-                                </select>
-                              </div>
-                            </div>
-                  
-                            <!-- Product Variants -->
-                            <div id="variant-container">
-                              <!-- Initial Variant Row -->
-                              <div class="variant-row row mb-3 mt-3">
-                                <div class="col-md-3">
-                                  <label for="productSize-1" class="form-label">Size</label>
-                                  <select class="form-select form-control" name="productSize[1]" id="productSize-1">
-                                    <option selected disabled>Storage</option>
-                                    <option value="64GB">64GB</option>
-                                    <option value="128GB">128GB</option>
-                                    <option value="256GB">256GB</option>
-                                    <option value="512GB">512GB</option>
-                                    <option value="1TB">1TB</option>
-                                    <option value="2TB">2TB</option>
-                                   
-                                   
-                                  </select>
+                            <form id="product-form" action="/admin/add_products" method="post" enctype="multipart/form-data">
+                                <!-- Product Information -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="productName" class="form-label">Product Name</label>
+                                       
+                                        <input type="text" class="form-control" name="productName" id="productName" required />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="productHighlights" class="form-label">Product Highlights</label>
+                                        <input type="text" class="form-control" name="productHighlights" id="productHighlights" required />
+                                    </div>
                                 </div>
-                                <div class="col-md-3">
-                                  <label for="productColor-1" class="form-label">Color</label>
-                                  <select class="form-select form-control" name="productColor[1]" id="productColor-1" required>
-                                    <option selected disabled>Color</option>
-                                    <option value="RED">RED</option>
-                                    <option value="BLUE">BLUE</option>
-                                    <option value="YELLOW">YELLOW</option>
-                                    <option value="BLACK">BLACK</option>
-                                    <option value="WHITE">WHITE</option>
-                                    <option value="PINK">PINK</option>
-                                    <option value="PURPLE">PURPLE</option>
-                                    <option value="ORANGE">ORANGE</option>
-                                    <option value="NAVY">NAVY</option>
-                                    <option value="MAROON">Space Black</option>
-                                  </select>
+                            
+                                <!-- Category and Brand Selection -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="productCategory" class="form-label">Category</label>
+                                        <select class="form-select form-control" name="productCategory" id="productCategory" required>
+                                            <option selected disabled>Select Category</option>
+                                            <% if (typeof category !== 'undefined' && category.length > 0) { %>
+                                                <% category.forEach((cat) => { %>
+                                                    <option value="<%= cat._id %>"><%= cat.name %></option>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <option disabled>No available categories</option>
+                                            <% } %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="productBrand" class="form-label">Brand</label>
+                                        <select class="form-select form-control" name="productBrand" id="productBrand" required>
+                                            <option selected disabled>Select Brand</option>
+                                            <% if (typeof brand !== 'undefined' && brand.length > 0) { %>
+                                                <% brand.forEach((brd) => { %>
+                                                    <option value="<%= brd._id %>"><%= brd.brand_name %></option>
+                                                <% }); %>
+                                            <% } else { %>
+                                                <option disabled>No available brands</option>
+                                            <% } %>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-md-3">
-                                  <label for="productPrice-1" class="form-label">Price</label>
-                                  <input type="number" class="form-control" name="productPrice[1]" id="productPrice-1" placeholder="Price" required />
+                            
+                                <!-- Product Variants -->
+                                <div id="variant-container">
+                                    <!-- Initial Variant Row -->
+                                    <div class="variant-row row mb-3 mt-3">
+                                        <div class="col-md-3">
+                                            <label for="productSize-1" class="form-label">Size</label>
+                                            <select class="form-select form-control" name="productSize[1]" id="productSize-1" required>
+                                                <option selected disabled>Storage</option>
+                                                <option value="64GB">64GB</option>
+                                                <option value="128GB">128GB</option>
+                                                <option value="256GB">256GB</option>
+                                                <option value="512GB">512GB</option>
+                                                <option value="1TB">1TB</option>
+                                                <option value="2TB">2TB</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="productColor-1" class="form-label">Color</label>
+                                            <select class="form-select form-control" name="productColor[1]" id="productColor-1" required>
+                                                <option selected disabled>Color</option>
+                                                <option value="RED">RED</option>
+                                                <option value="BLUE">BLUE</option>
+                                                <option value="YELLOW">YELLOW</option>
+                                                <option value="BLACK">BLACK</option>
+                                                <option value="WHITE">WHITE</option>
+                                                <option value="PINK">PINK</option>
+                                                <option value="PURPLE">PURPLE</option>
+                                                <option value="ORANGE">ORANGE</option>
+                                                <option value="NAVY">NAVY</option>
+                                                <option value="MAROON">Space Black</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="productPrice-1" class="form-label">Price</label>
+                                            <input type="number" class="form-control" name="productPrice[1]" id="productPrice-1" placeholder="Price" required />
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="productStock-1" class="form-label">Stock</label>
+                                            <input type="number" class="form-control" name="productStock[1]" id="productStock-1" placeholder="Stock" required />
+                                        </div>
+                                    </div>
+                            
+                                    <!-- Image Uploads -->
+                                    <div class="container mt-4">
+                                        <div class="col-md-12 mt-3">
+                                            <label class="form-label">Upload Images</label>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-1" class="image-preview" />
+                                                    <input class="form-control image-form" type="file" name="productImage[1][1]" id="productImage-1-1" onchange="previewImage(this, 'preview-1-1')" required />
+                                                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-1', 'productImage-1-1')">Crop Image</button>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-2" class="image-preview" />
+                                                    <input class="form-control image-form" type="file" name="productImage[1][2]" id="productImage-1-2" onchange="previewImage(this, 'preview-1-2')" required />
+                                                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-2', 'productImage-1-2')">Crop Image</button>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-3" class="image-preview" />
+                                                    <input class="form-control image-form" type="file" name="productImage[1][3]" id="productImage-1-3" onchange="previewImage(this, 'preview-1-3')" required />
+                                                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-3', 'productImage-1-3')">Crop Image</button>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-4" class="image-preview" />
+                                                    <input class="form-control image-form" type="file" name="productImage[1][4]" id="productImage-1-4" onchange="previewImage(this, 'preview-1-4')" required />
+                                                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-4', 'productImage-1-4')">Crop Image</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-3">
-                                  <label for="productStock-1" class="form-label">Stock</label>
-                                  <input type="number" class="form-control" name="productStock[1]" id="productStock-1" placeholder="Stock" required />
+                            
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label for="productDescription" class="form-label">Product Description</label>
+                                        <textarea class="form-control" name="productDescription" id="productDescription" rows="4" required></textarea>
+                                    </div>
                                 </div>
-                  
-                                <!-- Image Upload -->
-                                <div class="container mt-4">
-                                  <div class="col-md-12 mt-3">
-                                      <label class="form-label">Upload Images</label>
-                                      <div class="row">
-                                          <div class="col-md-6">
-                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-1" class="image-preview" />
-                                              <input class="form-control image-form" type="file" name="productImage[1][1]" id="productImage-1-1" onchange="previewImage(this, 'preview-1-1')" required />
-                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-1', 'productImage-1-1')">Crop Image</button>
-                                          </div>
-                                          <div class="col-md-6">
-                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-2" class="image-preview" />
-                                              <input class="form-control image-form" type="file" name="productImage[1][2]" id="productImage-1-2" onchange="previewImage(this, 'preview-1-2')" required />
-                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-2', 'productImage-1-2')">Crop Image</button>
-                                          </div>
-                                          <div class="col-md-6">
-                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-3" class="image-preview" />
-                                              <input class="form-control image-form" type="file" name="productImage[1][3]" id="productImage-1-3" onchange="previewImage(this, 'preview-1-3')" required />
-                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-3', 'productImage-1-3')">Crop Image</button>
-                                          </div>
-                                          <div class="col-md-6">
-                                              <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-1-4" class="image-preview" />
-                                              <input class="form-control image-form" type="file" name="productImage[1][4]" id="productImage-1-4" onchange="previewImage(this, 'preview-1-4')" required />
-                                              <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-1-4', 'productImage-1-4')">Crop Image</button>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                              </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-12">
-                                  <label for="productDescription" class="form-label">Product Description</label>
-                                  <textarea class="form-control" name="productDescription" id="productDescription" rows="4" required></textarea>
+                            
+                                <!-- Buttons -->
+                                <button type="button" class="btn btn-outline-primary" id="addVariantButton">Add Another Variant</button>
+                                <input type="hidden" id="variant_count" name="variant_count" value="1" />
+                                <div class="mt-4 text-end">
+                                    <button type="button" class="btn btn-primary" id="submit-button">Submit</button>
                                 </div>
-                              </div>
-                  
-                            <!-- Buttons -->
-                            <button type="button" class="btn btn-outline-primary" id="addVariantButton">Add Another Variant</button>
-                            <input type="hidden" id="variant_count" name="variant_count" value="1" />
-                            <div class="mt-4 text-end">
-
-                              <button type="submit" class="btn btn-primary">Submit</button>
-                            </div>
-                          </form>
+                            </form>
+                            
                         </div>
                       </div>
                     </div>
@@ -346,105 +343,165 @@
 
 <!-- Load Cropper.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
  
 <script>
-  function addVariantRow() {
-      const variantSection = document.getElementById("variant-container");
-      const variantCount = document.getElementById("variant_count");
-      const newVariantIndex = parseInt(variantCount.value) + 1;
-      variantCount.value = newVariantIndex;
 
-      const newVariantRow = document.createElement("div");
-      newVariantRow.classList.add("variant-row", "row", "mb-3", "mt-3");
-      newVariantRow.innerHTML = `
-          <div class="col-md-3">
-              <select class="form-select form-control form-edge" name="productSize[${newVariantIndex}]" id="productSize-${newVariantIndex}" required>
-                  <option selected disabled>Storage</option>
-                  <option value="64GB">64GB</option>
-                  <option value="128GB">128GB</option>
-                  <option value="256GB">256GB</option>
-                  <option value="512GB">512GB</option>
-                  <option value="1TB">1TB</option>
-                  <option value="2TB">2TB</option>
-              </select>
-          </div>
-          <div class="col-md-3">
-              <select class="form-select form-control form-edge" name="productColor[${newVariantIndex}]" id="productColor-${newVariantIndex}" required>
-                  <option selected disabled>Color</option>
-                  <option value="RED">RED</option>
-                  <option value="BLUE">BLUE</option>
-                  <option value="YELLOW">YELLOW</option>
-                  <option value="BLACK">BLACK</option>
-                  <option value="WHITE">WHITE</option>
-                  <option value="PINK">PINK</option>
-                  <option value="PURPLE">PURPLE</option>
-                  <option value="ORANGE">ORANGE</option>
-                  <option value="NAVY">NAVY</option>
-                  <option value="MAROON">Space Black</option>
-              </select>
-          </div>
-          <div class="col-md-3">
-              <input type="number" class="form-control form-edge" name="productPrice[${newVariantIndex}]" id="productPrice-${newVariantIndex}" placeholder="Price" required>
-          </div>
-          <div class="col-md-3">
-              <input type="number" class="form-control form-edge" name="productStock[${newVariantIndex}]" id="productStock-${newVariantIndex}" placeholder="Stock" required>
-          </div>
-          <div class="col-md-12 mt-3">
-              <label for="productImage-${newVariantIndex}" class="form-label">Upload Images</label>
-              <div class="row">
-                  <div class="col-md-6">
-                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-1" class="image-preview">
-                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][1]" id="productImage-${newVariantIndex}-1" onchange="previewImage(this, 'preview-${newVariantIndex}-1')" required>
-                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-1', 'productImage-${newVariantIndex}-1')">Crop Image</button>
-                  </div>
-                  <div class="col-md-6">
-                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-2" class="image-preview">
-                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][2]" id="productImage-${newVariantIndex}-2" onchange="previewImage(this, 'preview-${newVariantIndex}-2')" required>
-                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-2', 'productImage-${newVariantIndex}-2')">Crop Image</button>
-                  </div>
-                  <div class="col-md-6">
-                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-3" class="image-preview">
-                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][3]" id="productImage-${newVariantIndex}-3" onchange="previewImage(this, 'preview-${newVariantIndex}-3')" required>
-                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-3', 'productImage-${newVariantIndex}-3')">Crop Image</button>
-                  </div>
-                  <div class="col-md-6">
-                      <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-4" class="image-preview">
-                      <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][4]" id="productImage-${newVariantIndex}-4" onchange="previewImage(this, 'preview-${newVariantIndex}-4')" required>
-                      <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-4', 'productImage-${newVariantIndex}-4')">Crop Image</button>
-                  </div>
-              </div>
-          </div>
-          <div class="col-md-12 text-end mt-2">
-              <button type="button" class="btn btn-outline-danger remove-variant" data-index="${newVariantIndex}">Remove</button>
-          </div>
-      `;
+document.getElementById("submit-button").addEventListener("click", submitForm);
 
-      newVariantRow.querySelector(".remove-variant").addEventListener("click", function () {
-          newVariantRow.remove();
-          updateVariantCount();
-      });
+async function submitForm() {
+    const form = document.getElementById("product-form");
+    const formData = new FormData(form);
 
-      variantSection.appendChild(newVariantRow);
-  }
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            body: formData,
+        });
 
-  function updateVariantCount() {
-      const variantRows = document.querySelectorAll(".variant-row");
-      document.getElementById("variant_count").value = variantRows.length;
-  }
+        const data = await response.json();
 
-  document.getElementById("addVariantButton").addEventListener("click", addVariantRow);
+        if (response.ok) {
+            // Success alert
+            Swal.fire({
+                title: 'Success',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '/admin/admin_productmanagment'; // Redirect
+            });
+        } else {
+            // Error alert for backend validation
+            Swal.fire({
+                title: 'Error',
+                text: data.error || 'There was an issue adding the product.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+        }
+    } catch (error) {
+        console.error('Error submitting form:', error);
+        // General error alert
+        Swal.fire({
+            title: 'Error',
+            text: 'Something went wrong. Please try again later.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+    }
+}
+
+ function addVariantRow() {
+    const variantSection = document.getElementById("variant-container");
+    const variantCount = document.getElementById("variant_count");
+    
+    // Validate existing rows
+    const variantRows = document.querySelectorAll(".variant-row");
+    for (let row of variantRows) {
+        const size = row.querySelector('select[name^="productSize"]').value;
+        const color = row.querySelector('select[name^="productColor"]').value;
+        const price = row.querySelector('input[name^="productPrice"]').value;
+        const stock = row.querySelector('input[name^="productStock"]').value;
+
+        if (!size || !color || !price || !stock) {
+            Swal.fire({
+                title: 'Error',
+                text: 'Please fill all fields in the current variant before adding a new one.',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return; // Stop execution if validation fails
+        }
+    }
+
+    const newVariantIndex = parseInt(variantCount.value) + 1;
+    variantCount.value = newVariantIndex;
+
+    const newVariantRow = document.createElement("div");
+    newVariantRow.classList.add("variant-row", "row", "mb-3", "mt-3");
+    newVariantRow.innerHTML = `
+        <div class="col-md-3">
+            <select class="form-select form-control form-edge" name="productSize[${newVariantIndex}]" id="productSize-${newVariantIndex}" required>
+                <option selected disabled>Storage</option>
+                <option value="64GB">64GB</option>
+                <option value="128GB">128GB</option>
+                <option value="256GB">256GB</option>
+                <option value="512GB">512GB</option>
+                <option value="1TB">1TB</option>
+                <option value="2TB">2TB</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select class="form-select form-control form-edge" name="productColor[${newVariantIndex}]" id="productColor-${newVariantIndex}" required>
+                <option selected disabled>Color</option>
+                <option value="RED">RED</option>
+                <option value="BLUE">BLUE</option>
+                <option value="YELLOW">YELLOW</option>
+                <option value="BLACK">BLACK</option>
+                <option value="WHITE">WHITE</option>
+                <option value="PINK">PINK</option>
+                <option value="PURPLE">PURPLE</option>
+                <option value="ORANGE">ORANGE</option>
+                <option value="NAVY">NAVY</option>
+                <option value="MAROON">Space Black</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" class="form-control form-edge" name="productPrice[${newVariantIndex}]" id="productPrice-${newVariantIndex}" placeholder="Price" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" class="form-control form-edge" name="productStock[${newVariantIndex}]" id="productStock-${newVariantIndex}" placeholder="Stock" required>
+        </div>
+        <div class="col-md-12 mt-3">
+            <label for="productImage-${newVariantIndex}" class="form-label">Upload Images</label>
+            <div class="row">
+                <div class="col-md-6">
+                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-1" class="image-preview">
+                    <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][1]" id="productImage-${newVariantIndex}-1" onchange="previewImage(this, 'preview-${newVariantIndex}-1')" required>
+                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-1', 'productImage-${newVariantIndex}-1')">Crop Image</button>
+                </div>
+                <div class="col-md-6">
+                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-2" class="image-preview">
+                    <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][2]" id="productImage-${newVariantIndex}-2" onchange="previewImage(this, 'preview-${newVariantIndex}-2')" required>
+                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-2', 'productImage-${newVariantIndex}-2')">Crop Image</button>
+                </div>
+                <div class="col-md-6">
+                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-3" class="image-preview">
+                    <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][3]" id="productImage-${newVariantIndex}-3" onchange="previewImage(this, 'preview-${newVariantIndex}-3')" required>
+                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-3', 'productImage-${newVariantIndex}-3')">Crop Image</button>
+                </div>
+                <div class="col-md-6">
+                    <img src="/images/cloud-computing.png" style="height: 150px;" alt="Image Preview" id="preview-${newVariantIndex}-4" class="image-preview">
+                    <input class="form-control image-form" type="file" name="productImage[${newVariantIndex}][4]" id="productImage-${newVariantIndex}-4" onchange="previewImage(this, 'preview-${newVariantIndex}-4')" required>
+                    <button type="button" class="btn btn-outline-danger mt-2" onclick="openCroppingModal('preview-${newVariantIndex}-4', 'productImage-${newVariantIndex}-4')">Crop Image</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 text-end mt-2">
+            <button type="button" class="btn btn-outline-danger remove-variant" data-index="${newVariantIndex}">Remove</button>
+        </div>
+    `;
+
+    newVariantRow.querySelector(".remove-variant").addEventListener("click", function () {
+        newVariantRow.remove();
+        updateVariantCount();
+    });
+
+    variantSection.appendChild(newVariantRow);
+}
+
+function updateVariantCount() {
+    const variantRows = document.querySelectorAll(".variant-row");
+    document.getElementById("variant_count").value = variantRows.length;
+}
+
+document.getElementById("addVariantButton").addEventListener("click", addVariantRow);
+
 </script>
 
 
-<!-- Load jQuery (optional, if you need it for other parts) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Load Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- Load Cropper.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
 <!-- Your custom script should come AFTER the libraries -->
 <script>

@@ -15,7 +15,9 @@ googleRouter.get(
     (req, res) => {
       // Successful authentication, redirect to home or dashboard
       if (req.isAuthenticated()) {
-        res.redirect("/user/home");  // Redirect to your desired page after login (e.g., home, dashboard, etc.)
+        const googleUser = req.user;
+        req.session.user = googleUser.id || googleUser._id;
+        res.redirect("/user/");  // Redirect to your desired page after login (e.g., home, dashboard, etc.)
       } else {
         res.redirect("/");  // If something goes wrong after authentication
       }

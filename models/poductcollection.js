@@ -1,8 +1,7 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 // Define the schema for Products
 const productSchema = new mongoose.Schema({
-   
     product_name: {
         type: String,
         required: true,
@@ -37,7 +36,7 @@ const productSchema = new mongoose.Schema({
         },
         size: {
             type: String,
-            default:null,
+            default: null,
             required: true,
         },
         stock: {
@@ -48,16 +47,25 @@ const productSchema = new mongoose.Schema({
             type: String,
             required: true
         },
-        images: [{ // Array to handle multiple images for each variant
+        images: [{ 
             type: String,
             required: false
         }]
-    }]
-}, {
-    timestamps: true,
-});
+    }],
+    sold: {
+        type: Number,   // Used for sorting by popularity
+        default: 0
+    },
+    averageRating: {
+        type: Number,   // For sorting by ratings
+        default: 0
+    },
+    featured: {
+        type: Boolean,  // Used for "Featured" sorting
+        default: false
+    }
+}, { timestamps: true });
 
 // Create and export the model
 const Products = mongoose.model('Products', productSchema);
-
 module.exports = Products;

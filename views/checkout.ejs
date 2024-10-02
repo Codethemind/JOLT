@@ -1,0 +1,512 @@
+<%- include('./partial/header') %>
+<%- include('./partial/navbar')  %>
+
+
+
+<div class="billing">
+
+  <!-- ------------------breadcrumbs starts----------------- -->
+<div class="container">
+  <ol class="breadcrumb breadcrumb-arrow mb-4">
+      <li class="breadcrumb-item"><a href="/user">Home</a></li>
+      <li class="breadcrumb-item"><a href="/api/cart/">Cart</a></li>
+      <li class="breadcrumb-item active" aria-current="page">
+          <span>Checkout</span>
+      </li>
+  </ol>
+</div>
+<!-- ------------------breadcrumbs ends----------------- -->
+
+
+    <section class="bg-light py-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-xl-8 col-lg-8 mb-4">
+            <div class="billing-details">
+              <h4>Billing Details</h4>
+              <form id="billing-form" action="/api/cart/order" method="POST">
+                <div class="form-group">
+                  <label>Select a saved address</label>
+                  <select id="savedAddresses" name="addressId" class="form-control" required>
+                    <option disabled selected value=''>Select a saved address</option>
+                    <% if(address && address.length>0){ %>
+                      <% address.forEach((element)=>{ %>
+                        <option value="<%= element._id %>">
+                          <%= element.fullName %> - <%= element.streetAddress %>, <%= element.city %>
+                        </option>
+
+                        <% }) %>
+                          <% }else{ %>
+                            <option value="">No address... Add your address </option>
+                            <% } %>
+
+
+                  </select>
+                </div>
+            </div>
+            </form>
+
+            <!-- Checkout -->
+
+
+
+            <div class="card shadow-0 border">
+              <div class="p-4">
+
+
+                <hr class="my-4" />
+
+                <h5 class="card-title mb-3">Add address</h5>
+
+
+                <form id="addAddressForm">
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <p class="mb-0">Name</p>
+                      <div class="form-outline">
+                        <input type="text" id="typeText" placeholder="Type here" name="fullName" class="form-control" />
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <p class="mb-0">Phone</p>
+                      <div class="form-outline">
+                        <input type="" id="typeText" placeholder="Type here" name="phone" class="form-control" />
+                      </div>
+                    </div>
+                    <div class="col-sm-12 mb-3 mt-3">
+                      <p class="mb-0">Street Address</p>
+                      <div class="form-outline">
+                        <input type="text" id="typeText" placeholder="Type here" name="address" class="form-control" />
+                      </div>
+                    </div>
+
+
+
+                    <div class="col-sm-3 mb-3">
+                      <p class="mb-0">zipcode</p>
+                      <div class="form-outline">
+                        <input type="text" id="typeText" name="zipCode" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="col-sm-3 col-6 mb-3">
+                      <p class="mb-0">city</p>
+                      <div class="form-outline">
+                        <input type="text" id="typeText" name="city" class="form-control" />
+                      </div>
+                    </div>
+
+                    <div class="col-sm-3 col-6 mb-3">
+                      <p class="mb-0">state</p>
+                      <div class="form-outline">
+                        <input type="text" id="typeText" name="state" class="form-control" />
+                      </div>
+                    </div>
+                    <div class="col-sm-3 col-6 mb-3">
+                      <p class="mb-0">country</p>
+                      <div class="form-outline">
+                        <input type="text" id="typeText" name="country" class="form-control" />
+                      </div>
+                    </div>
+                  </div>
+
+
+
+
+
+                  <div class="float-end">
+
+                    <a onclick="addAddress()" class="btn btn-outline-dark shadow-0 border">Add</a>
+                  </div>
+              </div>
+            </div>
+            </form>
+            <!-- Checkout -->
+          </div>
+          <div class="col-xl-4 col-lg-4 d-flex justify-content-center justify-content-lg-end">
+            <div class="ms-lg-4 mt-4 mt-lg-0" style="max-width: 320px;">
+              <h6 class="mb-3">Summary</h6>
+          
+              <!-- Total price section -->
+              <div class="d-flex justify-content-between">
+                <p class="mb-2">Total price:</p>
+                <p class="mb-2">₹<%= cart ? cart.total_price : 0 %></p>
+              </div>
+              <div class="d-flex justify-content-between">
+                <p class="mb-2">Discount:</p>
+                <p class="mb-2 text-danger">₹100.00</p>
+              </div>
+              <div class="d-flex justify-content-between">
+                <p class="mb-2">Shipping cost:</p>
+                <p class="mb-2">Free</p>
+              </div>
+          
+              <!-- Final price after discount -->
+              <hr />
+              <div class="d-flex justify-content-between">
+                <p class="mb-2">Final price:</p>
+                <p class="mb-2 fw-bold">₹<%= cart ? cart.total_price - 100 : 0 %></p>
+              </div>
+              
+              <!-- Hidden field for cart ID -->
+              <input type="hidden" name="cartId" id="cartId" value="<%= cart ? cart._id : '' %>">
+          
+              <!-- Payment method section -->
+             <div class="form-group">
+    <label>Payment Method</label>
+    <div>
+        <label>
+            <input type="radio" name="paymentMethod" value="Cash on Delivery" required> Cash on Delivery
+        </label>
+        <label>
+            <input type="radio" name="paymentMethod" value="Bank Transfer"> Bank Transfer
+        </label>
+    </div>
+</div>
+
+              <!-- Promo code section -->
+              <div class="input-group mt-5 mb-4">
+                <input type="text" class="form-control border" placeholder="Promo code">
+                <button class="btn btn-light text-primary border">Apply</button>
+              </div>
+          
+              <!-- Buttons -->
+              <div class="float-end">
+                <a href="/cart" class="btn btn-light border">Cancel</a>
+                <button class="btn btn-success shadow-0 border" onclick="placeOrder()">Place Order</button>
+              </div>
+          
+              <!-- Items in cart section -->
+              <hr />
+              <h6 class="text-dark my-4">Items in cart</h6>
+          
+              <% if (cart && cart.items.length > 0) { %>
+                <% cart.items.forEach((element) => { %>
+                  <div class="d-flex align-items-center mb-4">
+                    <% const variant = element.product.variants.find(v => v._id.toString() === element.variantId); %>
+                    <div class="me-3 position-relative">
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-secondary">
+                        <%= element.quantity %>
+                      </span>
+                      <!-- Corrected image dimensions and src -->
+                      <img src="/<%= variant.images[0] %>" style="height: 96px; width: 96px;" class="img-sm rounded border" />
+                    </div>
+                    <div>
+                      <a href="#" class="nav-link">
+                        <%= element.product.product_name %><br />
+                        <%= variant.color %> color
+                      </a>
+                      <div class="price text-muted">Total: ₹<%= variant.price * element.quantity %></div>
+                    </div>
+                  </div>
+                <% }); %>
+              <% } else { %>
+                <!-- No items in cart -->
+                <h6 class="text-danger my-4">No items in cart</h6>
+              <% } %>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+
+
+  <footer class="footer">
+    <div class="footer-middle">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="widget widget-about">
+                        <img src="/images/demos/demo-4/logo.png" class="footer-logo" alt="Footer Logo" width="105"
+                            height="25">
+                        <p>Praesent dapibus, neque id cursus ucibus, tortor neque egestas augue, eu vulputate magna
+                            eros eu erat. </p>
+
+                        <div class="social-icons">
+                            <a href="#" class="social-icon" target="_blank" title="Facebook"><i
+                                    class="icon-facebook-f"></i></a>
+                            <a href="#" class="social-icon" target="_blank" title="Twitter"><i
+                                    class="icon-twitter"></i></a>
+                            <a href="#" class="social-icon" target="_blank" title="Instagram"><i
+                                    class="icon-instagram"></i></a>
+                            <a href="#" class="social-icon" target="_blank" title="Youtube"><i
+                                    class="icon-youtube"></i></a>
+                            <a href="#" class="social-icon" target="_blank" title="Pinterest"><i
+                                    class="icon-pinterest"></i></a>
+                        </div><!-- End .soial-icons -->
+                    </div><!-- End .widget about-widget -->
+                </div><!-- End .col-sm-6 col-lg-3 -->
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="widget">
+                        <h4 class="widget-title">Useful Links</h4><!-- End .widget-title -->
+
+                        <ul class="widget-list">
+                            <li><a href="about.html">About JOLT</a></li>
+                            <li><a href="#">How to shop on JOLT</a></li>
+                            <li><a href="#">FAQ</a></li>
+                            <li><a href="contact.html">Contact us</a></li>
+                            <li><a href="login.html">Log in</a></li>
+                        </ul><!-- End .widget-list -->
+                    </div><!-- End .widget -->
+                </div><!-- End .col-sm-6 col-lg-3 -->
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="widget">
+                        <h4 class="widget-title">Customer Service</h4><!-- End .widget-title -->
+
+                        <ul class="widget-list">
+                            <li><a href="#">Payment Methods</a></li>
+                            <li><a href="#">Money-back guarantee!</a></li>
+                            <li><a href="#">Returns</a></li>
+                            <li><a href="#">Shipping</a></li>
+                            <li><a href="#">Terms and conditions</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul><!-- End .widget-list -->
+                    </div><!-- End .widget -->
+                </div><!-- End .col-sm-6 col-lg-3 -->
+
+                <div class="col-sm-6 col-lg-3">
+                    <div class="widget">
+                        <h4 class="widget-title">My Account</h4><!-- End .widget-title -->
+
+                        <ul class="widget-list">
+                            <li><a href="#">Sign In</a></li>
+                            <li><a href="cart.html">View Cart</a></li>
+                            <li><a href="#">My Wishlist</a></li>
+                            <li><a href="#">Track My Order</a></li>
+                            <li><a href="#">Help</a></li>
+                        </ul><!-- End .widget-list -->
+                    </div><!-- End .widget -->
+                </div><!-- End .col-sm-6 col-lg-3 -->
+            </div><!-- End .row -->
+        </div><!-- End .container -->
+    </div><!-- End .footer-middle -->
+
+    <div class="footer-bottom">
+        <div class="container">
+            <p class="footer-copyright">Copyright © 2019 Molla Store. All Rights Reserved.</p>
+            <!-- End .footer-copyright -->
+            <figure class="footer-payments">
+                <img src="/images/payments.png" alt="Payment methods" width="272" height="20">
+            </figure><!-- End .footer-payments -->
+        </div><!-- End .container -->
+    </div><!-- End .footer-bottom -->
+</footer><!-- End .footer -->
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+async function addAddress() {
+  const form = document.getElementById('addAddressForm');
+  if (!form) {
+    console.error('Form not found!');
+    return;
+  }
+
+  // Trim input values to remove leading/trailing whitespace
+  const fullName = form.fullName.value.trim();
+  const streetAddress = form.address.value.trim(); // Changed from 'address' to 'streetAddress'
+  const zipCode = form.zipCode.value.trim();
+  const phone = form.phone.value.trim();
+  const city = form.city.value.trim();
+  const state = form.state.value.trim();
+  const country = form.country.value.trim();
+
+  // Input validation
+  if (!fullName) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'Full name is required.',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  if (!streetAddress) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'Street address is required.',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  if (!city) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'City is required.',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  if (!state) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'State is required.',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  if (!zipCode || !/^\d{5,6}$/.test(zipCode)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'A valid zip code is required (5-6 digits).',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  if (!country) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'Country is required.',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  if (!phone || !/^\d{10}$/.test(phone)) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Validation Error',
+      text: 'A valid 10-digit phone number is required.',
+      confirmButtonText: 'OK',
+    });
+    return;
+  }
+
+  // Proceed to send the data if all fields are valid
+  try {
+    const response = await fetch('/user/address/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        fullName,
+        streetAddress, // Ensure this matches the backend field name
+        zipCode,
+        phone,
+        city,
+        state,
+        country,
+      }),
+    });
+
+    if (response.ok) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Address Added',
+        text: 'The address has been successfully added.',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        location.reload(); // Reload the page after confirmation
+      });
+    } else {
+      const data = await response.json(); // Get JSON data from response
+      const errorMessage = data.message || 'Unable to add the address. Please try again later.';
+      
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed to Add Address',
+        text: errorMessage,
+        confirmButtonText: 'OK',
+      });
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'An error occurred while adding the address.',
+      confirmButtonText: 'OK',
+    });
+  }
+}
+async function placeOrder() {
+    try {
+        const addressId = document.getElementById('savedAddresses').value;
+        const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value; // Use optional chaining
+
+        // Validate address selection
+        if (!addressId || addressId === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Address Selected',
+                text: 'Please select or add a shipping address.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Validate payment method selection
+        if (!paymentMethod) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'No Payment Selected',
+                text: 'Please select a payment method.',
+                confirmButtonText: 'OK'
+            });
+            return;
+        }
+
+        // Make the fetch request to place the order
+        const response = await fetch('/api/cart/order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ addressId, paymentMethod })
+        });
+
+        // Check for successful response
+        if (response.ok) {
+            const orderData = await response.json(); // Parse the JSON response
+            Swal.fire({
+                icon: 'success',
+                title: 'Order Placed',
+                text: 'The order is successfully placed.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '/'; // Redirect to order history page
+            });
+        } else {
+            // Handle error response
+            const errorData = await response.json(); // Parse error message
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to Order',
+                text: errorData.message || 'Unable to place order. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+        }
+    } catch (error) {
+        // Handle unexpected errors
+        console.error('Error while placing order:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while placing the order. Please try again later.',
+            confirmButtonText: 'OK'
+        });
+    }
+}
+
+ </script>
+    <%- include('./partial/footer') %>

@@ -1,6 +1,77 @@
 ﻿@import url("https://fonts.googleapis.com/css?family=Poppins:200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800");
 
 
+.product-image-container {
+    width: 100%;
+    height: auto;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-image {
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease, transform-origin 0.3s ease;
+    cursor: pointer;
+}
+
+.product-image-container:hover .product-image {
+    transform: scale(1.5); /* Zoom in the image */
+}
+
+.thumbnail-images img {
+    width: 75%;
+    height: auto;
+    cursor: pointer;
+    margin-bottom: 10px;
+}
+
+.active-thumbnail {
+    border: 2px solid #007bff;
+}
+
+.thumbnail-images {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .product-image {
+        transform: none;
+    }
+    .thumbnail-images {
+        flex-direction: row;
+        overflow-x: auto;
+    }
+    .thumbnail-images img {
+        margin-right: 10px;
+        margin-bottom: 0;
+        width: 75px;
+    }
+}
+
+
+/* Custom styles for improved user experience */
+.form-control {
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff; /* Bootstrap primary color */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3; /* Darker shade for hover effect */
+    border-color: #0056b3; /* Ensure border matches */
+}
+
+
 #quantity {
     max-width: 150px; /* Adjust the width as needed */
 }
@@ -8221,9 +8292,11 @@ p {
 }
 
 .btn-cart:before {
-    content: '\e812'
+    content: '\e812';
 }
-
+.no-icon::before {
+    content: ''; /* Removes the icon for elements with the 'no-icon' class */
+}
 .btn-wishlist {
     font-size: 1.6rem
 }

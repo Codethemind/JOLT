@@ -1,5 +1,7 @@
 <%- include('./partial/header') %>
-<div class="page-wrapper">
+
+
+
   <header class="header header-intro-clearance header-4">
     <div class="header-top">
       <div class="container p-3">
@@ -23,10 +25,23 @@
                     <a href="#">English</a>
                   </div>
                 </li>
+                <% if(User){ %>
+
                 <li>
-                  <a href="/user/logout">Log out</a
-                  >
+                  <a href="#"><%= User.email %></a>
                 </li>
+                <li>
+                  <a href="/user/logout">Log out</a>
+                </li>
+                <% }else{ %>
+                           
+                  <li>
+                    <a href="#signin-modal" data-toggle="modal"
+                      >Sign in / Sign up</a
+                    >
+                  </li>
+                  <% } %>
+                
               </ul>
             </li>
           </ul>
@@ -39,19 +54,19 @@
     <!-- End .header-top -->
 
     <div class="header-middle">
-      <div class="container">
-        <div class="header-left">
+      <div class="container ">
+        <div class="header-left ">
           <!-- <button class="mobile-menu-toggler">
                             <span class="sr-only">Toggle mobile menu</span>
                             <i class="icon-bars"></i>
                         </button> -->
 
-          <a href="index.html" class="logo p-0">
+          <a href="index.html" class="">
             <img
               src="/images/demos/demo-4/logo.png"
               alt="JOLT Logo"
               width="105"
-              height="25"
+              height="15"
             />
           </a>
         </div>
@@ -61,10 +76,10 @@
           <div
             class="header-search header-search-extended header-search-visible d-none d-lg-block"
           >
-            <a href="#" class="search-toggle" role="button"
-              ><i class="icon-search"></i
-            ></a>
-            <form action="#" method="get">
+            <a href="#" class="search-toggle" role="button">
+              <i class="icon-search"></i>
+            </a>
+            <form action="/user/productpage" method="get">
               <div class="header-search-wrapper search-wrapper-wide">
                 <label for="q" class="sr-only">Search</label>
                 <button class="btn btn-primary" type="submit">
@@ -73,7 +88,7 @@
                 <input
                   type="search"
                   class="form-control"
-                  name="q"
+                  name="search" <!-- Change the name attribute to "search" -->
                   id="q"
                   placeholder="Search product ..."
                   required
@@ -84,13 +99,14 @@
           </div>
           <!-- End .header-search -->
         </div>
+        
 
         <div class="header-right">
           <div class="wishlist">
-            <a href="/user/wishlist" title="Wishlist">
+            <a href="/wishlist/" title="Wishlist">
               <div class="icon">
                 <i class="icon-heart-o"></i>
-                <span class="wishlist-count badge">3</span>
+                <!-- <span class="wishlist-count badge">3</span> -->
               </div>
               <p>Wishlist</p>
             </a>
@@ -98,10 +114,10 @@
           <!-- End .compare-dropdown -->
 
           <div class="dropdown cart-dropdown">
-            <a href="/user/cart" class="dropdown-toggle">
+            <a href="/api/cart" class="dropdown-toggle">
               <div class="icon">
                 <i class="icon-shopping-cart"></i>
-                <span class="cart-count">2</span>
+                <!-- <span class="cart-count">2</span> -->
               </div>
               <p>Cart</p>
             </a>
@@ -115,7 +131,7 @@
     <!-- End .header-middle -->
 
     <div class="header-bottom sticky-header">
-      <div class="container">
+      <div class="container pl-0 bg-light">
         <div class="header-left">
           <div class="dropdown category-dropdown">
             <a
@@ -152,7 +168,7 @@
         <div class="header-center">
           <nav class="main-nav">
             <ul class="menu sf-arrows">
-              <li class="megamenu-container active"><a href="/user/home" class="">Home</a></li>
+              <li class="megamenu-container active"><a href="/user/" class="">Home</a></li>
               <li> <a href="/user/productpage" class="">Product</a></li>
               <li><a href="#" class="sf-with-ul">Pages</a>
                 <ul>
@@ -161,6 +177,7 @@
                   <!-- <li><a href="login.html">Login</a></li> -->
                   <li><a href="/user/faq">FAQs</a></li>
                   <li><a href="/user/error">Error 404</a></li>
+                  <li><a href="/user/Myaccount">My account</a></li>
                   <!-- <li><a href="coming-soon.html">Coming Soon</a></li> -->
                 </ul>
               </li>
@@ -182,6 +199,13 @@
   </header>
   <!-- End .header -->
 
+
+
+
+
+
+  
+  <div class="page-wrapper">
   <main class="main">
     <div class="intro-slider-container mb-5">
       <div
@@ -283,7 +307,7 @@
       <div class="cat-blocks-container">
         <div class="row">
           <div class="col-6 col-sm-4 col-lg-2">
-            <a href="category.html" class="cat-block">
+            <a href="/api/cart/" class="cat-block">
               <figure>
                 <span>
                   <img
@@ -511,8 +535,7 @@
           <li class="nav-item">
             <!-- Add 'active' class if the current category matches the selected one -->
             <a class="nav-link <%= category._id == queryCategory ? 'active' : '' %>" 
-              href="/user/home?category=<%= category._id %>">
-              <%= category.name %>
+              href="/user/?category=<%= category._id %>"><%= category.name %>
             </a>
           </li>
         <% }) %>
@@ -541,11 +564,19 @@
                          style="width: 250px; height: 250px; object-fit: cover;" />
                   </a>
                   <div class="product-action-vertical">
-                    <a href="#" class="btn-product-icon btn-wishlist" title="Add to wishlist"></a>
-                  </div>
+                    <a href="#" class="btn-product-icon btn-wishlist" title="Add to wishlist" 
+                    data-product-id="<%= product._id %>" 
+                    data-variant-id="<%= variant.id %>"></a>
+                                 </div>
+                
                   <div class="product-action">
-                    <a href="#" class="btn-product btn-cart" title="Add to cart"><span>add to cart</span></a>
-                    <a href="popup/quickView.html" class="btn-product btn-quickview" title="Quick view"><span>quick view</span></a>
+                    <a href="javascript:void(0)" 
+   class="btn-product btn-cart" 
+   data-product-id="<%= product._id %>" 
+   data-variant-id="<%= variant._id %>" 
+   data-price="<%= variant.price %>" 
+   data-stock="<%= variant.stock %>" 
+   title="Add to cart"><span>add to cart</span></a>
                   </div>
                 </figure>
                 <div class="product-body">
@@ -585,7 +616,6 @@
 
     <div class="mb-6"></div>
     <!-- End .mb-6 -->
-
     <div class="container">
       <div
         class="cta cta-border mb-5"
@@ -731,82 +761,91 @@
                                                 }
                                             }
                                         }'>
-                <% top.forEach(product => { %>
-                  <div class="product product-2">
-                    <figure class="product-media">
-                      <% if (product.variants.stock<10) { %>
-                        <span class="product-label label-circle label-top">Top</span>
-                      <% } %>
-                      <a href="/user/product?id=<%= product._id %>">
-                        <!-- Display the first image of the first variant by default -->
-                        <img
-                          src="/<%= product.variants[0].images[0] %>" style="width: 250px; height: 250px; object-fit: cover;"
-                          alt="Product image"
-                          class="product-image"
-                        />
-                      </a>
-                
-                      <div class="product-action-vertical">
-                        <a href="#" class="btn-product-icon btn-wishlist" title="Add to wishlist"></a>
-                      </div>
-                      <!-- End .product-action -->
-                
-                      <div class="product-action">
-                        <a href="#" class="btn-product btn-cart" title="Add to cart"><span>add to cart</span></a>
-                        <a href="/quickView/<%= product._id %>" class="btn-product btn-quickview" title="Quick view">
-                          <span>quick view</span>
-                        </a>
-                      </div>
-                      <!-- End .product-action -->
-                    </figure>
-                    <!-- End .product-media -->
-                
-                    <div class="product-body">
-                      <div class="product-cat">
-                        <a href="/category/<%= product.category_id %>"><%= product.category_id.name %></a>
-                      </div>
-                      <!-- End .product-cat -->
-                
-                      <h3 class="product-title">
-                        <a href="/product/<%= product._id %>"><%= product.product_name %></a>
-                      </h3>
-                      <!-- End .product-title -->
-                
-                      <div class="product-price">$<%= product.variants[0].price %></div>
-                      <!-- End .product-price -->
-                
-                      <div class="ratings-container">
-                        <div class="ratings">
-                          <div class="ratings-val" style="width: <%= product.rating * 20 %>%"></div>
-                          <!-- End .ratings-val -->
-                        </div>
-                        <!-- End .ratings -->
-                        <span class="ratings-text">(<%= product.reviewsCount %> Reviews)</span>
-                      </div>
-                      <!-- End .rating-container -->
-                
-                      <div class="product-nav product-nav-dots">
-                        <% product.variants.forEach(variant => { %>
-                          <a href="#" style="background: <%= variant.color %>;">
-                            <span class="sr-only"><%= variant.color %></span>
-                          </a>
-                        <% }) %>
-                      </div>
-                      <!-- End .product-nav -->
-                    </div>
-                    <!-- End .product-body -->
-                  </div>
-                  <!-- End .product -->
-                <% }) %>
-                
+                                        <% top.forEach(product => { %>
+                                          <div class="product product-2">
+                                            <figure class="product-media">
+                                              <% if (product.variants.stock < 10) { %>
+                                                <span class="product-label label-circle label-top">Top</span>
+                                              <% } %>
+                                              <a href="/user/product?id=<%= product._id %>">
+                                                <!-- Display the first image of the first variant by default -->
+                                                <img
+                                                  src="/<%= product.variants[0].images[0] %>" style="width: 250px; height: 250px; object-fit: cover;"
+                                                  alt="Product image"
+                                                  class="product-image"
+                                                />
+                                              </a>
+                                        
+                                              <div class="product-action-vertical">
+                                                <a href="javascript:void(0)" 
+                                                   class="btn-product-icon btn-wishlist" 
+                                                   title="Add to wishlist" 
+                                                   data-product-id="<%= product._id %>" 
+                                                   data-variant-id="<%= product.variants[0]._id %>">
+                                                  <!-- Optional icon for wishlist -->
+                                                </a>
+                                            </div>
+                                              <!-- End .product-action-vertical -->
+                                        
+                                              <div class="product-action">
+                                                <!-- Updated Add to Cart Button -->
+                                                <a href="javascript:void(0)"
+                                                   class="btn-product btn-cart"
+                                                   data-product-id="<%= product._id %>"
+                                                   data-variant-id="<%= product.variants[0]._id %>"
+                                                   data-price="<%= product.variants[0].price %>"
+                                                   data-stock="<%= product.variants[0].stock %>"
+                                                   title="Add to cart">
+                                                   <span>add to cart</span>
+                                                </a>
+                                                
+                                              
+                                              </div>
+                                              <!-- End .product-action -->
+                                            </figure>
+                                            <!-- End .product-media -->
+                                        
+                                            <div class="product-body">
+                                              <div class="product-cat">
+                                                <a href="/category/<%= product.category_id %>"><%= product.category_id.name %></a>
+                                              </div>
+                                              <!-- End .product-cat -->
+                                        
+                                              <h3 class="product-title">
+                                                <a href="/product/<%= product._id %>"><%= product.product_name %></a>
+                                              </h3>
+                                              <!-- End .product-title -->
+                                        
+                                              <div class="product-price">INR <%= product.variants[0].price %></div>
+                                              <!-- End .product-price -->
+                                        
+                                              <div class="ratings-container">
+                                                <div class="ratings">
+                                                  <div class="ratings-val" style="width: <%= product.rating * 20 %>%"></div>
+                                                  <!-- End .ratings-val -->
+                                                </div>
+                                                <!-- End .ratings -->
+                                                <span class="ratings-text">(<%= product.reviewsCount %> Reviews)</span>
+                                              </div>
+                                              <!-- End .rating-container -->
+                                        
+                                              <div class="product-nav product-nav-dots">
+                                                <% product.variants.forEach(variant => { %>
+                                                  <a href="#" style="background: <%= variant.color %>;">
+                                                    <span class="sr-only"><%= variant.color %></span>
+                                                  </a>
+                                                <% }) %>
+                                              </div>
+                                              <!-- End .product-nav -->
+                                            </div>
+                                            <!-- End .product-body -->
+                                          </div>
+                                          <!-- End .product -->
+                                        <% }) %>
+                                        
                 <!-- End .product -->
                 
 
-                
-
-                
-
-                 
                 </div>
                 <!-- End .owl-carousel -->
               </div>
@@ -846,7 +885,7 @@
                 <% product.forEach(product => { %>
                   <div class="product product-2">
                     <figure class="product-media">
-                      <% if (product.variants.stock<0) { %>
+                      <% if (product.variants[0].stock < 0) { %>
                         <span class="product-label label-circle label-top">Top</span>
                       <% } %>
                       <a href="/product/<%= product._id %>">
@@ -859,15 +898,29 @@
                       </a>
                 
                       <div class="product-action-vertical">
-                        <a href="#" class="btn-product-icon btn-wishlist" title="Add to wishlist"></a>
-                      </div>
-                      <!-- End .product-action -->
+                        <a href="javascript:void(0)" 
+                           class="btn-product-icon btn-wishlist" 
+                           title="Add to wishlist" 
+                           data-product-id="<%= product._id %>" 
+                           data-variant-id="<%= product.variants[0]._id %>">
+                          <!-- Optional icon for wishlist -->
+                        </a>
+                    </div>
+                      <!-- End .product-action-vertical -->
                 
                       <div class="product-action">
-                        <a href="#" class="btn-product btn-cart" title="Add to cart"><span>add to cart</span></a>
-                        <a href="/quickView/<%= product._id %>" class="btn-product btn-quickview" title="Quick view">
-                          <span>quick view</span>
+                        <!-- Updated Add to Cart Button -->
+                        <a href="javascript:void(0)"
+                           class="btn-product btn-cart"
+                           data-product-id="<%= product._id %>"
+                           data-variant-id="<%= product.variants[0]._id %>"
+                           data-price="<%= product.variants[0].price %>"
+                           data-stock="<%= product.variants[0].stock %>"
+                           title="Add to cart">
+                           <span>add to cart</span>
                         </a>
+                        
+                       
                       </div>
                       <!-- End .product-action -->
                     </figure>
@@ -884,7 +937,7 @@
                       </h3>
                       <!-- End .product-title -->
                 
-                      <div class="product-price">$<%= product.variants[0].price %></div>
+                      <div class="product-price">INR <%= product.variants[0].price %></div>
                       <!-- End .product-price -->
                 
                       <div class="ratings-container">
@@ -967,15 +1020,29 @@
                       </a>
                 
                       <div class="product-action-vertical">
-                        <a href="#" class="btn-product-icon btn-wishlist" title="Add to wishlist"></a>
-                      </div>
+                        <a href="javascript:void(0)" 
+                           class="btn-product-icon btn-wishlist" 
+                           title="Add to wishlist" 
+                           data-product-id="<%= product._id %>" 
+                           data-variant-id="<%= product.variants[0]._id %>">
+                          <!-- Optional icon for wishlist -->
+                        </a>
+                    </div>
                       <!-- End .product-action -->
                 
                       <div class="product-action">
-                        <a href="#" class="btn-product btn-cart" title="Add to cart"><span>add to cart</span></a>
-                        <a href="/quickView/<%= product._id %>" class="btn-product btn-quickview" title="Quick view">
-                          <span>quick view</span>
+                        <!-- Updated Add to Cart Button -->
+                        <a href="javascript:void(0)"
+                           class="btn-product btn-cart"
+                           data-product-id="<%= product._id %>"
+                           data-variant-id="<%= product.variants[0]._id %>"
+                           data-price="<%= product.variants[0].price %>"
+                           data-stock="<%= product.variants[0].stock %>"
+                           title="Add to cart">
+                           <span>add to cart</span>
                         </a>
+                        
+                       
                       </div>
                       <!-- End .product-action -->
                     </figure>
@@ -992,7 +1059,7 @@
                       </h3>
                       <!-- End .product-title -->
                 
-                      <div class="product-price">$<%= product.variants[0].price %></div>
+                      <div class="product-price">INR <%= product.variants[0].price %></div>
                       <!-- End .product-price -->
                 
                       <div class="ratings-container">
@@ -1297,6 +1364,489 @@
 </button>
 
 
+
+
+
+<div
+class="modal fade"
+id="signin-modal"
+tabindex="-1"
+role="dialog"
+aria-hidden="true"
+>
+<div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+    <div class="modal-body">
+      <button
+        type="button"
+        class="close"
+        data-dismiss="modal"
+        aria-label="Close"
+      >
+        <span aria-hidden="true"><i class="icon-close"></i></span>
+      </button>
+
+      <div class="form-box">
+        <div class="form-tab">
+          <ul class="nav nav-pills nav-fill nav-border-anim" role="tablist">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                id="signin-tab"
+                data-toggle="tab"
+                href="#signin"
+                role="tab"
+                aria-controls="signin"
+                aria-selected="true"
+                >Sign In</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                id="register-tab"
+                data-toggle="tab"
+                href="#register"
+                role="tab"
+                aria-controls="register"
+                aria-selected="false"
+                >Register</a
+              >
+            </li>
+          </ul>
+
+          <div class="tab-content" id="tab-content-5">
+            
+              <div class="tab-pane fade show active" id="signin" role="tabpanel" aria-labelledby="signin-tab">
+                <!-- Sign In Form -->
+                <form id="login-form" method="post" onsubmit="login(event)">
+                  <div class="form-group">
+                    <label for="signin-email">Email address *</label>
+                    <input type="text" class="form-control" id="signin-email" name="signin-email"  />
+                  </div>
+            
+                  <div class="form-group">
+                    <label for="signin-password">Password *</label>
+                    <input type="password" class="form-control" id="signin-password" name="signin-password" />
+                  </div>
+            
+                  <div class="form-footer">
+                    <button type="submit" class="btn btn-outline-primary-2">
+                      <span>LOG IN</span>
+                      <i class="icon-long-arrow-right"></i>
+                    </button>
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" class="custom-control-input" id="signin-remember" />
+                      <label class="custom-control-label" for="signin-remember">Remember Me</label>
+                    </div>
+                    <a href="#" class="forgot-link">Forgot Your Password?</a>
+                  </div>
+                </form>
+            
+                <!-- Google Sign-In Button -->
+                <div class="google-signin mt-4">
+                  <a href="/auth/google" class="btn btn-outline-danger btn-block">
+                    <i class="fab fa-google"></i> Sign in with Google
+                  </a>
+                </div>
+             
+            </div>
+            
+
+            <div
+              class="tab-pane fade"
+              id="register"
+              role="tabpanel"
+              aria-labelledby="register-tab"
+            >
+              <!-- Registration Form -->
+              <div id="register-section">
+                <form
+                  id="register-form"
+                  method="post"
+                  onsubmit="signup(event)"
+                >
+                  <div class="form-group">
+                    <label for="register-name">Name *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="register-name"
+                      name="register_name"
+                      
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="register-email">Your email address *</label>
+                    <input
+                      type="email"
+                      class="form-control"
+                      id="register-email"
+                      name="register_email"
+                   
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="register-password">Password *</label>
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="register-password"
+                      name="register_password"
+                     
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="register-password-confirm"
+                      >Confirm Password *</label
+                    >
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="register-password-confirm"
+                      name="register_password_confirm"
+                   
+                    />
+                  </div>
+
+                  <div class="form-footer">
+                    <button type="submit" class="btn btn-outline-primary-2">
+                      <span>SIGN UP</span>
+                      <i class="icon-long-arrow-right"></i>
+                    </button>
+
+                    <div class="custom-control custom-checkbox">
+                      <input
+                        type="checkbox"
+                        class="custom-control-input"
+                        id="register-policy"
+                        
+                      />
+                      <label
+                        class="custom-control-label"
+                        for="register-policy"
+                        >I agree to the
+                        <a href="#">privacy policy</a> *</label
+                      >
+                    </div>
+                  </div>
+                </form>
+              </div>
+
+              <!-- OTP Verification Section -->
+              <div id="otp-section" style="display: none">
+                <h3 class="text-center">Verify OTP</h3>
+                <p class="text-center">Enter the OTP sent to your email</p>
+                <form id="otp-form" onsubmit="verifyOtp(event)">
+                  <div class="form-group">
+                    <label for="otp-input">OTP *</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="otp-input"
+                      name="otp-input"
+                      required
+                    />
+                  </div>
+                  <div class="form-footer">
+                    <button type="submit" class="btn btn-outline-primary-2">
+                      <span>VERIFY OTP</span>
+                      <i class="icon-long-arrow-right"></i>
+                    </button>
+                  </div>
+                </form>
+                <div class="form-choice">
+                  <p class="text-center">
+                    Didn't receive the OTP? <span id="timer"></span>
+                  </p>
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <button
+                        id="resend-otp"
+                        class="btn btn-outline-primary-2 btn-block"
+                        disabled
+                        onclick="resendOtp()"
+                      >
+                        <i class="icon-refresh"></i> Resend OTP
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+
+function signup(event) {
+    event.preventDefault();
+
+    const name = document.getElementById("register-name").value.trim();
+    const email = document.getElementById("register-email").value.trim();
+    const password = document.getElementById("register-password").value.trim();
+    const confirmPassword = document.getElementById("register-password-confirm").value.trim();
+
+    // Check if all fields are filled
+    if (!name || !email || !password || !confirmPassword) {
+        Swal.fire({
+            title: "Error",
+            text: "All fields must be filled.",
+            icon: "error",
+        });
+        return;
+    }
+
+    // Name validation: Must not contain numbers or be empty
+    if (!/^[a-zA-Z\s]+$/.test(name)) {
+        Swal.fire({
+            title: "Error",
+            text: "Name must contain only letters and cannot be empty.",
+            icon: "error",
+        });
+        return;
+    }
+
+    // Email validation: Check for a valid email format
+    if (!isValidEmail(email)) {
+        Swal.fire({
+            title: "Error",
+            text: "Please enter a valid email address.",
+            icon: "error",
+        });
+        return;
+    }
+
+    // Password validation: Check if passwords match
+    if (password !== confirmPassword) {
+        Swal.fire({
+            title: "Error",
+            text: "Passwords do not match.",
+            icon: "error",
+        });
+        return;
+    }
+
+    // Password validation: Minimum 6 characters, no spaces
+    if (password.length < 6 || /\s/.test(password)) {
+        Swal.fire({
+            title: "Error",
+            text: "Password must be at least 6 characters long and should not contain spaces.",
+            icon: "error",
+        });
+        return;
+    }
+
+    // All validations passed, proceed with the fetch request
+    fetch("/user/signup", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+    })
+    .then((res) => res.json())
+    .then((data) => {
+        if (data.success) {
+            document.getElementById("register-section").style.display = "none";
+            document.getElementById("otp-section").style.display = "block";
+            startTimer();
+        } else if (data.error) {
+            Swal.fire({
+                title: "Error",
+                text: data.error,
+                icon: "error",
+            });
+        }
+    })
+    .catch((error) => {
+        Swal.fire({
+            title: "Oops!",
+            text: "Something went wrong! Please try again.",
+            icon: "error",
+        });
+    });
+}
+
+// Helper function to validate email format using regular expression
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function resendOtp() {
+  fetch("/user/resend-otp", {
+      method: "POST",
+      headers: {
+          "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: document.getElementById("register-email").value }),
+  })
+  .then((res) => res.json())
+  .then((data) => {
+      if (data.success) {
+          Swal.fire({
+              title: "Success",
+              text: "OTP has been resent to your email.",
+              icon: "success",
+          });
+          startTimer();
+      } else if (data.error) {
+          Swal.fire({
+              title: "Error",
+              text: data.error,
+              icon: "error",
+          });
+      }
+  })
+  .catch((error) => {
+      Swal.fire({
+          title: "Oops!",
+          text: "Something went wrong! Please try again.",
+          icon: "error",
+      });
+  });
+}
+
+let timer;
+
+function startTimer() {
+  let duration = 10; // Duration in seconds
+  clearInterval(timer); // Clear any existing timer
+
+  const countdownElement = document.getElementById("timer");
+  countdownElement.style.display = "inline"; // Show timer element
+  countdownElement.innerHTML = `Resend OTP in ${duration} seconds`;
+
+  document.getElementById("resend-otp").disabled = true; // Disable resend button
+
+  timer = setInterval(() => {
+      duration--;
+      countdownElement.innerHTML = `Resend OTP in ${duration} seconds`;
+
+      if (duration <= 0) {
+          clearInterval(timer);
+          countdownElement.innerHTML = "You can resend the OTP now";
+          document.getElementById("resend-otp").disabled = false; // Enable resend button
+      }
+  }, 1000); // Update every second
+}
+
+// Initialize the resend button state
+document.getElementById("resend-otp").disabled = true;
+
+// OTP verification
+function verifyOtp(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("register-email").value;
+  const otp = document.getElementById("otp-input").value;
+
+  fetch("/user/verify-otp", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, otp }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire({
+          title: "Success",
+          text: "OTP verified. Please log in.",
+          icon: "success",
+        }).then(() => {
+          document.getElementById("signin-tab").click(); // Redirect to login form
+        });
+      } else if (data.error) {
+        Swal.fire({
+          title: "Error",
+          text: data.error,
+          icon: "error",
+        });
+      }
+    })
+    .catch((error) => {
+      Swal.fire({
+        title: "Oops!",
+        text: "Something went wrong! Please try again.",
+        icon: "error",
+      });
+    });
+}
+
+// Login form submission
+function login(event) {
+  event.preventDefault();
+
+  const email = document.getElementById("signin-email").value.trim();
+  const password = document.getElementById("signin-password").value.trim();
+
+  // Check if all fields are filled
+  if (!email || !password) {
+    Swal.fire({
+      title: "Error",
+      text: "Please fill in both email and password.",
+      icon: "error",
+    });
+    return;
+  }
+
+
+
+  // Proceed with the login request if validation passes
+  fetch("/user/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.success) {
+        Swal.fire({
+          title: "Success",
+          text: "Login successful",
+          icon: "success",
+        }).then(() => {
+          window.location.href = "/user/"; // Redirect to home page
+        });
+      } else if (data.error) {
+        Swal.fire({
+          title: "Error",
+          text: data.error,
+          icon: "error",
+        });
+      }
+    })
+    .catch((error) => {
+      Swal.fire({
+        title: "Oops!",
+        text: "Something went wrong! Please try again.",
+        icon: "error",
+      });
+    });
+}
+
+// Helper function to validate email format using regular expression
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+
+</script>
 <script>
   $('.nav-link').on('click', function (e) {
     e.preventDefault();
@@ -1315,6 +1865,122 @@
 });
 
 </script>
+<script>
+ document.addEventListener('DOMContentLoaded', function() {
+    // Get all the add to cart buttons
+    const addToCartButtons = document.querySelectorAll('.btn-cart');
+
+    addToCartButtons.forEach(button => {
+        button.addEventListener('click', async function(event) {
+            event.preventDefault();
+
+            const productId = this.getAttribute('data-product-id');
+            const variantId = this.getAttribute('data-variant-id');
+            const quantity = 1; // Default quantity
+            const stock = parseInt(this.getAttribute('data-stock')); // Get stock level
+
+            // Check if stock is less than or equal to zero
+            if (stock <= 0) {
+                // SweetAlert for out of stock notification
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Out of Stock',
+                    text: 'This product is currently out of stock.',
+                });
+                return; // Exit the function
+            }
+
+            try {
+                const response = await fetch('/api/cart/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ productId, variantId, quantity })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // SweetAlert for success notification
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Added!',
+                        text: 'Product added to cart successfully!',
+                        showConfirmButton: false,
+                        timer: 1500 // Automatically closes after 1.5 seconds
+                    });
+                } else {
+                    // SweetAlert for error notification
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: data.message || 'Failed to add product to cart.',
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                // SweetAlert for catch block error
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: 'An error occurred. Please try again.',
+                });
+            }
+        });
+    });
+});
+
+  </script>
+<script>
+  
+  document.addEventListener("DOMContentLoaded", function() {
+      document.querySelectorAll('.btn-wishlist').forEach(button => {
+          button.addEventListener('click', function(event) {
+              event.preventDefault();
+              const productId = this.getAttribute('data-product-id');
+              const variantId = this.getAttribute('data-variant-id'); // Capture variantId
+
+              fetch('/wishlist/add', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ productId, variantId }) // Include variantId in the request
+              })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      Swal.fire({
+                          title: 'Success!',
+                          text: 'Product added to wishlist',
+                          icon: 'success',
+                          confirmButtonText: 'OK'
+                      });
+                  } else {
+                      Swal.fire({
+                          title: 'Error!',
+                          text: data.message || 'Could not add product to wishlist',
+                          icon: 'error',
+                          confirmButtonText: 'OK'
+                      });
+                  }
+              })
+              .catch(error => {
+                  console.error('Error:', error);
+                  Swal.fire({
+                      title: 'Error!',
+                      text: 'Something went wrong. Please try again later.',
+                      icon: 'error',
+                      confirmButtonText: 'OK'
+                  });
+              });
+          });
+      });
+  });
+
+</script>
+
 
 
   

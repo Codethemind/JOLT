@@ -3,6 +3,8 @@ const OTP =require('../models/otpcollection')
 const Category =require('../models/catagorycollection')
 const Brand =require('../models/brandcollection')
 const Product =require('../models/poductcollection')
+const Order =require('../models/ordercollection')
+const Address=require('../models/adresscollection')
 const bcrypt=require('bcrypt')
 const upload = require('../config/multer')
 
@@ -10,54 +12,149 @@ const upload = require('../config/multer')
 const admin_login_page=(req,res)=>{
     res.render('admin_login_page')
 }
-const admin_post_login=async (req, res) => {
+const admin_post_login = async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-
   try {
-    const adminexist = await user.findOne({ email: email });
-
-    if (adminexist) {
-      if (adminexist.isAdmin) {
-        const passwordmatch = await bcrypt.compare(
-          password,
-          adminexist.password
-        );
-        if (passwordmatch) {
+    const adminExist = await user.findOne({ email: email });
+    if (adminExist) {
+      if (adminExist.isAdmin) {
+        const passwordMatch = await bcrypt.compare(password, adminExist.password);
+        if (passwordMatch) {
           req.session.isAdmin = true;
-          res.redirect("/admin/admin_dashbord");
+          return res.json({ success: true }); // Send a success response
         } else {
-          res.render("admin_login_page", { passNo: "incorrect password" });
+          return res.json({ success: false, error: "Incorrect password" }); // Send JSON error response
         }
       } else {
-        res.render("admin_login_page", { notadmin: "You are not admin" });
+        return res.json({ success: false, error: "You are not admin" }); // Send JSON error response
       }
     } else {
-      res.render("admin_login_page", { notexist: "Email not found" });
+      return res.json({ success: false, error: "Email not found" }); // Send JSON error response
     }
   } catch (err) {
-    console.log("error in login ", err);
+    console.log("Error in login", err);
+    return res.status(500).json({ success: false, error: "Internal server error" }); // Handle server error
   }
 };
+
+
 const admin_get_dashboard=(req,res)=>{
         res.render('admin_dashboard')
     }
-const admin_get_usermanagment=async (req,res)=>{
-      const users = await user.find( {isAdmin: false });
-        res.render('admin_usermanagment',{users})
+    const admin_get_usermanagment = async (req, res) => {
+      try {
+          const page = parseInt(req.query.page) || 1; // Get current page from query, default is 1
+          const limit = 5; // Number of users per page
+          const skip = (page - 1) * limit; // Calculate how many users to skip
+  
+          // Fetch total number of users (non-admin users)
+          const totalUsers = await user.countDocuments({ isAdmin: false });
+  
+          // Fetch users for the current page
+          const users = await user.find({ isAdmin: false }).skip(skip).limit(limit);
+  
+          // Calculate total number of pages
+          const totalPages = Math.ceil(totalUsers / limit);
+  
+          // Render the user management view with paginated users and pagination data
+          res.render('admin_usermanagment', {
+              users,
+              currentPage: page,
+              totalPages: totalPages,
+          });
+      } catch (error) {
+          console.error('Error fetching users:', error);
+          res.status(500).send('Server Error');
+      }
+  };
+  
+
+    
+    const admin_get_productmanagment = async (req, res) => {
+      try {
+          const page = parseInt(req.query.page) || 1; // Current page number
+          const limit = 5; // Number of products per page
+          const skip = (page - 1) * limit; // Calculate how many products to skip
+  
+          // Fetch the total count of products (for pagination)
+          const totalProducts = await Product.countDocuments();
+  
+          // Fetch products with pagination
+          const products = await Product.find()
+              .populate('category_id')
+              .populate('brand_id')
+              .skip(skip)
+              .limit(limit);
+  
+          // Calculate total pages
+          const totalPages = Math.ceil(totalProducts / limit);
+  
+          res.render('admin_productmanagment', {
+              products,
+              currentPage: page,
+              totalPages: totalPages,
+          });
+      } catch (error) {
+          console.error('Error fetching products:', error);
+          res.status(500).send('Server Error');
+      }
+  };
+  
+  const admin_get_catagorymanagment = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; // Current page
+        const limit = 5; // Number of categories per page
+        const skip = (page - 1) * limit; // Calculate how many categories to skip
+
+        // Fetch total number of categories for pagination
+        const totalCategories = await Category.countDocuments();
+
+        // Fetch paginated categories
+        const categories = await Category.find().skip(skip).limit(limit);
+
+        // Calculate total number of pages
+        const totalPages = Math.ceil(totalCategories / limit);
+
+        // Render the category management view with pagination data
+        res.render('admin_catagorymanagment', {
+            categories,
+            currentPage: page,
+            totalPages: totalPages,
+        });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        res.status(500).send('Server Error');
     }
-const admin_get_productmanagment=async (req,res)=>{
-      const products=await Product.find().populate('category_id').populate('brand_id')
-        res.render('admin_productmanagment',{products})
-    }
-const admin_get_catagorymanagment=async(req,res)=>{
-      const categories = await Category.find();
-        res.render('admin_catagorymanagment',{categories})
-    }
-const admin_get_brandmanagment= async(req,res)=>{
-      const brands = await Brand.find();
-        res.render('admin_brandmanagment',{brands})
-    }
+};
+
+const admin_get_brandmanagment = async (req, res) => {
+  try {
+      const page = parseInt(req.query.page) || 1; // Current page, default is 1
+      const limit = 5; // Number of brands per page
+      const skip = (page - 1) * limit; // Calculate how many brands to skip
+
+      // Fetch total number of brands for pagination
+      const totalBrands = await Brand.countDocuments();
+
+      // Fetch paginated brands
+      const brands = await Brand.find().skip(skip).limit(limit);
+
+      // Calculate total number of pages
+      const totalPages = Math.ceil(totalBrands / limit);
+
+      // Render the brand management view with pagination data
+      res.render('admin_brandmanagment', {
+          brands,
+          currentPage: page,
+          totalPages: totalPages,
+      });
+  } catch (error) {
+      console.error('Error fetching brands:', error);
+      res.status(500).send('Server Error');
+  }
+};
+
 const admin_get_addproduct=async (req, res) => {
   try {
       const category = await Category.find(); // Fetch categories from the DB
@@ -165,11 +262,11 @@ const admin_put_updatecategory= async (req, res) => {
       res.status(500).json({ success: false, message: 'Failed to update category' });
   }
 };
-const admin_post_addproduct=async (req, res) => {
+const admin_post_addproduct = async (req, res) => {
   try {
-    console.log('Incoming request body:', req.body); // Log the entire body
-    console.log('Session Admin:', req.session.isAdmin); // Log session info
-    console.log('Files:', req.files); // Log file uploads
+    console.log('Incoming request body:', req.body);
+    console.log('Session Admin:', req.session.isAdmin);
+    console.log('Files:', req.files);
 
     if (req.session.isAdmin) {
       const {
@@ -181,49 +278,46 @@ const admin_post_addproduct=async (req, res) => {
         variant_count,
       } = req.body;
 
-   
       if (!productName || !productHighlights || !productCategory || !productBrand || !productDescription) {
-        return res.status(400).send('All fields are required.');
+        return res.status(400).json({ error: 'All fields are required.' });
       }
 
       const existProduct = await Product.findOne({ product_name: productName });
 
       if (existProduct) {
-        return res.render('admin_addproduct', { exist: 'Product already exists' });
+        return res.status(400).json({ error: 'Product already exists.' });
       }
 
       const variantDetails = [];
-      for (let i = 1; i <= variant_count; i++) {  // Start loop at index 1
-          const price = req.body.productPrice[i];
-          const color = req.body.productColor[i];
-          const size = req.body.productSize[i];
-          const stock = req.body.productStock[i];
-        
-          // Skip if any of the values are empty or undefined
-          if (!price || !color || !size || !stock) {
-            continue;
-          }
-        
-          const numericPrice = Number(price.replace(/,/g, ''));
-        
-          const variantImages = [];
-          if (req.files) {
-            req.files.forEach(image => {
-              if (image.fieldname.startsWith(`productImage[${i}]`)) {
-                variantImages.push(image.path);
-              }
-            });
-          }
-        
-          variantDetails.push({
-            price: numericPrice,
-            size: size,
-            stock: stock,
-            color: color,
-            images: variantImages,
+      for (let i = 1; i <= variant_count; i++) {
+        const price = req.body.productPrice[i];
+        const color = req.body.productColor[i];
+        const size = req.body.productSize[i];
+        const stock = req.body.productStock[i];
+
+        if (!price || !color || !size || !stock) {
+          continue;
+        }
+
+        const numericPrice = Number(price.replace(/,/g, ''));
+
+        const variantImages = [];
+        if (req.files) {
+          req.files.forEach(image => {
+            if (image.fieldname.startsWith(`productImage[${i}]`)) {
+              variantImages.push(image.path);
+            }
           });
         }
-        
+
+        variantDetails.push({
+          price: numericPrice,
+          size: size,
+          stock: stock,
+          color: color,
+          images: variantImages,
+        });
+      }
 
       const product = new Product({
         product_name: productName,
@@ -236,15 +330,16 @@ const admin_post_addproduct=async (req, res) => {
 
       await product.save();
       console.log('Product saved successfully');
-      res.redirect("/admin/admin_productmanagment");
+      res.status(201).json({ message: 'Product added successfully!' });
     } else {
-      res.redirect("/admin/admin_dashbord");
+      res.status(403).json({ error: 'Unauthorized access.' });
     }
   } catch (error) {
     console.error("Error while adding the product:", error);
     res.status(500).json({ error: "Something went wrong while adding the product" });
   }
-}
+};
+
 const admin_put_deletproduct= async (req, res) => {
   try {
       const { id } = req.params;
@@ -342,5 +437,53 @@ const admin_update_product = async (req, res) => {
   }
 };
 
-  module.exports={admin_login_page,admin_post_login,admin_get_dashboard,admin_get_usermanagment,admin_get_productmanagment,admin_get_addproduct,
+
+const ordermanagment=async(req,res)=>{
+const order=await Order.find({}).populate('user').populate('address').populate('items.product')
+console.log(order);
+
+  res.render('admin_ordermanagment',{order})
+}
+
+const updateorderstatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    // Find the order by ID
+    const order = await Order.findById(orderId).populate('items.product'); // Populate product for stock updates
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    // If the new status is 'Cancelled', increment the stock
+    if (status === 'Cancelled') {
+      // Loop through the items in the order and update the stock for each product variant
+      for (const item of order.items) {
+        const product = item.product;
+        const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+
+        if (variant) {
+          // Increment the stock for the variant
+          variant.stock += item.quantity;
+
+          // Save the updated product to reflect the stock increment
+          await product.save();
+        }
+      }
+    }
+
+    // Update the order status
+    order.orderStatus = status;
+    await order.save(); // Save the updated order
+
+    return res.json({ success: true, message: 'Order status updated successfully' });
+  } catch (error) {
+    console.error('Error updating order status:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update order status' });
+  }
+};
+
+
+  module.exports={updateorderstatus,ordermanagment,admin_login_page,admin_post_login,admin_get_dashboard,admin_get_usermanagment,admin_get_productmanagment,admin_get_addproduct,
     admin_get_catagorymanagment,admin_get_brandmanagment,admin_blockuser,admin_unblockuser,admin_post_addcategory,admin_put_deletcategory,admin_put_restorecategory,admin_put_updatecategory,admin_post_addproduct,admin_get_logout,admin_put_restoreproduct,admin_put_deletproduct,admin_edit_product,admin_update_product};

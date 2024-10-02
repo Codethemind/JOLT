@@ -1,7 +1,11 @@
 const user =require('../models/usercollection')
+const Address =require('../models/adresscollection')
+const Order =require('../models/ordercollection')
 const OTP =require('../models/otpcollection')
 const Category =require('../models/catagorycollection')
 const Product=require('../models/poductcollection')
+const Cart=require('../models/cartCollection')
+
 
 
 const bcrypt=require('bcrypt')
@@ -19,45 +23,34 @@ const transporter = nodemailer.createTransport({
 
 const otps = {};
 
-const get_interface= (req, res) => {
-    res.render("interface");
-  }
+
 
 
   const get_home = async (req, res) => {
     const categoryId = req.query.category; // Get category ID from query
-
     let query = {}; // Default to an empty query to fetch all products
-
     if (categoryId) {
-        query = { category_id: categoryId }; // If a category is selected, filter products by category
-    }
-
-    // Fetch products with category and brand populated
+        query = { category_id: categoryId };}
     const product = await Product.find(query,{isDelete:false}).populate('category_id').populate('brand_id');
-
-    // Fetch all categories for the navigation bar
     const categories = await Category.find({ isDeleted: false });
-
-    // Render the home page, passing categories, products, and the selected category
     const top = await Product.find({'variants.stock': { $lt: 4 },isDelete:false});
-
+    const User =await user.findOne({_id:req.session.user})
+    const cart = await Cart.findOne({ user: req.session.user }).populate('items.product');
+   
     const category = await Category.findOne({ name: 'Cameras' }).exec();
     if (!category) {
       throw new Error('Category not found');
     }
     const categoryId1 = category._id;
     const onsale = await Product.find({ category_id: categoryId1,isDelete:false }).populate('category_id').exec();
-
-    
-    
-
             res.render("home", {
         categories,       // All available categories
         product, 
         top, 
-        onsale,        // Filtered or all products
-        queryCategory: categoryId // The selected category ID, if any
+        onsale, 
+        User,    // Filtered or all products
+        queryCategory: categoryId,// The selected category ID, if any
+        cart
     });
 };
 
@@ -85,75 +78,110 @@ const get_interface= (req, res) => {
   }
   
 
-
-  const post_signup=async (req, res) => {
+  const post_signup = async (req, res) => {
     const { name, email, password } = req.body;
-    try {
-      console.log(64);
-      
-      const existingUser = await user.findOne({ email });
-      if (existingUser) {
-        return res.status(400).json({ error: "This email already exists" });
-      }
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new user({
-        name,
-        email,
-        password: hashedPassword,
-      });
-      const otp = otpGenerator.generate(6, {
-        digits: true,        // Allow digits (numeric values)
-        specialChars: false,  // Disable special characters
-        upperCase: false,     // Disable uppercase letters
-        lowerCaseAlphabets: false,  // Disable lowercase letters
-        upperCaseAlphabets: false   // Disable uppercase letters (extra safety)
-      });
-      const otpmodel = new OTP({ otp: otp, email: email });
-      await otpmodel.save();
-      req.session.email = email;
-      req.session.newUser = newUser;
-      const mailOptions = {
-        from: "mhdshahid88gmail.com",
-        to: email,
-        subject: "OTP for registration",
-        text: `Your OTP for registration is: ${otp}`,
-      };
-      await transporter.sendMail(mailOptions);
-      return res.status(200).json({
-        success: true,
-        successRedirectUrl: "#otp-modal",
-      });
-    } catch (error) {
-      console.error("Error during signup:", error);
-      return res.status(500).json({ error: "An error occurred during signup" });
+
+    // Check if all fields are provided
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: "All fields are required." });
     }
+
+    try {
+        // Check if the name contains only letters and spaces
+        if (!/^[a-zA-Z\s]+$/.test(name)) {
+            return res.status(400).json({ error: "Name must contain only letters and spaces." });
+        }
+
+        // Check if email already exists
+        const existingUser = await user.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ error: "This email already exists." });
+        }
+
+        // Password validation
+        if (password.length < 6 || /\s/.test(password)) {
+            return res.status(400).json({ error: "Password must be at least 6 characters long and contain no spaces." });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new user({
+            name,
+            email,
+            password: hashedPassword,
+        });
+        console.log(hashedPassword);
+        
+
+        // Generate OTP and save it
+        const otp = otpGenerator.generate(6, {
+            digits: true,
+            specialChars: false,
+            upperCase: false,
+            lowerCaseAlphabets: false,
+            upperCaseAlphabets: false,
+        });
+        const otpmodel = new OTP({ otp: otp, email: email });
+        await otpmodel.save();
+
+        // Store user and OTP in the session
+        req.session.email = email;
+        req.session.newUser = newUser;
+
+        // Send OTP email
+        const mailOptions = {
+            from: "mhdshahid88gmail.com",
+            to: email,
+            subject: "OTP for registration",
+            text: `Your OTP for registration is: ${otp}`,
+        };
+        await transporter.sendMail(mailOptions);
+
+        return res.status(200).json({
+            success: true,
+            successRedirectUrl: "#otp-modal",
+        });
+    } catch (error) {
+        console.error("Error during signup:", error);
+        return res.status(500).json({ error: "An error occurred during signup" });
+    }
+};
+
+const post_login = async (req, res) => {
+  const { email, password } = req.body;
+
+  // Server-side validation
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
   }
 
-  const post_login=async (req, res) => {
-    try {
-      // Find the user by email
-      const userRecord = await user.findOne({ email: req.body.email });
-      if (!userRecord) {
-        return res.status(404).json({ error: "User not found" });
-      }
-     
-      if(userRecord.isBlock){
-        return res.status(404).json({ error: "User blocked" });
-      }
-      // Compare the provided password with the hashed password in the database
-      const isPasswordValid = await bcrypt.compare(req.body.password,userRecord.password);
-      if (isPasswordValid) {
-        req.session.username=true;
-        // Password is correct, redirect to the home page
-        return res.status(200).json({ success: true,successRedirectUrl: "/home", });
-      } else {
-        return res.status(401).json({ error: "Incorrect password" });
-      }
-    } catch (error) {
-      console.error("Login error:", error); // Log detailed error
-      return res.status(500).json({ error: "An error occurred during login" });
+  try {
+    // Find the user by email
+    const userRecord = await user.findOne({ email });
+    if (!userRecord) {
+      return res.status(404).json({ error: "User not found" });
     }
+
+    // Check if the user is blocked
+    if (userRecord.isBlock) {
+      return res.status(403).json({ error: "User is blocked" });
+    }
+
+    // Compare the provided password with the hashed password in the database
+    const isPasswordValid = await bcrypt.compare(password, userRecord.password);
+    if (isPasswordValid) {
+      req.session.user = userRecord._id; // Store user session
+
+      // Password is correct, redirect to the home page
+      return res.status(200).json({ success: true, successRedirectUrl: "/" });
+    } else {
+      return res.status(401).json({ error: "Incorrect password" });
+    }
+  } catch (error) {
+    console.error("Login error:", error); // Log detailed error
+    return res.status(500).json({ error: "An error occurred during login" });
   }
+};
 
 
   const post_verify_otp = async (req, res) => {
@@ -241,10 +269,86 @@ const get_interface= (req, res) => {
     }
   };
 
-  const get_productpage=async (req,res)=>{
-    const product=await Product.find({isDelete:false})
-    res.render('productpage',{product})
-  }
+  const get_ProductPage = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1; // Current page number
+        const limit = 8; // Number of products per page
+        const skip = (page - 1) * limit; // Number of products to skip
+
+        // Get search and sort options from query parameters
+        const searchQuery = req.query.search || ''; // Search term from query
+        const sortOption = req.query.sort || 'new'; // Sort option from query
+
+        let sortCriteria;
+
+        // Define sort logic
+        switch (sortOption) {
+            case 'popularity':
+                sortCriteria = { sold: -1 }; // Most sold products first
+                break;
+            case 'price-low-high':
+                sortCriteria = { 'variants.price': 1 }; // Cheapest products first
+                break;
+            case 'price-high-low':
+                sortCriteria = { 'variants.price': -1 }; // Most expensive products first
+                break;
+            case 'ratings':
+                sortCriteria = { averageRating: -1 }; // Highest rated products first
+                break;
+            case 'featured':
+                sortCriteria = { featured: -1, createdAt: -1 }; // Featured and newest first
+                break;
+            case 'a-z':
+                sortCriteria = { product_name: 1 }; // Alphabetically A-Z
+                break;
+            case 'z-a':
+                sortCriteria = { product_name: -1 }; // Alphabetically Z-A
+                break;
+            default:
+                sortCriteria = { createdAt: -1 }; // Newest products first
+        }
+
+        // Search filter
+        const searchFilter = searchQuery
+            ? { product_name: { $regex: searchQuery, $options: 'i' }, isDelete: false } // Case-insensitive search
+            : { isDelete: false }; // Show only products that aren't deleted
+
+        // Get total product count for pagination
+        const totalProducts = await Product.countDocuments(searchFilter);
+
+        // Fetch products based on search, pagination, and sort
+        const products = await Product.find(searchFilter)
+            .sort(sortCriteria)
+            .skip(skip)
+            .limit(limit)
+            .exec();
+
+        // Fetch all categories (if needed for filters or display)
+        const categories = await Category.find();
+
+        // Calculate total number of pages
+        const totalPages = Math.ceil(totalProducts / limit);
+
+        // Check if no products found
+        const noProductsFound = products.length === 0;
+
+        // Render product page with products and pagination
+        res.render('productpage', {
+            products,
+            categories,
+            currentPage: page,
+            totalPages,
+            searchQuery,
+            sortOption,
+            noProductsFound // Pass this flag to the template
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+
   
   const get_singleproduct=async(req,res)=>{
     const id = req.query.id
@@ -255,29 +359,46 @@ const get_interface= (req, res) => {
   }
 
 
- const category = async (req, res) => {
+  const category = async (req, res) => {
     const id = req.params.id;
-
+    
     try {
-        // Fetch products by category ID
-        const products = await Product.find({ category_id: id ,isDelete:false}).populate('category_id');
+        const page = parseInt(req.query.page) || 1; // Get the current page number from query params, default to 1
+        const limit = 4; // Number of products per page
+        const skip = (page - 1) * limit; // Calculate how many products to skip
         
-        // Fetch the category by ID
+        // Fetch the total number of products for the category
+        const totalProducts = await Product.countDocuments({ category_id: id, isDelete: false });
+        
+        // Fetch the products for the current page
+        const products = await Product.find({ category_id: id, isDelete: false })
+                                      .skip(skip)
+                                      .limit(limit)
+                                      .populate('category_id')
+                                      .exec();
+        
+        // Fetch the category details by ID
         const category = await Category.findById(id);
-
+        
         if (!category) {
             return res.status(404).send('Category not found');
         }
-
+        
+        // Calculate the total number of pages
+        const totalPages = Math.ceil(totalProducts / limit);
+        
         res.render('category', {
-            products,  // List of products
-            category   // Single category object
+            products,  // List of products for the current page
+            category,  // Single category object
+            currentPage: page,  // Current page number
+            totalPages: totalPages  // Total number of pages
         });
     } catch (error) {
         console.error('Error fetching category:', error);
         res.status(500).send('Server Error');
     }
 };
+
 
 const getlogout=(req,res)=>{
   req.session.destroy(err=>{
@@ -290,5 +411,116 @@ const getlogout=(req,res)=>{
 }
 
 
+const get_myaccount = async (req, res) => {
+  try {
+      // Check if session exists
+      if (!req.session.user) {
+          console.error('User not authenticated');
+          return res.status(401).send('User not authenticated');
+      }
 
-  module.exports={get_interface, get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_productpage,get_singleproduct,category,getlogout};
+      // Log user ID from session
+      console.log('Fetching user:', req.session.user);
+
+      // Fetch the user from the database
+      const User = await user.findById(req.session.user);
+      if (!User) {
+          console.error('User not found');
+          return res.status(404).send('User not found');
+      }
+
+      // Log that the user was found
+      console.log('User found:', User);
+
+      // Fetch the user's orders
+      const orders = await Order.find({ user: req.session.user })
+          .populate('items.product')
+          .populate('address');
+
+          const addresses=await Address.find({userId:req.session.user})
+
+      // Log the retrieved orders
+      console.log('Orders found:', orders);
+
+      // Render the 'myaccount' page with user and orders data
+      res.render('myaccount', { User, orders,addresses });
+
+  } catch (error) {
+      console.error('Error in get_myaccount:', error.message);
+      res.status(500).send('Server Error');
+  }
+};
+
+
+
+const postaddressadd=async (req, res) => {
+  console.log('add');
+  
+  const { fullName, streetAddress, city, state, zipCode, country, phone } = req.body;
+  const userId = req.session.user; // Assuming userId is available here
+
+  const newAddress = new Address({
+      userId, // Set the userId
+      fullName,
+      streetAddress,
+      city,
+      state,
+      zipCode,
+      country,
+      phone,
+  });
+
+  try {
+      await newAddress.save();
+      res.status(200).json({ success: true });
+  } catch (error) {
+      console.error('Error adding address:', error);
+      res.status(500).json({ success: false });
+  }
+}
+
+const postaddressedit=async (req, res) => {
+  console.log(63456);
+  
+  try {
+      const addressId = req.params.id;
+      const updatedAddress = {
+          fullName: req.body.fullName,
+          streetAddress: req.body.streetAddress,
+          city: req.body.city,
+          state: req.body.state,
+          zipCode: req.body.zipCode,
+          country: req.body.country,
+          phone: req.body.phone,
+      };
+
+      // Find the address by ID and update it
+      const result = await Address.findByIdAndUpdate(addressId, updatedAddress, { new: true });
+
+      if (!result) {
+          return res.status(404).json({ success: false, message: 'Address not found' });
+      }
+
+      res.json({ success: true, message: 'Address updated successfully', data: result });
+  } catch (error) {
+      console.error('Edit Address Error:', error); // More descriptive logging
+      res.status(500).json({ success: false, message: 'Server error', error: error.message });
+  }
+}
+
+const deleteaddress=async (req, res) => {
+  console.log(`Deleting address with ID: ${req.params.id}`);
+  try {
+      const result = await Address.findByIdAndDelete(req.params.id);
+      if (!result) {
+          return res.status(404).json({ success: false, message: 'Address not found' });
+      }
+      res.status(200).json({ success: true });
+  } catch (error) {
+      console.error('Error deleting address:', error);
+      res.status(500).json({ success: false, message: 'Internal Server Error' });
+  }
+}
+
+
+  module.exports={deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout};

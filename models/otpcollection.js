@@ -9,10 +9,11 @@ const otpschema = mongoose.Schema({
     type: String,
     required: true
   },
+ 
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 30  // This will make the document expire 30 seconds after creation
+    expires: 30 // This will make the document expire 30 seconds after creation
   }
 });
 

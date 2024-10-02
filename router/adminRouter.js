@@ -29,11 +29,8 @@ adminRouter.put('/restore-product/:id',adminauth, adminController.admin_put_rest
 adminRouter.get('/editproduct/:id',adminauth,adminController.admin_edit_product);
 adminRouter.get('/editproduct/:id',adminauth,adminController.admin_edit_product);
 adminRouter.post('/update-product/:id',adminauth, upload.any('productImage', 4), adminController.admin_update_product);
-// adminRouter.post('/update-product/:id', (req, res, next) => {
-//   console.log('Update product route hit');
-//   next();
-// }, upload.array('productImage', 4), adminController.admin_update_product);
-
+adminRouter.get('/admin_ordermanagment',adminauth,adminController.ordermanagment)
+adminRouter.post('/update-status/:orderId',adminauth,adminController.updateorderstatus)
 
 
 adminRouter.get('/logout', adminController.admin_get_logout);
