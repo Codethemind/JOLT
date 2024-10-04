@@ -31,9 +31,9 @@ const otps = {};
     let query = {}; // Default to an empty query to fetch all products
     if (categoryId) {
         query = { category_id: categoryId };}
-    const product = await Product.find(query,{isDelete:false}).populate('category_id').populate('brand_id');
+    const product = await Product.find(query,{isDelete:false}).populate('category_id').populate('brand_id').populate('variants.offer');
     const categories = await Category.find({ isDeleted: false });
-    const top = await Product.find({'variants.stock': { $lt: 4 },isDelete:false});
+    const top = await Product.find({'variants.stock': { $lt: 4 },isDelete:false}).populate('variants.offer');
     const User =await user.findOne({_id:req.session.user})
     const cart = await Cart.findOne({ user: req.session.user }).populate('items.product');
    
@@ -42,7 +42,7 @@ const otps = {};
       throw new Error('Category not found');
     }
     const categoryId1 = category._id;
-    const onsale = await Product.find({ category_id: categoryId1,isDelete:false }).populate('category_id').exec();
+    const onsale = await Product.find({ category_id: categoryId1,isDelete:false }).populate('category_id').populate('variants.offer').exec();
             res.render("home", {
         categories,       // All available categories
         product, 
@@ -314,10 +314,10 @@ const post_login = async (req, res) => {
             : { isDelete: false }; // Show only products that aren't deleted
 
         // Get total product count for pagination
-        const totalProducts = await Product.countDocuments(searchFilter);
+        const totalProducts = await Product.countDocuments(searchFilter).populate('variants.offer');
 
         // Fetch products based on search, pagination, and sort
-        const products = await Product.find(searchFilter)
+        const products = await Product.find(searchFilter).populate('variants.offer')
             .sort(sortCriteria)
             .skip(skip)
             .limit(limit)
@@ -352,9 +352,9 @@ const post_login = async (req, res) => {
   
   const get_singleproduct=async(req,res)=>{
     const id = req.query.id
-    const product = await Product.findOne({_id:id,isDelete:false}).populate('category_id')
+    const product = await Product.findOne({_id:id,isDelete:false}).populate('category_id').populate('variants.offer')
     const category = product.category_id;
-    const relatableProduct = await Product.find({category_id:category,isDelete:false})
+    const relatableProduct = await Product.find({category_id:category,isDelete:false}).populate('variants.offer')
     res.render('singleproduct',{product,relatableProduct,category})
   }
 

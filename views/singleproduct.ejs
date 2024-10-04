@@ -77,11 +77,16 @@
                                         <div class="ratings">
                                             <div class="ratings-val" style="width: 80%;"></div><!-- End .ratings-val -->
                                         </div><!-- End .ratings -->
-                                        <a class="ratings-text" href="#product-review-link" id="review-link">( 2 Reviews )</a>
+                                        <a class="ratings-text" href="#product-review-link" id="review-link">( <%= product.reviewsCount || 0 %> Reviews )</a>
                                     </div><!-- End .rating-container -->
                                 
                                     <div class="product-price">
-                                        INR <%= product.variants[0].price %>
+                                        <% if (product.variants[0].offer && product.variants[0].offer.offerPercentage) { %>
+                                            <small><del>INR <%= product.variants[0].price %></del></small>
+                                            <strong>INR <%= product.variants[0].discount_price %></strong>
+                                        <% } else { %>
+                                            <strong>INR <%= product.variants[0].price %></strong>
+                                        <% } %>
                                     </div><!-- End .product-price -->
                                 
                                     <div class="product-content">
@@ -116,12 +121,13 @@
                                             </select>
                                         </div><!-- End .select-custom -->
                                     </div><!-- End .details-filter-row -->
+                                
                                     <div class="product-content">
                                         <p class="<%= product.variants[0].stock > 0 ? 'text-success' : 'text-danger' %>">
                                             <%= product.variants[0].stock > 0 ? `${product.variants[0].stock} In Stock` : 'Out of Stock' %>
                                         </p>
                                     </div><!-- End .product-content -->
-                                    
+                                
                                     <div class="details-filter-row details-row-size">
                                         <label for="qty">Qty:</label>
                                         <div class="product-details-quantity">
@@ -138,20 +144,20 @@
                                            data-variant-id="<%= product.variants[0]._id %>" 
                                            data-price="<%= product.variants[0].price %>" 
                                            data-stock="<%= product.variants[0].stock %>" 
-                                           title="Add to cart">
-                                           <span>add to cart</span>
+                                           title="Add to cart"
+                                           onclick="addToCart('<%= product._id %>', '<%= product.variants[0]._id %>', <%= product.variants[0].stock %>)">
+                                           <span>Add to Cart</span>
                                         </a>
                                 
                                         <div class="details-action-wrapper">
-                                            
-                                                <a href="javascript:void(0)" 
-                                                   class="btn-product-icon btn-wishlist" 
-                                                   title="Add to wishlist" 
-                                                   data-product-id="<%= product._id %>" 
-                                                   data-variant-id="<%= product.variants[0]._id %>">
-                                                  <!-- Optional icon for wishlist -->
-                                                </a>
-                                            </div>
+                                            <a href="javascript:void(0)" 
+                                               class="btn-product-icon btn-wishlist" 
+                                               title="Add to wishlist" 
+                                               data-product-id="<%= product._id %>" 
+                                               data-variant-id="<%= product.variants[0]._id %>">
+                                              <!-- Optional icon for wishlist -->
+                                            </a>
+                                        </div>
                                     </div><!-- End .product-details-action -->
                                 </div><!-- End .product-details -->
                                 
@@ -338,72 +344,79 @@
                         }
                     }
                 }'>
-                        <% relatableProduct.forEach((element)=>{ %>
-                            <% if(element.product_name !=product.product_name){ %>
-                                <div class="product product-7 text-center">
-                                    <figure class="product-media">
-                                        <span class="product-label label-new">New</span>
-                                        <a href="/user/product?id=<%= element._id %>">
-                                            <img src="/<%= element.variants[0].images[0] %>" alt="Product image" style="width: 284px; height: 236px;"
-
-                                                class="product-image">
-                                        </a>
-
-                                        <div class="product-action-vertical">
-                                            <a href="javascript:void(0)" 
-                                               class="btn-product-icon btn-wishlist" 
-                                               title="Add to wishlist" 
-                                               data-product-id="<%= element._id %>" 
-                                               data-variant-id="<%= element.variants[0]._id %>">
-                                              <!-- Optional icon for wishlist -->
-                                            </a>
-                                        </div>
-
-                                        <div class="product-action">
-                                            <a href="javascript:void(0)" 
-                                           class="btn-product btn-cart" 
-                                           data-product-id="<%= element._id %>" 
-                                           data-variant-id="<%= element.variants[0]._id %>" 
-                                           data-price="<%= element.variants[0].price %>" 
-                                           data-stock="<%= element.variants[0].stock %>" 
-
-                                           title="Add to cart">
-                                           <span>add to cart</span>
-                                        </a>
-                                
-                                        </div><!-- End .product-action -->
-                                    </figure><!-- End .product-media -->
-
-                                    <div class="product-body">
-                                        <div class="product-cat">
-                                            <a href="#">
-                                                <%= category.name %>
-                                            </a>
-                                        </div><!-- End .product-cat -->
-
-                                        <h3 class="product-title"><a href="product.html">
-                                                <%= element.product_name %>
-                                            </a></h3><!-- End .product-title -->
-                                        <div class="product-price">
-                                            <p class="card-text text-danger"><small><del>
-                                                        <%= element.variants[0].price+320 %>
-                                                    </del></small>
-                                                <%= element.variants[0].price %>
-                                            </p>
-
-                                        </div><!-- End .product-price -->
-                                        <div class="ratings-container">
-                                            <div class="ratings">
-                                                <div class="ratings-val" style="width: 20%;"></div>
-                                                <!-- End .ratings-val -->
-                                            </div><!-- End .ratings -->
-                                            <span class="ratings-text">( 2 Reviews )</span>
-                                        </div><!-- End .rating-container -->
-
-                                    </div><!-- End .product-body -->
-                                </div><!-- End .product -->
+                <% relatableProduct.forEach((element) => { %>
+                    <% if (element.product_name != product.product_name) { %>
+                        <div class="product product-7 text-center">
+                            <figure class="product-media">
+                                <!-- Display offer badge if the variant has an offer -->
+                                <% if (element.variants[0].offer && element.variants[0].offer.offerPercentage) { %>
+                                    <span class="offer-badge position-absolute top-0 start-0 bg-success text-white p-2" style="font-size: 12px;">
+                                        <%= element.variants[0].offer.offerPercentage %> % off
+                                    </span>
                                 <% } %>
-                                    <% }) %>
+                
+                                
+                                <a href="/user/product?id=<%= element._id %>">
+                                    <img src="/<%= element.variants[0].images[0] %>" alt="Product image" style="width: 284px; height: 236px;" class="product-image">
+                                </a>
+                
+                                <div class="product-action-vertical">
+                                    <a href="javascript:void(0)" 
+                                       class="btn-product-icon btn-wishlist" 
+                                       title="Add to wishlist" 
+                                       data-product-id="<%= element._id %>" 
+                                       data-variant-id="<%= element.variants[0]._id %>">
+                                      <!-- Optional icon for wishlist -->
+                                    </a>
+                                </div>
+                
+                                <div class="product-action">
+                                    <a href="javascript:void(0)" 
+                                       class="btn-product btn-cart" 
+                                       data-product-id="<%= element._id %>" 
+                                       data-variant-id="<%= element.variants[0]._id %>" 
+                                       data-price="<%= element.variants[0].price %>" 
+                                       data-stock="<%= element.variants[0].stock %>" 
+                                       title="Add to cart">
+                                       <span>add to cart</span>
+                                    </a>
+                                </div><!-- End .product-action -->
+                            </figure><!-- End .product-media -->
+                
+                            <div class="product-body">
+                                <div class="product-cat">
+                                    <a href="#">
+                                        <%= category.name %>
+                                    </a>
+                                </div><!-- End .product-cat -->
+                
+                                <h3 class="product-title"><a href="/user/product?id=<%= element._id %>">
+                                    <%= element.product_name %>
+                                </a></h3><!-- End .product-title -->
+                
+                                <div class="product-price">
+                                    <p class="card-text text-danger">
+                                        <% if (element.variants[0].offer && element.variants[0].offer.offerPercentage) { %>
+                                            <small><del><%= element.variants[0].price + 320 %></del></small>
+                                            <%= element.variants[0].discount_price %>
+                                        <% } else { %>
+                                            <%= element.variants[0].price %>
+                                        <% } %>
+                                    </p>
+                                </div><!-- End .product-price -->
+                
+                                <div class="ratings-container">
+                                    <div class="ratings">
+                                        <div class="ratings-val" style="width: <%= (element.rating || 0) * 20 %>%"></div>
+                                        <!-- End .ratings-val -->
+                                    </div><!-- End .ratings -->
+                                    <span class="ratings-text">( <%= element.reviewsCount || 0 %> Reviews )</span>
+                                </div><!-- End .rating-container -->
+                            </div><!-- End .product-body -->
+                        </div><!-- End .product -->
+                    <% } %>
+                <% }) %>
+                
 
 
 

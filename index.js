@@ -19,6 +19,8 @@ const wishlistRouter = require('./router/wishlistRouter');
 
 
 
+
+
 mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
 app.use('/uploads',express.static('uploads'))
 app.use(express.static(path.join(__dirname, "public")));
@@ -37,6 +39,7 @@ app.use('/brand',brandRouter)
 app.use('/profile',profileRouter)
 app.use('/api/cart', cartRouter);
 app.use('/wishlist', wishlistRouter);
+
 
 
 

@@ -3,23 +3,63 @@ const Cart=require('../models/cartCollection')
 const Address=require('../models/adresscollection')
 const Order =require('../models/ordercollection')
 
-// Add product to the cart
 exports.getCart = async (req, res) => {
     try {
-        // Ensure req.session.user is defined and is an ObjectId
+        // Ensure req.session.user is defined and user is logged in
         if (!req.session.user) {
             return res.redirect('/'); // Redirect if the user is not logged in
         }
+        
+        console.log(8); // For debugging purposes
 
-        // Find the cart by user ID
-        const cart = await Cart.findOne({ user: req.session.user }).populate('items.product');
+        // Find the cart by user ID and populate necessary fields (products, variants, and offers)
+        const cart = await Cart.findOne({ user: req.session.user }).populate({
+            path: 'items.product',
+            populate: {
+                path: 'variants.offer' // Populating the offer inside the variants
+            }
+        });
 
+        console.log(9); // For debugging purposes
+
+        // If no cart exists, handle this case and render an empty cart
+        if (!cart) {
+            return res.render('cart', { cart: null, total_price: 0 });
+        }
+
+        // Calculate total price considering offers
+        let total_price = 0;
+
+        // Iterate through the cart items to calculate the total price
+        if (cart.items && cart.items.length > 0) {
+            cart.items.forEach(item => {
+                const variant = item.product.variants.find(v => v._id.toString() === item.variantId);
+
+                if (variant) {
+                    // Calculate the price: use discounted price if offer exists, otherwise regular price
+                    const price = variant.offer && variant.offer.offerPercentage
+                        ? variant.discount_price // Use discount price if an offer is available
+                        : variant.price; // Fallback to regular price if no offer
+
+                    total_price += price * item.quantity; // Update total price
+                }
+            });
+        }
+
+        // Assign the calculated total price to the cart object
+        cart.total_price = total_price;
+
+        console.log(10); // For debugging purposes
+
+        // Render the cart page with updated cart and total price data
         res.render('cart', { cart });
     } catch (err) {
-        console.error(err); // Log the error for debugging
+        console.error("Error fetching cart:", err); // Log the error for debugging
         res.status(500).send('Error fetching cart');
     }
 };
+
+
 
 
 exports.addToCart = async (req, res) => {
@@ -37,7 +77,7 @@ exports.addToCart = async (req, res) => {
         }
 
         // Find the product and variant
-        const product = await Product.findById(productId);
+        const product = await Product.findById(productId).populate('variants.offer');
         const variant = product.variants.find(v => v._id == variantId);
 
         if (!variant) {
@@ -107,7 +147,12 @@ exports.updateCart = async (req, res) => {
         const userId = req.session.user; // Get the user's ID from session or token
         const { productId, variantId, quantity } = req.body;
 
-        let cart = await Cart.findOne({ user: userId });
+        let cart = await Cart.findOne({ user: userId }).populate({
+            path: 'items.product',
+            populate: {
+                path: 'variants.offer' // Populating the offer inside the variants
+            }
+        });
 
         if (cart) {
             const itemIndex = cart.items.findIndex(item => 
@@ -144,23 +189,31 @@ exports.getCheckout = async (req, res) => {
         }
 
         // Fetch addresses for the logged-in user
-        const address = await Address.find({ userId:req.session.user});
+        const address = await Address.find({ userId: req.session.user });
 
-        // Fetch the cart for the user, populate product details
-        const cart = await Cart.findOne({ user: req.session.user }).populate('items.product');
+        // Fetch the cart for the user, populate product details including the offer
+        const cart = await Cart.findOne({ user: req.session.user }).populate({
+            path: 'items.product',
+            populate: {
+                path: 'variants.offer' // Populating the offer inside the variants
+            }
+        });
 
-
-        
         if (!cart || cart.items.length === 0) {
             // If the cart is empty or not found, send empty cart data
             return res.render('checkout', { address, cart: null });
         }
 
-        // Dynamically calculate total price based on the product variants and quantity
+        // Dynamically calculate total price based on the product variants, offer, and quantity
         cart.total_price = cart.items.reduce((acc, item) => {
             const variant = item.product.variants.find(v => v._id.toString() === item.variantId);
             if (variant) {
-                return acc + variant.price * item.quantity;
+                // Check if an offer exists for the variant and apply the offer price if available
+                const priceToUse = variant.offer && variant.offer.offerPercentage
+                    ? variant.discount_price // Use discount price if offer exists
+                    : variant.price; // Otherwise, use the regular price
+
+                return acc + priceToUse * item.quantity;
             }
             return acc;
         }, 0);
@@ -176,6 +229,7 @@ exports.getCheckout = async (req, res) => {
 
 
 
+
 exports.placeOrder = async (req, res) => {
     try {
         // Ensure the user is logged in
@@ -186,7 +240,11 @@ exports.placeOrder = async (req, res) => {
         const { addressId, paymentMethod } = req.body;
 
         // Find the cart for the user
-        const cart = await Cart.findOne({ user: req.session.user }).populate('items.product');
+        const cart = await Cart.findOne({ user: req.session.user }).populate({
+            path: 'items.product',populate: {
+                path: 'variants.offer' // Populating the offer inside the variants
+            }
+        });
 
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ message: "Cart is empty" });
@@ -219,31 +277,51 @@ exports.placeOrder = async (req, res) => {
             await product.save();
         }
 
-       // Function to generate a short, unique order ID
-function generateOrderId() {
-    const timestamp = Date.now().toString(36); // Convert the timestamp to base36 (shorter representation)
-    const randomString = Math.random().toString(36).substr(2, 5).toUpperCase(); // Generate a random 5-character string
-    return `ORD-${randomString}`; // Example output: "ORD-k8j4tr-RX2H7"
-  }
-  
-  // Usage
-  const newOrderId = generateOrderId();
+        // Function to generate a short, unique order ID
+        function generateOrderId() {
+            const timestamp = Date.now().toString(36); // Convert the timestamp to base36 (shorter representation)
+            const randomString = Math.random().toString(36).substr(2, 5).toUpperCase(); // Generate a random 5-character string
+            return `ORD-${randomString}`; // Example output: "ORD-RX2H7"
+        }
 
-  
+        // Usage
+        const newOrderId = generateOrderId();
+
+        // Calculate total amount for the order considering offers
+        let totalAmount = 0;
+
+        const orderItems = cart.items.map(item => {
+            const product = item.product;
+            const variant = product.variants.find(v => v._id.toString() === item.variantId);
+
+            // Determine the price to use: discounted price if offer exists, otherwise regular price
+            const itemPrice = variant.offer && variant.offer.offerPercentage
+                ? variant.discount_price // Use discounted price if an offer is available
+                : variant.price; // Use regular price if no offer
+
+            // Update the total amount considering the quantity of each item
+            totalAmount += itemPrice * item.quantity;
+
+            // Return the item for the order
+            return {
+                product: item.product._id,
+                variantId: item.variantId,
+                quantity: item.quantity,
+                price: itemPrice // Save the correct price (offer or regular price)
+            };
+        });
+
+        // Apply any additional discounts (if applicable), for example, a flat discount of ₹100
+        totalAmount -= 100; // Assuming you're applying a flat discount
 
         // Create a new order
         const newOrder = new Order({
             orderId: newOrderId,
             user: req.session.user,
             address: addressId,
-            items: cart.items.map(item => ({
-                product: item.product._id,
-                variantId: item.variantId,
-                quantity: item.quantity,
-                price: item.price
-            })),
+            items: orderItems, // Items with correct prices (offer/regular)
             paymentMethod: paymentMethod,
-            totalAmount: cart.total_price - 100, // Assuming you are applying a discount
+            totalAmount: totalAmount, // Total price after considering offers and discounts
             orderStatus: 'Pending',
             orderStatusTimestamps: {
                 pending: new Date()

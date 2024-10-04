@@ -1,3 +1,51 @@
+
+    .img-cover {
+        width: 100%;          /* Set width to 100% of the parent */
+        height: 200px;       /* Set a fixed height for the image */
+        object-fit: cover;   /* Ensures the image covers the area without distortion */
+        border-top-left-radius: .25rem;  /* Optional: matches the card's rounded corners */
+        border-top-right-radius: .25rem; /* Optional: matches the card's rounded corners */
+    }
+
+    .card {
+        border: none;        /* Optional: removes card borders for a cleaner look */
+    }
+
+    .hover-effect {
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .hover-effect:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .text-success {
+        color: green; /* Change the color for discounts */
+    }
+
+    .text-danger {
+        color: red; /* Change the color for no discounts */
+    }
+
+
+
+.offer-card {
+    transition: transform 0.2s;
+}
+
+.offer-card:hover {
+    transform: scale(1.02);
+}
+
+.card-title {
+    font-weight: bold;
+}
+
+.card-text strong {
+    color: #333;
+}
+
 .sidebar {
     height: 100vh;
     background-color: #e8d7b4;

@@ -1,5 +1,32 @@
 ﻿@import url("https://fonts.googleapis.com/css?family=Poppins:200,200i,300,300i,400,400i,500,500i,600,600i,700,700i,800");
 
+.price-col {
+    display: flex;
+    flex-direction: column; /* Ensure the prices stack */
+    align-items: flex-start; /* Aligns items to the start of the flex container */
+}
+
+.text-muted {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.text-danger {
+    color: red;
+    font-weight: bold;
+}
+
+.product-title {
+    font-size: 1.1em;
+    margin: 0;
+}
+
+
+.offer-badge {
+    border-radius: 5px; /* Optional: Rounded corners */
+    font-weight: bold; /* Optional: Bold text */
+    z-index: 10; /* Optional: Ensure it appears above other elements */
+}
 
 .product-image-container {
     width: 100%;

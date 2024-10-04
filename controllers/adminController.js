@@ -42,7 +42,7 @@ const admin_post_login = async (req, res) => {
 const admin_get_dashboard=(req,res)=>{
         res.render('admin_dashboard')
     }
-    const admin_get_usermanagment = async (req, res) => {
+const admin_get_usermanagment = async (req, res) => {
       try {
           const page = parseInt(req.query.page) || 1; // Get current page from query, default is 1
           const limit = 5; // Number of users per page

@@ -28,13 +28,21 @@
                                     <a href="#"><%= category.name %></a>
                                 </div>
                                 <h3 class="product-title">
-                                    <a href="product.html"><%= element.product_name %></a>
+                                    <a href="/user/product?id=<%= element._id %>"><%= element.product_name %></a>
                                 </h3>
                                 <div class="product-price">
-                                    <p class="card-text text-danger">
-                                        <small><del><%= element.variants[0].price + 320 %></del></small>
-                                        <%= element.variants[0].price %>
-                                    </p>
+                                    <% if (element.variants[0].offer) { %>
+                                        <!-- If offer is present, show discounted price and original price -->
+                                        <p class="card-text text-danger">
+                                            <small><del><%= element.variants[0].price %></del></small>
+                                            <%= element.variants[0].discount_price %> <!-- Display discounted price -->
+                                        </p>
+                                    <% } else { %>
+                                        <!-- If no offer, show original price -->
+                                        <p class="card-text text-danger">
+                                            <%= element.variants[0].price %>
+                                        </p>
+                                    <% } %>
                                 </div>
                                 <div class="ratings-container">
                                     <div class="ratings">
@@ -48,6 +56,7 @@
                 <% }) %>
             </div>
         </div>
+        
     </section>
 
     <!-- Pagination Section -->

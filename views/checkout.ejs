@@ -21,194 +21,186 @@
     <section class="bg-light py-5">
       <div class="container">
         <div class="row">
-          <div class="col-xl-8 col-lg-8 mb-4">
-            <div class="billing-details">
-              <h4>Billing Details</h4>
-              <form id="billing-form" action="/api/cart/order" method="POST">
-                <div class="form-group">
-                  <label>Select a saved address</label>
-                  <select id="savedAddresses" name="addressId" class="form-control" required>
-                    <option disabled selected value=''>Select a saved address</option>
-                    <% if(address && address.length>0){ %>
-                      <% address.forEach((element)=>{ %>
-                        <option value="<%= element._id %>">
-                          <%= element.fullName %> - <%= element.streetAddress %>, <%= element.city %>
-                        </option>
-
-                        <% }) %>
-                          <% }else{ %>
-                            <option value="">No address... Add your address </option>
-                            <% } %>
-
-
-                  </select>
+            <div class="col-xl-8 col-lg-8 mb-4">
+                <div class="billing-details">
+                    <h4>Billing Details</h4>
+                    <form id="billing-form" action="/api/cart/order" method="POST">
+                        <div class="form-group">
+                            <label>Select a saved address</label>
+                            <select id="savedAddresses" name="addressId" class="form-control" required>
+                                <option disabled selected value=''>Select a saved address</option>
+                                <% if(address && address.length > 0) { %>
+                                    <% address.forEach((element) => { %>
+                                        <option value="<%= element._id %>">
+                                            <%= element.fullName %> - <%= element.streetAddress %>, <%= element.city %>
+                                        </option>
+                                    <% }) %>
+                                <% } else { %>
+                                    <option value="">No address... Add your address</option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </form>
+    
+                    <!-- Checkout -->
+    
+                    <div class="card shadow-0 border">
+                        <div class="p-4">
+                            <hr class="my-4" />
+                            <h5 class="card-title mb-3">Add address</h5>
+    
+                            <form id="addAddressForm">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <p class="mb-0">Name</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" placeholder="Type here" name="fullName" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <p class="mb-0">Phone</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" placeholder="Type here" name="phone" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 mb-3 mt-3">
+                                        <p class="mb-0">Street Address</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" placeholder="Type here" name="address" class="form-control" />
+                                        </div>
+                                    </div>
+    
+                                    <div class="col-sm-3 mb-3">
+                                        <p class="mb-0">Zipcode</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" name="zipCode" class="form-control" />
+                                        </div>
+                                    </div>
+    
+                                    <div class="col-sm-3 col-6 mb-3">
+                                        <p class="mb-0">City</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" name="city" class="form-control" />
+                                        </div>
+                                    </div>
+    
+                                    <div class="col-sm-3 col-6 mb-3">
+                                        <p class="mb-0">State</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" name="state" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-6 mb-3">
+                                        <p class="mb-0">Country</p>
+                                        <div class="form-outline">
+                                            <input type="text" id="typeText" name="country" class="form-control" />
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div class="float-end">
+                                    <a onclick="addAddress()" class="btn btn-outline-dark shadow-0 border">Add</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <!-- Checkout -->
                 </div>
             </div>
-            </form>
-
-            <!-- Checkout -->
-
-
-
-            <div class="card shadow-0 border">
-              <div class="p-4">
-
-
-                <hr class="my-4" />
-
-                <h5 class="card-title mb-3">Add address</h5>
-
-
-                <form id="addAddressForm">
-                  <div class="row">
-                    <div class="col-sm-6">
-                      <p class="mb-0">Name</p>
-                      <div class="form-outline">
-                        <input type="text" id="typeText" placeholder="Type here" name="fullName" class="form-control" />
-                      </div>
-                    </div>
-                    <div class="col-sm-6">
-                      <p class="mb-0">Phone</p>
-                      <div class="form-outline">
-                        <input type="" id="typeText" placeholder="Type here" name="phone" class="form-control" />
-                      </div>
-                    </div>
-                    <div class="col-sm-12 mb-3 mt-3">
-                      <p class="mb-0">Street Address</p>
-                      <div class="form-outline">
-                        <input type="text" id="typeText" placeholder="Type here" name="address" class="form-control" />
-                      </div>
-                    </div>
-
-
-
-                    <div class="col-sm-3 mb-3">
-                      <p class="mb-0">zipcode</p>
-                      <div class="form-outline">
-                        <input type="text" id="typeText" name="zipCode" class="form-control" />
-                      </div>
-                    </div>
-
-                    <div class="col-sm-3 col-6 mb-3">
-                      <p class="mb-0">city</p>
-                      <div class="form-outline">
-                        <input type="text" id="typeText" name="city" class="form-control" />
-                      </div>
-                    </div>
-
-                    <div class="col-sm-3 col-6 mb-3">
-                      <p class="mb-0">state</p>
-                      <div class="form-outline">
-                        <input type="text" id="typeText" name="state" class="form-control" />
-                      </div>
-                    </div>
-                    <div class="col-sm-3 col-6 mb-3">
-                      <p class="mb-0">country</p>
-                      <div class="form-outline">
-                        <input type="text" id="typeText" name="country" class="form-control" />
-                      </div>
-                    </div>
-                  </div>
-
-
-
-
-
-                  <div class="float-end">
-
-                    <a onclick="addAddress()" class="btn btn-outline-dark shadow-0 border">Add</a>
-                  </div>
-              </div>
-            </div>
-            </form>
-            <!-- Checkout -->
-          </div>
-          <div class="col-xl-4 col-lg-4 d-flex justify-content-center justify-content-lg-end">
-            <div class="ms-lg-4 mt-4 mt-lg-0" style="max-width: 320px;">
-              <h6 class="mb-3">Summary</h6>
-          
-              <!-- Total price section -->
-              <div class="d-flex justify-content-between">
-                <p class="mb-2">Total price:</p>
-                <p class="mb-2">₹<%= cart ? cart.total_price : 0 %></p>
-              </div>
-              <div class="d-flex justify-content-between">
-                <p class="mb-2">Discount:</p>
-                <p class="mb-2 text-danger">₹100.00</p>
-              </div>
-              <div class="d-flex justify-content-between">
-                <p class="mb-2">Shipping cost:</p>
-                <p class="mb-2">Free</p>
-              </div>
-          
-              <!-- Final price after discount -->
-              <hr />
-              <div class="d-flex justify-content-between">
-                <p class="mb-2">Final price:</p>
-                <p class="mb-2 fw-bold">₹<%= cart ? cart.total_price - 100 : 0 %></p>
-              </div>
-              
-              <!-- Hidden field for cart ID -->
-              <input type="hidden" name="cartId" id="cartId" value="<%= cart ? cart._id : '' %>">
-          
-              <!-- Payment method section -->
-             <div class="form-group">
-    <label>Payment Method</label>
-    <div>
-        <label>
-            <input type="radio" name="paymentMethod" value="Cash on Delivery" required> Cash on Delivery
-        </label>
-        <label>
-            <input type="radio" name="paymentMethod" value="Bank Transfer"> Bank Transfer
-        </label>
-    </div>
-</div>
-
-              <!-- Promo code section -->
-              <div class="input-group mt-5 mb-4">
-                <input type="text" class="form-control border" placeholder="Promo code">
-                <button class="btn btn-light text-primary border">Apply</button>
-              </div>
-          
-              <!-- Buttons -->
-              <div class="float-end">
-                <a href="/cart" class="btn btn-light border">Cancel</a>
-                <button class="btn btn-success shadow-0 border" onclick="placeOrder()">Place Order</button>
-              </div>
-          
-              <!-- Items in cart section -->
-              <hr />
-              <h6 class="text-dark my-4">Items in cart</h6>
-          
-              <% if (cart && cart.items.length > 0) { %>
-                <% cart.items.forEach((element) => { %>
-                  <div class="d-flex align-items-center mb-4">
-                    <% const variant = element.product.variants.find(v => v._id.toString() === element.variantId); %>
-                    <div class="me-3 position-relative">
-                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-secondary">
-                        <%= element.quantity %>
-                      </span>
-                      <!-- Corrected image dimensions and src -->
-                      <img src="/<%= variant.images[0] %>" style="height: 96px; width: 96px;" class="img-sm rounded border" />
-                    </div>
+            
+            <div class="col-xl-4 col-lg-4 d-flex justify-content-center justify-content-lg-end">
+              <div class="ms-lg-4 mt-4 mt-lg-0" style="max-width: 320px;">
+                <h6 class="mb-3">Summary</h6>
+            
+                <!-- Total price section -->
+                <div class="d-flex justify-content-between">
+                    <p class="mb-2">Total price:</p>
+                    <p class="mb-2">₹<%= cart ? cart.total_price : 0 %></p>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <p class="mb-2">Discount:</p>
+                    <p class="mb-2 text-danger">₹0.0</p>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <p class="mb-2">Shipping cost:</p>
+                    <p class="mb-2">Free</p>
+                </div>
+            
+                <!-- Final price after discount -->
+                <hr />
+                <div class="d-flex justify-content-between">
+                    <p class="mb-2">Final price:</p>
+                    <p class="mb-2 fw-bold">₹<%= cart ? cart.total_price  : 0 %></p>
+                </div>
+            
+                <!-- Hidden field for cart ID -->
+                <input type="hidden" name="cartId" id="cartId" value="<%= cart ? cart._id : '' %>">
+            
+                <!-- Payment method section -->
+                <div class="form-group">
+                    <label>Payment Method</label>
                     <div>
-                      <a href="#" class="nav-link">
-                        <%= element.product.product_name %><br />
-                        <%= variant.color %> color
-                      </a>
-                      <div class="price text-muted">Total: ₹<%= variant.price * element.quantity %></div>
+                        <label>
+                            <input type="radio" name="paymentMethod" value="Cash on Delivery" required> Cash on Delivery
+                        </label>
+                        <label>
+                            <input type="radio" name="paymentMethod" value="Bank Transfer"> Bank Transfer
+                        </label>
                     </div>
-                  </div>
-                <% }); %>
-              <% } else { %>
-                <!-- No items in cart -->
-                <h6 class="text-danger my-4">No items in cart</h6>
-              <% } %>
+                </div>
+            
+                <!-- Promo code section -->
+                <div class="input-group mt-5 mb-4">
+                    <input type="text" class="form-control border" placeholder="Promo code">
+                    <button class="btn btn-light text-primary border">Apply</button>
+                </div>
+            
+                <!-- Buttons -->
+                <div class="float-end">
+                    <a href="/cart" class="btn btn-light border">Cancel</a>
+                    <button class="btn btn-success shadow-0 border" onclick="placeOrder()">Place Order</button>
+                </div>
+            
+                <!-- Items in cart section -->
+                <hr />
+                <h6 class="text-dark my-4">Items in cart</h6>
+            
+                <% if (cart && cart.items.length > 0) { %>
+                    <% cart.items.forEach((element) => { %>
+                        <div class="d-flex align-items-center mb-4">
+                            <% const variant = element.product.variants.find(v => v._id.toString() === element.variantId); %>
+                            <div class="me-3 position-relative">
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-secondary">
+                                    <%= element.quantity %>
+                                </span>
+                                <!-- Corrected image dimensions and src -->
+                                <img src="/<%= variant.images[0] %>" style="height: 96px; width: 96px;" class="img-sm rounded border" />
+                            </div>
+                            <div>
+                                <a href="#" class="nav-link">
+                                    <%= element.product.product_name %><br />
+                                    <%= variant.color %> color
+                                </a>
+                                <% 
+                                    // Check if an offer is present and use the discount price, else use the regular price
+                                    const itemPrice = variant.offer && variant.offer.offerPercentage 
+                                        ? variant.discount_price // Use the discount price if offer exists
+                                        : variant.price; // Fallback to regular price if no offer
+                                %>
+                                <div>Total: ₹<%= itemPrice * element.quantity %></div>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <!-- No items in cart -->
+                    <h6 class="text-danger my-4">No items in cart</h6>
+                <% } %>
             </div>
-          </div>
-          
+            
+            </div>
         </div>
-      </div>
+    </div>
+    
     </section>
   </div>
 

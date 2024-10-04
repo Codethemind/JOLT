@@ -63,13 +63,13 @@
 									  
 												  <!-- Product Name -->
 												  <td class="text-center">
-													<% order.items.forEach(item => { %>
-													  <a href="/user/product?id=<%= item.product._id %>">
-														<%= item.product.product_name %>
-													  </a><br> <!-- Making the Product Name clickable -->
-													<% }) %>
-												  </td>
-												  
+  <% order.items.forEach(item => { %>
+    <a href="/user/product?id=<%= item.product._id %>">
+      <%= item.product.product_name %>
+    </a><br> <!-- Making the Product Name clickable -->
+  <% }) %>
+</td>
+
 									  
 												  <!-- Order Status -->
 												  <td class="text-center">

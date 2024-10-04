@@ -1,0 +1,860 @@
+<%- include('./partial/admin_header') %>
+<!-- Body Wrapper -->
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-10 content">
+            <div class="d-sm-flex align-items-center justify-content-between border-bottom">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active ps-0" id="overview-tab" data-bs-toggle="tab" href="#overview" role="tab"
+                            aria-controls="overview" aria-selected="true">Offer Management</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="products-tab" data-bs-toggle="tab" href="#products" role="tab"
+                            aria-controls="products" aria-selected="false">Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="category-tab" data-bs-toggle="tab" href="#category" role="tab"
+                            aria-controls="category" aria-selected="false">Categories</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid main-area">
+    <div class="tab-content tab-content-basic">
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+            <div class="col-md-10 content">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-9">
+                                <h4 class="card-title">Offer Management</h4>
+                                <p class="card-description">Manage Offer details and customize the discounts.</p>
+                            </div>
+                            <div class="col-lg-3 text-end">
+                                <button type="button" class="btn btn-outline-primary btn-icon-text" data-bs-toggle="modal"
+                                    data-bs-target="#addOfferModal">Add New Offer</button>
+                            </div>
+                        </div>
+
+                        <!-- Offers in Card View -->
+                        <div class="row mt-4">
+                          <% if (typeof offer !== 'undefined' && offer.length > 0) { %>
+                              <% offer.forEach((element) => { %>
+                                  <div class="col-lg-4 mb-4">
+                                      <div class="card offer-card shadow-sm hover-effect">
+                                          <div class="card-body">
+                                              <h5 class="card-title text-primary"><%= element.offerName %></h5>
+                                              <p class="card-text">
+                                                  <strong>Discount:</strong> <span class="text-success"><%= element.offerPercentage %>%</span><br>
+                                                  <strong>Start Date:</strong> <%= new Date(element.offerStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %><br>
+                                                  <strong>Expiry Date:</strong> <%= new Date(element.offerEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %><br>
+                                              </p>
+                                              <div class="d-flex justify-content-between">
+                                                  <% if (element.isDelete) { %>
+                                                      <button type="button" class="btn btn-secondary btn-sm" onclick="restoreOffer('<%= element._id %>')">Restore</button>
+                                                  <% } else { %>
+                                                      <button type="button" class="btn btn-danger btn-sm" onclick="deleteOffer('<%= element._id %>')">Delete</button>
+                                                      <button type="button" class="btn btn-outline-info btn-sm editBtn" 
+                                                          data-offer-id="<%= element._id %>" 
+                                                          data-offer-name="<%= element.offerName %>" 
+                                                          data-offer-percentage="<%= element.offerPercentage %>" 
+                                                          data-offer-sdate="<%= element.offerStartDate ? new Date(element.offerStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>" 
+                                                          data-offer-edate="<%= element.offerEndDate ? new Date(element.offerEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>" 
+                                                          onclick="populateEditModal(this)">
+                                                          Edit
+                                                      </button>
+                                                  <% } %>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                              <% }) %>
+                          <% } else { %>
+                              <div class="col-12 text-center mt-4">
+                                  <h4 class="card-title">No offer available</h4>
+                              </div>
+                          <% } %>
+                      </div>
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div class="tab-pane fade" id="products" role="tabpanel" aria-labelledby="products-tab">
+          <div class="col-md-10 content">
+              <div class="card">
+                  <div class="card-body">
+                      <div class="row align-items-center mb-4">
+                          <div class="col-lg-9">
+                              <h4 class="card-title mb-1">Product Offer Management</h4>
+                              <p class="card-description text-muted">Manage product offer details and discounts</p>
+                          </div>
+                      </div>
+      
+                      <!-- Product Offers -->
+                      <div class="row mt-4">
+                        <% if (typeof products !== 'undefined' && products.length > 0) { %>
+                            <% products.forEach((element) => { %>
+                                <% element.variants.forEach((variant) => { %>
+                                    <div class="col-lg-4 mb-4">
+                                        <div class="card offer-card shadow-sm rounded border-light hover-effect">
+                                          <img src="/<%= variant.images[0] || 'default_image_path.jpg' %>" class="card-img-top img-cover" alt="<%= element.product_name %>">
+                                          <div class="card-body">
+                                                <h5 class="card-title text-primary"><%= element.product_name %></h5>
+                                                <p class="card-text">
+                                                    <strong>Color:</strong> <%= variant.color %><br>
+                                                    <% if (variant.offer) { %>
+                                                        <strong class="text-success">Discount:</strong> <%= variant.offer.offerPercentage %>%<br>
+                                                        <strong>Start Date:</strong> <%= new Date(variant.offer.offerStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric' }) %><br>
+                                                        <strong>Expiry Date:</strong> <%= new Date(variant.offer.offerEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric' }) %>
+                                                    <% } else { %>
+                                                        <strong class="text-danger">Discount:</strong> No discount <br>
+                                                        <strong>Start Date:</strong> --/--/---- <br>
+                                                        <strong>Expiry Date:</strong> --/--/----
+                                                    <% } %>
+                                                </p>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                  <% if (variant.offer) { %>
+                                                      <div class="col-6">
+                                                          <select class="form-select form-select-sm" onchange="updateProductOffer('<%= element._id %>', this.value, '<%= variant._id %>')">
+                                                              <option>Select Offer</option>
+                                                              <% offerSelect.forEach((offer) => { %>
+                                                                  <option value="<%= offer._id %>" <% if (variant.offer && variant.offer._id.toString() === offer._id.toString()) { %> selected <% } %>>
+                                                                      <%= offer.offerName %> - <%= offer.offerPercentage %>%
+                                                                  </option>
+                                                              <% }) %>
+                                                          </select>
+                                                      </div>
+                                                      <div class="col-6">
+                                                          <button type="button" class="btn btn-danger btn-sm" onclick="removeOffer('<%= element._id %>', '<%= variant._id %>')">Remove Offer</button>
+                                                      </div>
+                                                  <% } else { %>
+                                                      <div class="col-12">
+                                                          <select class="form-select form-select-sm" onchange="updateProductOffer('<%= element._id %>', this.value, '<%= variant._id %>')">
+                                                              <option>Select Offer</option>
+                                                              <% offerSelect.forEach((offer) => { %>
+                                                                  <option value="<%= offer._id %>" <% if (variant.offer && variant.offer._id.toString() === offer._id.toString()) { %> selected <% } %>>
+                                                                      <%= offer.offerName %> - <%= offer.offerPercentage %>%
+                                                                  </option>
+                                                              <% }) %>
+                                                          </select>
+                                                      </div>
+                                                  <% } %>
+                                              </div>
+                                              
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% }) %>
+                            <% }) %>
+                        <% } else { %>
+                            <div class="col-12 text-center mt-4">
+                                <h4 class="card-title">No products available</h4>
+                            </div>
+                        <% } %>
+                    </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+      
+
+        <!-- Category Tab -->
+        <div class="tab-pane fade" id="category" role="tabpanel" aria-labelledby="category-tab">
+            <div class="col-md-10 content">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center mb-3">
+                            <div class="col-lg-9">
+                                <h4 class="card-title mb-1">Category Offer Management</h4>
+                                <p class="card-description text-muted">Manage category offer details and discounts</p>
+                            </div>
+                        </div>
+                        <!-- Category Offers -->
+                        <div class="row mt-4">
+                          <% if (typeof category !== 'undefined' && category.length > 0) { %>
+                              <% category.forEach((element) => { %>
+                                  <div class="col-lg-4 mb-4">
+                                      <div class="card offer-card shadow-sm hover-effect">
+                                          <div class="card-body">
+                                              <p class="card-text">
+                                                  <strong>Category Name:</strong> <%= element.name %><br>
+                                                  <% if (element.offer) { %>
+                                                      <strong class="text-success">Discount:</strong> <%= element.offer.offerPercentage %>% <br>
+                                                      <strong>Start Date:</strong> <%= new Date(element.offer.offerStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %><br>
+                                                      <strong>Expiry Date:</strong> <%= new Date(element.offer.offerEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %>
+                                                  <% } else { %>
+                                                      <strong class="text-danger">Discount:</strong> No discount <br>
+                                                      <strong>Start Date:</strong> --/--/---- <br>
+                                                      <strong>Expiry Date:</strong> --/--/----
+                                                  <% } %>
+                                              </p>
+                                              <div class="d-flex justify-content-between align-items-center">
+                                                  <% if (element.offer) { %>
+                                                      <div class="col-6">
+                                                          <select class="form-select form-select-sm" onchange="updateCategoryOffer('<%= element._id %>', this.value)">
+                                                              <option>Select Offer</option>
+                                                              <% offerSelect.forEach((offer) => { %>
+                                                                  <option value="<%= offer._id %>" <% if (element.offer && element.offer._id.toString() === offer._id.toString()) { %> selected <% } %>>
+                                                                      <%= offer.offerName %> - <%= offer.offerPercentage %>%
+                                                                  </option>
+                                                              <% }) %>
+                                                          </select>
+                                                      </div>
+                                                      <div class="col-6">
+                                                          <button type="button" class="btn btn-danger btn-sm" onclick="removeCategoryOffer('<%= element._id %>', '<%= element.offer._id %>')">Remove Offer</button>
+                                                      </div>
+                                                  <% } else { %>
+                                                      <div class="col-12">
+                                                          <select class="form-select form-select-sm" onchange="updateCategoryOffer('<%= element._id %>', this.value)">
+                                                              <option>Select Offer</option>
+                                                              <% offerSelect.forEach((offer) => { %>
+                                                                  <option value="<%= offer._id %>" <% if (element.offer && element.offer._id.toString() === offer._id.toString()) { %> selected <% } %>>
+                                                                      <%= offer.offerName %> - <%= offer.offerPercentage %>%
+                                                                  </option>
+                                                              <% }) %>
+                                                          </select>
+                                                      </div>
+                                                  <% } %>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </div>
+                              <% }) %>
+                          <% } else { %>
+                              <div class="col-12 text-center mt-4">
+                                  <h4 class="card-title">No categories available</h4>
+                              </div>
+                          <% } %>
+                      </div>
+                      
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+   <!-- Edit Offer Modal -->
+   <div class="modal fade" id="editOfferModal" tabindex="-1" aria-labelledby="editOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editOfferModalLabel">Edit Offer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editOfferForm">
+                    <input type="hidden" id="editOfferId">
+                    <div class="mb-3">
+                        <label for="editOfferName" class="form-label">Offer Name</label>
+                        <input type="text" class="form-control" id="editOfferName" name="editOfferName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOfferPercentage" class="form-label">Offer Percentage (%)</label>
+                        <input type="number" class="form-control" id="editOfferPercentage" name="editOfferPercentage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOfferStartDate" class="form-label">Start Date</label>
+                        <input type="datetime-local" class="form-control" id="editOfferStartDate" name="editOfferStartDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editOfferEndDate" class="form-label">End Date</label>
+                        <input type="datetime-local" class="form-control" id="editOfferEndDate" name="editOfferEndDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning" onclick="EditOffer()">Update Offer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+   <!-- Add Offer Modal -->
+   <div class="modal fade" id="addOfferModal" tabindex="-1" aria-labelledby="addOfferModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addOfferModalLabel">Add New Offer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addOfferForm" onsubmit="event.preventDefault(); AddOffer();">
+                    <div class="mb-3">
+                        <label for="offerName" class="form-label">Offer Name</label>
+                        <input type="text" class="form-control" id="offerName" name="offerName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="offerPercentage" class="form-label">Offer Percentage (%)</label>
+                        <input type="number" class="form-control" id="offerPercentage" name="offerPercentage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="offerStartDate" class="form-label">Start Date</label>
+                        <input type="datetime-local" class="form-control" id="offerStartDate" name="offerStartDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="offerEndDate" class="form-label">End Date</label>
+                        <input type="datetime-local" class="form-control" id="offerEndDate" name="offerEndDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="AddOffer()">Save Offer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+
+async function AddOffer() {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+            
+            const offerName = document.getElementById('offerName').value.trim();
+            const offerPercentage = parseFloat(document.getElementById('offerPercentage').value.trim());
+            const offerStartDate = document.getElementById('offerStartDate').value.trim();
+            const offerEndDate = document.getElementById('offerEndDate').value.trim();
+            const currentDate = new Date();
+
+            // Input validations
+            if (!offerName) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Offer name is empty"
+                });
+                return;
+            }
+            if (offerName.length < 2) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Name Length",
+                    text: 'Name must need minimum 2 characters.',
+                });
+                return;
+            }
+            const nameRegex = /^[a-zA-Z\s\-]+$/;
+            if (!nameRegex.test(offerName)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Characters in Name",
+                    text: 'Name should not contain numbers or special characters.',
+                });
+                return;
+            }
+
+            if (!offerPercentage) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Percentage is empty"
+                });
+                return;
+            }
+
+            if (isNaN(offerPercentage)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Percentage",
+                    text: "Percentage must be a number.",
+                });
+                return;
+            }
+
+            if (offerPercentage < 1 || offerPercentage > 100) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid percentage",
+                    text: 'Percentage not more than 100 and less than 1'
+                });
+                return;
+            }
+            if (offerPercentage !== Math.floor(offerPercentage)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Percentage Format",
+                    text: "Percentage must be a whole number.",
+                });
+                return;
+            }
+
+            if (!offerStartDate) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Start date is empty"
+                });
+                return;
+            }
+            if (new Date(offerStartDate) < currentDate) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Start Date",
+                    text: 'Start date cannot be in the past.',
+                });
+                return;
+            }
+
+            if (!offerEndDate) {
+                Toast.fire({
+                    icon: "error",
+                    title: "End date is empty"
+                });
+                return;
+            }
+
+            if (new Date(offerEndDate) <= new Date(offerStartDate)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid End Date",
+                    text: 'End date must be after the start date.',
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/addOffers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ offerName, offerPercentage, offerStartDate, offerEndDate })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Offer added',
+                        text: result.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        // Close the modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addOfferModal'));
+                        modal.hide();
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error occurred',
+                        text: result.error,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'An error occurred. Please check your network connection.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+async function deleteOffer(offerId) {
+        const result = await Swal.fire({
+          title: 'Are you sure?',
+          text: "Do you want to Delete this offer?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, Delete it!',
+          cancelButtonText: 'Close!'
+        });
+        if (result.isConfirmed) {
+          const responce = await fetch('/admin/deleteOffer', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ offerId })
+          })
+          if (responce.ok) {
+            Swal.fire('deleted!', 'this offer is deleted.', 'success').then(() => {
+              location.reload()
+            })
+
+          } else {
+            Swal.fire('Error!', 'Failed to delete offer.', 'error');
+          }
+        }
+
+      }
+async function restoreOffer(offerId) {
+        const result = await Swal.fire({
+          title: 'Are you sure?',
+          text: "Do you want to restore this offer?",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, restore it!',
+          cancelButtonText: 'Close!'
+        });
+        if (result.isConfirmed) {
+          const responce = await fetch('/admin/restoreOffer', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ offerId })
+          })
+          if (responce.ok) {
+            Swal.fire('restored!', 'this offer is restored.', 'success').then(() => {
+              location.reload(); // Reload the page
+            })
+          } else {
+            Swal.fire('Error!', 'Failed to restore offer.', 'error');
+          }
+        }
+
+      }
+
+
+
+ // Function to populate the edit modal
+ function populateEditModal(button) {
+            const offerId = button.getAttribute('data-offer-id');
+            const offerName = button.getAttribute('data-offer-name');
+            const offerPercentage = button.getAttribute('data-offer-percentage');
+            const offerStartDate = button.getAttribute('data-offer-sdate');
+            const offerEndDate = button.getAttribute('data-offer-edate');
+
+            document.getElementById('editOfferId').value = offerId;
+            document.getElementById('editOfferName').value = offerName;
+            document.getElementById('editOfferPercentage').value = offerPercentage;
+            document.getElementById('editOfferStartDate').value = new Date(offerStartDate).toISOString().slice(0, 16);
+            document.getElementById('editOfferEndDate').value = new Date(offerEndDate).toISOString().slice(0, 16);
+
+            const modal = new bootstrap.Modal(document.getElementById('editOfferModal'));
+            modal.show();
+        }
+
+        async function EditOffer() {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: "top-end",
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.onmouseenter = Swal.stopTimer;
+                    toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+
+            const editOfferName = document.getElementById('editOfferName').value.trim();
+            const editOfferPercentage = parseFloat(document.getElementById('editOfferPercentage').value.trim());
+            const editOfferStartDate = document.getElementById('editOfferStartDate').value.trim();
+            const editOfferEndDate = document.getElementById('editOfferEndDate').value.trim();
+            const editOfferId = document.getElementById('editOfferId').value;
+            const currentDate = new Date();
+
+            // Input validations
+            if (!editOfferName) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Offer name is empty"
+                });
+                return;
+            }
+            if (editOfferName.length < 2) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Name Length",
+                    text: 'Name must need minimum 2 characters.',
+                });
+                return;
+            }
+            const nameRegex = /^[a-zA-Z\s\-]+$/;
+            if (!nameRegex.test(editOfferName)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Characters in Name",
+                    text: 'Name should not contain numbers or special characters.',
+                });
+                return;
+            }
+
+            if (!editOfferPercentage) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Percentage is empty"
+                });
+                return;
+            }
+
+            if (isNaN(editOfferPercentage)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Percentage",
+                    text: "Percentage must be a number.",
+                });
+                return;
+            }
+
+            if (editOfferPercentage < 1 || editOfferPercentage > 100) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid percentage",
+                    text: 'Percentage not more than 100 and less than 1'
+                });
+                return;
+            }
+            if (editOfferPercentage !== Math.floor(editOfferPercentage)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Percentage Format",
+                    text: "Percentage must be a whole number.",
+                });
+                return;
+            }
+
+            if (!editOfferStartDate) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Start date is empty"
+                });
+                return;
+            }
+            if (new Date(editOfferStartDate) < currentDate) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid Start Date",
+                    text: 'Start date cannot be in the past.',
+                });
+                return;
+            }
+
+            if (!editOfferEndDate) {
+                Toast.fire({
+                    icon: "error",
+                    title: "End date is empty"
+                });
+                return;
+            }
+
+            if (new Date(editOfferEndDate) <= new Date(editOfferStartDate)) {
+                Toast.fire({
+                    icon: "error",
+                    title: "Invalid End Date",
+                    text: 'End date must be after the start date.',
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/editOffers', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ editOfferId, editOfferName, editOfferPercentage, editOfferStartDate, editOfferEndDate })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Offer Edited',
+                        text: result.message,
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error Occurred',
+                        text: result.error,
+                        confirmButtonText: 'OK'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'An error occurred. Please check your network connection.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+
+      async function updateProductOffer(productId,offerId,variantId){
+        try{
+          const responce = await fetch('/admin/updateProductOffer',{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify({productId,offerId,variantId})
+        })
+        const result = await responce.json()
+        if(result.success){
+          Swal.fire({
+            icon:'success',
+            title:'offer updated',
+            text:result.message,
+            confirmButtonText:'OK'
+          }).then(()=>{
+            window.location.reload()
+          })
+        }else{
+          Swal.fire({
+            icon:'error',
+            title:'failed to update',
+            text:result.error,
+            confirmButtonText:'OK'
+          })
+        }
+        }catch(error){
+          Swal.fire('Error!', 'There was a problem processing your request.', 'error');
+        }
+       
+
+
+      } 
+
+async function removeOffer(productId,variantId){
+  try{
+          const responce = await fetch('/admin/removeProductOffer',{
+            method:'POST',
+            headers:{
+              'Content-Type':'application/json'
+            },
+            body:JSON.stringify({productId,variantId})
+        })
+        const result = await responce.json()
+        if(result.success){
+          Swal.fire({
+            icon:'success',
+            title:'offer updated',
+            text:result.message,
+            confirmButtonText:'OK'
+          }).then(()=>{
+            window.location.reload()
+          })
+        }else{
+          Swal.fire({
+            icon:'error',
+            title:'failed to update',
+            text:result.error,
+            confirmButtonText:'OK'
+          })
+        }
+        }catch(error){
+          Swal.fire('Error!', 'There was a problem processing your request.', 'error');
+        }
+}
+
+async function removeCategoryOffer(categoryId, offerId) {
+    const confirmation = confirm("Are you sure you want to remove this offer?");
+
+    if (!confirmation) {
+        return; // Exit if user cancels
+    }
+
+    try {
+        const response = await fetch('/admin/removeCategoryOffer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ categoryId, offerId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Offer Updated',
+                text: result.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload(); // Reload to see updated state
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to Update',
+                text: result.error,
+                confirmButtonText: 'OK'
+            });
+        }
+    } catch (error) {
+        console.error(error); // Log error for debugging
+        Swal.fire('Error!', 'There was a problem processing your request.', 'error');
+    }
+}
+
+async function updateCategoryOffer(categoryId, offerId) {
+    try {
+        const response = await fetch('/admin/updateCategoryOffer', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ categoryId, offerId })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Offer Updated',
+                text: result.message,
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload(); // Reload to see updated state
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Failed to Update',
+                text: result.error,
+                confirmButtonText: 'OK'
+            });
+        }
+    } catch (error) {
+        console.error(error); // Log error for debugging
+        Swal.fire('Error!', 'There was a problem processing your request.', 'error');
+    }
+}
+
+
+   </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <!-- Popper.js (required for Bootstrap 5) -->
+
+<!-- Bootstrap JS (ensure this is the correct version for your Bootstrap) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
