@@ -4,8 +4,6 @@ const orderSchema = new mongoose.Schema({
     orderId: {
         type: String,
         unique: true,
-        // Make this optional if you are not generating it
-        // required: true 
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -34,6 +32,13 @@ const orderSchema = new mongoose.Schema({
         price: {
             type: Number,
             required: true
+        },
+        discount_price: {
+            type: Number
+        },
+        offerPercentage: {
+            type: Number,
+            default: 0
         }
     }],
     paymentMethod: {
@@ -43,7 +48,16 @@ const orderSchema = new mongoose.Schema({
     },
     totalAmount: {
         type: Number,
-        required: true
+        required: true,
+        min: 0.01
+    },
+    discountAmount: {
+        type: Number, // New field to store the discount amount
+        default: 0
+    },
+    couponCode: {
+        type: String, // New field to store the applied coupon code
+        default: null
     },
     orderStatus: {
         type: String,

@@ -24,6 +24,10 @@ const cartSchema = mongoose.Schema({
     }],
     total_price:{
         type:Number
+    },
+    appliedCoupon: {
+        code: String,
+        discount: Number
     }
 },{ timestamps :true});
 

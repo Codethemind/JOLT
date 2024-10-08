@@ -1,0 +1,297 @@
+<%- include('./partial/admin_header') %>
+
+<div class="container-fluid">
+    <div class="row">
+<!-- views/coupons.ejs -->
+
+<div  class="col-md-10 content">
+    <h4 class="mb-3">Coupon Management</h4>
+
+    <!-- Add Coupon Form -->
+    <form id="couponForm">
+        <div class="row">
+            <div class="col-md-3">
+                <input type="text" name="couponName" class="form-control" placeholder="Coupon Name" required>
+            </div>
+            <div class="col-md-3">
+                <input type="text" name="couponCode" class="form-control" placeholder="Coupon Code" required>
+            </div>
+            <div class="col-md-2">
+                <input type="number" name="discountPercentage" class="form-control" placeholder="Discount %" required>
+            </div>
+            <div class="col-md-2">
+                <input type="datetime-local" name="couponStartDate" class="form-control" required>
+            </div>
+            <div class="col-md-2">
+                <input type="datetime-local" name="couponEndDate" class="form-control" required>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary">Add</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Coupon List -->
+    <div class="row mt-4">
+        <% if (typeof coupons !== 'undefined' && coupons.length > 0) { %>
+            <% coupons.forEach((coupon) => { %>
+                <div class="col-lg-4 mb-4">
+                    <div class="card offer-card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= coupon.couponName %> (<%= coupon.couponCode %>)</h5>
+                            <p class="card-text">
+                                <strong>Discount:</strong> <%= coupon.discountPercentage %>%<br>
+                                <strong>Start Date:</strong> <%= new Date(coupon.couponStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %><br>
+                                <strong>Expiry Date:</strong> <%= new Date(coupon.couponEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %>
+                            </p>
+                            <div class="d-flex justify-content-between">
+                                <% if (coupon.isDeleted) { %>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="restoreCoupon('<%= coupon._id %>')">Restore</button>
+                                <% } else { %>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="deleteCoupon('<%= coupon._id %>')">Delete</button>
+                                    <button type="button" class="btn btn-outline-info btn-sm editBtn" 
+                                            data-coupon-id="<%= coupon._id %>"
+                                            data-coupon-name="<%= coupon.couponName %>"
+                                            data-coupon-code="<%= coupon.couponCode %>"
+                                            data-discount-percentage="<%= coupon.discountPercentage %>"
+                                            data-start-date="<%= coupon.couponStartDate ? new Date(coupon.couponStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>"
+                                            data-end-date="<%= coupon.couponEndDate ? new Date(coupon.couponEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>"
+                                            onclick="populateEditModal(this)">Edit</button>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <div class="col-12 text-center mt-4">
+                <h4 class="card-title">No coupons available</h4>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Modal for editing a coupon -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" role="dialog" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="editCouponForm">
+            <input type="hidden" id="editCouponId">
+            <div class="form-group">
+              <label for="editCouponName">Coupon Name</label>
+              <input type="text" class="form-control" id="editCouponName" required>
+            </div>
+            <div class="form-group">
+              <label for="editCouponCode">Coupon Code</label>
+              <input type="text" class="form-control" id="editCouponCode" required>
+            </div>
+            <div class="form-group">
+              <label for="editDiscountPercentage">Discount Percentage</label>
+              <input type="number" class="form-control" id="editDiscountPercentage" required>
+            </div>
+            <div class="form-group">
+              <label for="editStartDate">Start Date</label>
+              <input type="datetime-local" class="form-control" id="editStartDate" required>
+            </div>
+            <div class="form-group">
+              <label for="editEndDate">End Date</label>
+              <input type="datetime-local" class="form-control" id="editEndDate" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+
+  <script>
+    document.querySelector('form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(event.target);
+    const couponCode = formData.get('couponCode');
+    
+    if (!couponCode || couponCode.trim() === "") {
+        Swal.fire({
+            title: 'Error!',
+            text: 'Coupon Code cannot be empty.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+        });
+        return;
+    }
+
+    const data = {
+        couponName: formData.get('couponName'),
+        couponCode,
+        discountPercentage: formData.get('discountPercentage'),
+        couponStartDate: formData.get('couponStartDate'),
+        couponEndDate: formData.get('couponEndDate'),
+    };
+
+    try {
+        const response = await fetch('/coupons/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Coupon created successfully.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                location.reload();  // Reload the page to show updated list
+            });
+        } else {
+            Swal.fire({
+                title: 'Error!',
+                text: result.message || 'Failed to create coupon.',
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            title: 'Error!',
+            text: 'An unexpected error occurred.',
+            icon: 'error',
+            confirmButtonText: 'Try Again'
+        });
+        console.error('Error:', error);
+    }
+});
+
+  </script>
+<script>
+    async function deleteCoupon(couponId) {
+        const confirmation = confirm('Are you sure you want to delete this coupon?');
+        if (!confirmation) return;
+
+        try {
+            const response = await fetch(`/coupons/delete/${couponId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                location.reload(); // Reload to reflect the changes
+            } else {
+                console.error('Failed to delete coupon');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+</script>
+<script>
+    async function restoreCoupon(couponId) {
+        try {
+            const response = await fetch(`/coupons/restore/${couponId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                location.reload(); // Reload to update the list of coupons
+            } else {
+                console.error('Failed to restore coupon');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+</script>
+<script>
+    function populateEditModal(button) {
+        const couponId = button.getAttribute('data-coupon-id');
+        const couponName = button.getAttribute('data-coupon-name');
+        const couponCode = button.getAttribute('data-coupon-code');
+        const discountPercentage = button.getAttribute('data-discount-percentage');
+        const startDate = button.getAttribute('data-start-date');
+        const endDate = button.getAttribute('data-end-date');
+
+        // Populate modal fields
+        document.getElementById('editCouponId').value = couponId;
+        document.getElementById('editCouponName').value = couponName;
+        document.getElementById('editCouponCode').value = couponCode;
+        document.getElementById('editDiscountPercentage').value = discountPercentage;
+        document.getElementById('editStartDate').value = startDate;
+        document.getElementById('editEndDate').value = endDate;
+
+        // Show the modal
+        $('#editCouponModal').modal('show');
+    }
+
+    document.getElementById('editCouponForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const couponId = document.getElementById('editCouponId').value;
+        const couponName = document.getElementById('editCouponName').value;
+        const couponCode = document.getElementById('editCouponCode').value;
+        const discountPercentage = document.getElementById('editDiscountPercentage').value;
+        const couponStartDate = document.getElementById('editStartDate').value;
+        const couponEndDate = document.getElementById('editEndDate').value;
+
+        const data = {
+            couponName,
+            couponCode,
+            discountPercentage,
+            couponStartDate,
+            couponEndDate,
+        };
+
+        try {
+            const response = await fetch(`/coupons/edit/${couponId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                location.reload(); // Reload to reflect the updates
+            } else {
+                console.error('Failed to edit coupon');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+</script>
+
+
+</body>
+</html>

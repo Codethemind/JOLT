@@ -1,15 +1,9 @@
 const express=require('express')
-
 const adminRouter=express.Router()
 const adminController=require('../controllers/adminController')
 const offerController=require('../controllers/offerController')
 const upload = require('../config/multer')
 const adminauth=require('../middleware/adminauth')
-
-
-
-
-
 
 adminRouter.get('/',adminController.admin_login_page),
 adminRouter.post('/admin_login',adminController.admin_post_login),
@@ -35,28 +29,14 @@ adminRouter.get('/admin_ordermanagment',adminauth,adminController.ordermanagment
 adminRouter.post('/update-status/:orderId',adminauth,adminController.updateorderstatus)
 
 adminRouter.get("/offers",offerController.offers);
-
 adminRouter.post("/addOffers",offerController.addOffers);
-
 adminRouter.post("/deleteOffer",offerController.deleteOffer);
-
 adminRouter.post("/restoreOffer",offerController.restoreOffer);
-
 adminRouter.post("/editOffers",offerController.editOffers);
-
 adminRouter.post("/updateProductOffer",offerController.updateProductOffer);
-
 adminRouter.post("/removeProductOffer",offerController.removeProductOffer);
-
 adminRouter.post("/updateCategoryOffer",offerController.updateCategoryOffer);
-
 adminRouter.post("/removeCategoryOffer",offerController.removeCategoryOffer);
-
-// adminrouter.post('/update_orderStatus',adminController.update_orderStatus)
-
-// adminrouter.get("/logout",adminController.admin_logout);
-
-
 
 adminRouter.get('/logout', adminController.admin_get_logout);
   

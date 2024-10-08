@@ -634,6 +634,642 @@
     </div>
   </div>
   
+
+<%- include('./partial/header') %>
+
+
+  <header class="header header-intro-clearance header-4">
+    <div class="header-top">
+      <div class="container p-3">
+        <div class="header-left">
+          <a href="tel:#"><i class="icon-phone"></i>Call: 9747604603</a>
+        </div>
+        <!-- End .header-left -->
+
+        <div class="header-right">
+          <ul class="top-menu">
+            <li>
+              <!-- <a href="#">Links</a> -->
+              <ul>
+                <li>
+                  <div class="header-">
+                    <a href="#">USD</a>
+                  </div>
+                </li>
+                <li>
+                  <div class="header-">
+                    <a href="#">English</a>
+                  </div>
+                </li>
+                <% if(User){ %>
+
+                <li>
+                  <a href="#"><%= User.email %></a>
+                </li>
+                <li>
+                  <a href="/user/logout">Log out</a>
+                </li>
+                <% }else{ %>
+                           
+                  <li>
+                    <a href="#signin-modal" data-toggle="modal"
+                      >Sign in / Sign up</a
+                    >
+                  </li>
+                  <% } %>
+                
+              </ul>
+            </li>
+          </ul>
+          <!-- End .top-menu -->
+        </div>
+        <!-- End .header-right -->
+      </div>
+      <!-- End .container -->
+    </div>
+    <!-- End .header-top -->
+
+    <div class="header-middle">
+      <div class="container ">
+        <div class="header-left ">
+          <!-- <button class="mobile-menu-toggler">
+                            <span class="sr-only">Toggle mobile menu</span>
+                            <i class="icon-bars"></i>
+                        </button> -->
+
+          <a href="index.html" class="">
+            <img
+              src="/images/demos/demo-4/logo.png"
+              alt="JOLT Logo"
+              width="105"
+              height="15"
+            />
+          </a>
+        </div>
+        <!-- End .header-left -->
+
+        <div class="header-center">
+          <div
+            class="header-search header-search-extended header-search-visible d-none d-lg-block"
+          >
+            <a href="#" class="search-toggle" role="button">
+              <i class="icon-search"></i>
+            </a>
+            <form action="/user/productpage" method="get">
+              <div class="header-search-wrapper search-wrapper-wide">
+                <label for="q" class="sr-only">Search</label>
+                <button class="btn btn-primary" type="submit">
+                  <i class="icon-search"></i>
+                </button>
+                <input
+                  type="search"
+                  class="form-control"
+                  name="search" <!-- Change the name attribute to "search" -->
+                  id="q"
+                  placeholder="Search product ..."
+                  required
+                />
+              </div>
+              <!-- End .header-search-wrapper -->
+            </form>
+          </div>
+          <!-- End .header-search -->
+        </div>
+        
+
+        <div class="header-right">
+          <div class="wishlist">
+            <a href="/wishlist/" title="Wishlist">
+              <div class="icon">
+                <i class="icon-heart-o"></i>
+                <!-- <span class="wishlist-count badge">3</span> -->
+              </div>
+              <p>Wishlist</p>
+            </a>
+          </div>
+          <!-- End .compare-dropdown -->
+
+          <div class="dropdown cart-dropdown">
+            <a href="/api/cart" class="dropdown-toggle">
+              <div class="icon">
+                <i class="icon-shopping-cart"></i>
+                <!-- <span class="cart-count">2</span> -->
+              </div>
+              <p>Cart</p>
+            </a>
+          </div>
+          <!-- End .cart-dropdown -->
+        </div>
+        <!-- End .header-right -->
+      </div>
+      <!-- End .container -->
+    </div>
+    <!-- End .header-middle -->
+
+    <div class="header-bottom sticky-header">
+      <div class="container pl-0 bg-light">
+        <div class="header-left">
+          <div class="dropdown category-dropdown">
+            <a
+              href="#"
+              class="dropdown-toggle"
+              role="button"
+              data-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+              data-display="static"
+              title="Browse Categories"
+            >
+              Browse Categories <i class="icon-angle-down"></i>
+            </a>
+
+            <div class="dropdown-menu">
+              <nav class="side-nav">
+                <ul class="menu-vertical sf-arrows">
+                  <% categories.forEach(category => { %>
+                      <li><a href="/user/category/<%= category._id %>"><%= category.name %></a></li>
+                  <% }) %>
+              </ul>
+                <!-- End .menu-vertical -->
+              </nav>
+              
+              <!-- End .side-nav -->
+            </div>
+            <!-- End .dropdown-menu -->
+          </div>
+          <!-- End .category-dropdown -->
+        </div>
+        <!-- End .header-left -->
+
+        <div class="header-center">
+          <nav class="main-nav">
+            <ul class="menu sf-arrows">
+              <li class="megamenu-container active"><a href="/user/" class="">Home</a></li>
+              <li> <a href="/user/productpage" class="">Product</a></li>
+              <li><a href="#" class="sf-with-ul">Pages</a>
+                <ul>
+                  <li><a href="/user/about" class="">About</a> </li>
+                  <li><a href="/user/contact" class="">Contact</a> </li>
+                  <!-- <li><a href="login.html">Login</a></li> -->
+                  <li><a href="/user/faq">FAQs</a></li>
+                  <li><a href="/user/error">Error 404</a></li>
+                  <li><a href="/user/Myaccount">My account</a></li>
+                  <!-- <li><a href="coming-soon.html">Coming Soon</a></li> -->
+                </ul>
+              </li>
+            </ul>
+            <!-- End .menu -->
+          </nav>
+          <!-- End .main-nav -->
+        </div>
+        <!-- End .header-center -->
+
+        <div class="header-right">
+          <i class="la la-lightbulb-o"></i>
+          <p>Clearance<span class="highlight">&nbsp;Up to 30% Off</span></p>
+        </div>
+      </div>
+      <!-- End .container -->
+    </div>
+    <!-- End .header-bottom -->
+  </header>
+  <!-- End .header -->
+
+
+
+
+
+
+  
+  <div class="page-wrapper">
+  <main class="main">
+    <div class="intro-slider-container mb-5">
+      <div
+        class="intro-slider owl-carousel owl-theme owl-nav-inside owl-light"
+        data-toggle="owl"
+        data-owl-options='{
+                        "dots": true,
+                        "nav": false, 
+                        "responsive": {
+                            "1200": {
+                                "nav": true,
+                                "dots": false
+                            }
+                        }
+                    }'
+      >
+        <div
+          class="intro-slide"
+          style="
+            background-image: url(/images/demos/demo-4/slider/slide-1.png);
+          "
+        >
+          <div class="container intro-content">
+            <div class="row justify-content-end">
+              <div class="col-auto col-sm-7 col-md-6 col-lg-5">
+                <h3 class="intro-subtitle text-third">Deals and Promotions</h3>
+                <!-- End .h3 intro-subtitle -->
+                <h1 class="intro-title">Beats by</h1>
+                <h1 class="intro-title">Dre Studio 3</h1>
+                <!-- End .intro-title -->
+
+                <div class="intro-price">
+                  <sup class="intro-old-price">$349,95</sup>
+                  <span class="text-third"> $279<sup>.99</sup> </span>
+                </div>
+                <!-- End .intro-price -->
+
+                <a href="category.html" class="btn btn-primary btn-round">
+                  <span>Shop More</span>
+                  <i class="icon-long-arrow-right"></i>
+                </a>
+              </div>
+              <!-- End .col-lg-11 offset-lg-1 -->
+            </div>
+            <!-- End .row -->
+          </div>
+          <!-- End .intro-content -->
+        </div>
+        <!-- End .intro-slide -->
+
+        <div
+          class="intro-slide"
+          style="
+            background-image: url(/images/demos/demo-4/slider/slide-2.png);
+          "
+        >
+          <div class="container intro-content">
+            <div class="row justify-content-end">
+              <div class="col-auto col-sm-7 col-md-6 col-lg-5">
+                <h3 class="intro-subtitle text-primary">New Arrival</h3>
+                <!-- End .h3 intro-subtitle -->
+                <h1 class="intro-title">
+                  Apple iPad Pro <br />12.9 Inch, 64GB
+                </h1>
+                <!-- End .intro-title -->
+
+                <div class="intro-price">
+                  <sup>Today:</sup>
+                  <span class="text-primary"> $999<sup>.99</sup> </span>
+                </div>
+                <!-- End .intro-price -->
+
+                <a href="category.html" class="btn btn-primary btn-round">
+                  <span>Shop More</span>
+                  <i class="icon-long-arrow-right"></i>
+                </a>
+              </div>
+              <!-- End .col-md-6 offset-md-6 -->
+            </div>
+            <!-- End .row -->
+          </div>
+          <!-- End .intro-content -->
+        </div>
+        <!-- End .intro-slide -->
+      </div>
+      <!-- End .intro-slider owl-carousel owl-simple -->
+
+      <span class="slider-loader"></span
+      ><!-- End .slider-loader -->
+    </div>
+    <!-- End .intro-slider-container -->
+
+
+    <div class="container">
+      <h2 class="title text-center mb-4">Explore Popular Categories</h2>
+      <!-- End .title text-center -->
+
+
+      <div class="cat-blocks-container">
+        <div class="row">
+          <div class="col-6 col-sm-4 col-lg-2">
+            <a href="/api/cart/" class="cat-block">
+              <figure>
+                <span>
+                  <img
+                    src="/images/demos/demo-4/cats/1.png"
+                    alt="Category image"
+                  />
+                </span>
+              </figure>
+
+              <h3 class="cat-block-title">Computer & Laptop</h3>
+              <!-- End .cat-block-title -->
+            </a>
+          </div>
+          <!-- End .col-sm-4 col-lg-2 -->
+
+          <div class="col-6 col-sm-4 col-lg-2">
+            <a href="category.html" class="cat-block">
+              <figure>
+                <span>
+                  <img
+                    src="/images/demos/demo-4/cats/2.png"
+                    alt="Category image"
+                  />
+                </span>
+              </figure>
+
+              <h3 class="cat-block-title">Digital Cameras</h3>
+              <!-- End .cat-block-title -->
+            </a>
+          </div>
+          <!-- End .col-sm-4 col-lg-2 -->
+
+          <div class="col-6 col-sm-4 col-lg-2">
+            <a href="category.html" class="cat-block">
+              <figure>
+                <span>
+                  <img
+                    src="/images/demos/demo-4/cats/3.png"
+                    alt="Category image"
+                  />
+                </span>
+              </figure>
+
+              <h3 class="cat-block-title">Smart Phones</h3>
+              <!-- End .cat-block-title -->
+            </a>
+          </div>
+          <!-- End .col-sm-4 col-lg-2 -->
+
+          <div class="col-6 col-sm-4 col-lg-2">
+            <a href="category.html" class="cat-block">
+              <figure>
+                <span>
+                  <img
+                    src="/images/demos/demo-4/cats/4.png"
+                    alt="Category image"
+                  />
+                </span>
+              </figure>
+
+              <h3 class="cat-block-title">Televisions</h3>
+              <!-- End .cat-block-title -->
+            </a>
+          </div>
+          <!-- End .col-sm-4 col-lg-2 -->
+
+          <div class="col-6 col-sm-4 col-lg-2">
+            <a href="category.html" class="cat-block">
+              <figure>
+                <span>
+                  <img
+                    src="/images/demos/demo-4/cats/5.png"
+                    alt="Category image"
+                  />
+                </span>
+              </figure>
+
+              <h3 class="cat-block-title">Audio</h3>
+              <!-- End .cat-block-title -->
+            </a>
+          </div>
+          <!-- End .col-sm-4 col-lg-2 -->
+
+          <div class="col-6 col-sm-4 col-lg-2">
+            <a href="category.html" class="cat-block">
+              <figure>
+                <span>
+                  <img
+                    src="/images/demos/demo-4/cats/6.png"
+                    alt="Category image"
+                  />
+                </span>
+              </figure>
+
+              <h3 class="cat-block-title">Smart Watches</h3>
+              <!-- End .cat-block-title -->
+            </a>
+          </div>
+          <!-- End .col-sm-4 col-lg-2 -->
+        </div>
+        <!-- End .row -->
+      </div>
+      <!-- End .cat-blocks-container -->
+    </div>
+    <!-- End .container -->
+
+
+
+
+
+
+    <div class="mb-4"></div>
+    <!-- End .mb-4 -->
+
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+          <div class="banner banner-overlay banner-overlay-light">
+            <a href="#">
+              <img
+                src="/images/demos/demo-4/banners/banner-1.png"
+                alt="Banner"
+              />
+            </a>
+
+            <div class="banner-content">
+              <h4 class="banner-subtitle"><a href="#">Smart Offer</a></h4>
+              <!-- End .banner-subtitle -->
+              <h3 class="banner-title">
+                <a href="#"
+                  >Save $150 <strong>on Samsung <br />Galaxy Note9</strong></a
+                >
+              </h3>
+              <!-- End .banner-title -->
+              <a href="#" class="banner-link"
+                >Shop Now<i class="icon-long-arrow-right"></i
+              ></a>
+            </div>
+            <!-- End .banner-content -->
+          </div>
+          <!-- End .banner -->
+        </div>
+        <!-- End .col-md-4 -->
+
+        <div class="col-md-6 col-lg-4">
+          <div class="banner banner-overlay banner-overlay-light">
+            <a href="#">
+              <img
+                src="/images/demos/demo-4/banners/banner-2.jpg"
+                alt="Banner"
+              />
+            </a>
+
+            <div class="banner-content">
+              <h4 class="banner-subtitle"><a href="#">Time Deals</a></h4>
+              <!-- End .banner-subtitle -->
+              <h3 class="banner-title">
+                <a href="#"
+                  ><strong>Bose SoundSport</strong> <br />Time Deal -30%</a
+                >
+              </h3>
+              <!-- End .banner-title -->
+              <a href="#" class="banner-link"
+                >Shop Now<i class="icon-long-arrow-right"></i
+              ></a>
+            </div>
+            <!-- End .banner-content -->
+          </div>
+          <!-- End .banner -->
+        </div>
+        <!-- End .col-md-4 -->
+
+        <div class="col-md-6 col-lg-4">
+          <div class="banner banner-overlay banner-overlay-light">
+            <a href="#">
+              <img
+                src="/images/demos/demo-4/banners/banner-3.png"
+                alt="Banner"
+              />
+            </a>
+
+            <div class="banner-content">
+              <h4 class="banner-subtitle"><a href="#">Clearance</a></h4>
+              <!-- End .banner-subtitle -->
+              <h3 class="banner-title">
+                <a href="#"
+                  ><strong>GoPro - Fusion 360</strong> <br />Save $70</a
+                >
+              </h3>
+              <!-- End .banner-title -->
+              <a href="#" class="banner-link"
+                >Shop Now<i class="icon-long-arrow-right"></i
+              ></a>
+            </div>
+            <!-- End .banner-content -->
+          </div>
+          <!-- End .banner -->
+        </div>
+        <!-- End .col-lg-4 -->
+      </div>
+      <!-- End .row -->
+    </div>
+    <!-- End .container -->
+
+
+
+
+
+
+
+
+
+
+<!-- End .mb-5 -->
+<div class="mb-3"></div>
+<div class="container new-arrivals">
+  <div class="heading heading-flex mb-3">
+    <div class="heading-left">
+      <h2 class="title">New Arrivals</h2>
+    </div>
+    <div class="heading-right">
+      <ul class="nav nav-pills nav-border-anim justify-content-center" role="tablist">
+        <!-- Iterate over categories to create navigation pills -->
+        <% categories.forEach(category => { %>
+          <li class="nav-item">
+            <!-- Add 'active' class if the current category matches the selected one -->
+            <a class="nav-link <%= category._id == queryCategory ? 'active' : '' %>" 
+              href="/user/?category=<%= category._id %>"><%= category.name %>
+            </a>
+          </li>
+        <% }) %>
+      </ul>
+    </div>
+  </div>
+  <div class="tab-content tab-content-carousel just-action-icons-sm">
+    <div class="tab-pane p-0 fade show active" id="new-all-tab" role="tabpanel" aria-labelledby="new-all-link">
+      <div class="owl-carousel owl-full carousel-equal-height carousel-with-shadow" 
+           data-toggle="owl" 
+           data-owl-options='{
+             "nav": true, "dots": true, "margin": 20, "loop": false, 
+             "responsive": { "0": {"items":2}, "480": {"items":2}, "768": {"items":3}, "992": {"items":4}, "1200": {"items":5}}}'>
+        
+        <!-- Display products from the selected category -->
+        <% if (product.length > 0) { %>
+          <% product.forEach(function(product) { %>
+            <% product.variants.forEach(function(variant) { %>
+              <div class="product product-2">
+                <figure class="product-media">
+  
+                  <!-- Display offer badge if the variant has an offer -->
+                  <% if (variant.offer && variant.offer.offerPercentage) { %>
+                    <span class="offer-badge position-absolute top-0 start-0 bg-success text-white p-2" style="font-size: 12px;">
+                      <%= variant.offer.offerPercentage %> % off
+                    </span>
+                  <% } %>
+  
+                  <!-- Check if stock is low, display "Low Stock" label -->
+                  <% if (variant.stock < 10) { %>
+                    <span class="product-label label-circle label-top">Low Stock</span>
+                  <% } %>
+  
+                  <a href="/user/product?id=<%= product._id %>">
+                    <img src="/<%= variant.images[0] %>" 
+                         alt="Product image" 
+                         class="product-image" 
+                         style="width: 250px; height: 250px; object-fit: cover;" />
+                  </a>
+  
+                  <div class="product-action-vertical">
+                    <a href="javascript:void(0)" class="btn-product-icon btn-wishlist" title="Add to wishlist" 
+                       data-product-id="<%= product._id %>" 
+                       data-variant-id="<%= variant._id %>"></a>
+                  </div>
+                  
+                  <div class="product-action">
+                    <a href="javascript:void(0)" 
+                       class="btn-product btn-cart" 
+                       data-product-id="<%= product._id %>" 
+                       data-variant-id="<%= variant._id %>" 
+                       data-price="<%= variant.price %>" 
+                       data-stock="<%= variant.stock %>" 
+                       title="Add to cart"><span>add to cart</span></a>
+                  </div>
+                </figure>
+  
+                <div class="product-body">
+                  <div class="product-cat">
+                    <a href="#"><%= product.category_id.name %></a> <!-- Display the category name -->
+                  </div>
+  
+                  <h3 class="product-title">
+                    <a href="/user/product?id=<%= product._id %>"><%= product.product_name %></a>
+                  </h3>
+  
+                  <div class="product-price">
+                    <% if (variant.offer && variant.offer.offerPercentage) { %>
+                      <!-- If offer is present, show original and discounted price -->
+                      <p class="text-danger">
+                        <small><del>INR <%= variant.price %></del></small> <!-- Original price -->
+                        INR <%= variant.discount_price %> <!-- Discounted price -->
+                      </p>
+                    <% } else { %>
+                      <!-- If no offer, show original price only -->
+                      INR <%= variant.price %>
+                    <% } %>
+                  </div>
+  
+                  <div class="ratings-container">
+                    <div class="ratings">
+                      <div class="ratings-val" style="width: 0%"></div>
+                    </div>
+                    <span class="ratings-text">( No Reviews )</span>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          <% }) %>
+        <% } else { %>
+          <!-- Display a message if there are no products for the selected category -->
+          <p>No products found in this category.</p>
+        <% } %>
+  
+      </div>
+    </div>
+  </div>
+  
 </div>
 
 

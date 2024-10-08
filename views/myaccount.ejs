@@ -10,26 +10,32 @@
 								<ul class="nav nav-tabs flex-column mb-3" id="myTab" role="tablist">
 									<li class="nav-item">
 										<a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab"
-											href="#dashboard" role="tab" aria-controls="dashboard"
-											aria-selected="true">Dashboard</a>
+										   href="#dashboard" role="tab" aria-controls="dashboard"
+										   aria-selected="true">Dashboard</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders"
-											role="tab" aria-controls="orders" aria-selected="false">Orders</a>
+										   role="tab" aria-controls="orders" aria-selected="false">Orders</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address"
-											role="tab" aria-controls="address" aria-selected="false">Addresses</a>
+										   role="tab" aria-controls="address" aria-selected="false">Addresses</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile"
-											role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+										   role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+									</li>
+									<!-- New Wallet Tab -->
+									<li class="nav-item">
+										<a class="nav-link" id="wallet-tab" data-bs-toggle="tab" href="#wallet"
+										   role="tab" aria-controls="wallet" aria-selected="false">Wallet</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" href="/logout">Sign Out</a>
 									</li>
 								</ul>
 							</aside>
+							
 
 							<div class="col-md-9">
 								<div class="tab-content" id="myTabContent">
@@ -37,125 +43,212 @@
 
 									<div class="tab-pane fade show active" id="dashboard" role="tabpanel"
 										aria-labelledby="dashboard-tab">
-										<h2>Dashboard Content</h2>
+										<h4 class="text-center mt-4 mb-4">Dashboard Content</h4>
 										<p>Your dashboard information goes here.</p>
 									</div>
 
 									<div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
-										<h2>Your Orders</h2>
+										<h4 class="text-center mt-4 mb-4">Your Orders</h4>
 										<% if (orders.length > 0) { %>
-										  <table class="table">
-											<thead class="text-center">
-											  <tr>
-												<th>Order ID</th>
-												<th>Product Name</th> <!-- New column for Product Name -->
-												<th>Status</th>
-												<th>Total</th>
-												<th>Action</th>
-											  </tr>
-											</thead>
-											<tbody>
-											  <% orders.forEach(order => { %>
-												<!-- Single Order Row -->
-												<tr>
-												  <!-- Order ID -->
-												  <td class="text-center"><%= order.orderId %></td>
-									  
-												  <!-- Product Name -->
-												  <td class="text-center">
-  <% order.items.forEach(item => { %>
-    <a href="/user/product?id=<%= item.product._id %>">
-      <%= item.product.product_name %>
-    </a><br> <!-- Making the Product Name clickable -->
-  <% }) %>
-</td>
+											<table class="table">
+												<thead class="text-center">
+													<tr>
+														<th>Order ID</th>
+														<th>Product Name</th> <!-- New column for Product Name -->
+														<th>Status</th>
+														<th>Total</th>
+														<th>Action</th>
+													</tr>
+												</thead>
+												<tbody>
+													<% orders.forEach(order => { %>
+														<!-- Single Order Row -->
+														<tr>
+															<!-- Order ID -->
+															<td class="text-center">
+																<%= order.orderId %>
+															</td>
+	
+															<!-- Product Name -->
+															<td class="text-center">
+																<% order.items.forEach(item => { %>
+																	<a href="/user/product?id=<%= item.product._id %>">
+																		<%= item.product.product_name %>
+																	</a><br> <!-- Making the Product Name clickable -->
+																<% }) %>
+															</td>
+	
+															<!-- Order Status -->
+															<td class="text-center">
+																<button class="btn 
+																	<%= order.orderStatus === 'Pending' ? 'btn-outline-warning' : 
+																		order.orderStatus === 'Processing' ? 'btn-outline-primary' : 
+																		order.orderStatus === 'Shipped' ? 'btn-outline-info' : 
+																		order.orderStatus === 'Delivered' ? 'btn-outline-success' : 
+																		order.orderStatus === 'Cancelled' ? 'btn-outline-danger' : 
+																		'btn-outline-secondary' %>" disabled>
+																	<%= order.orderStatus %>
+																</button>
+															</td>
+	
+															<!-- Total Amount -->
+															<td class="text-center">₹<%= order.totalAmount.toFixed(2) %></td>
+	
+															<!-- Actions (Details and Cancel Button for Pending Orders) -->
+															<td class="text-center">
+																<button
+																	class="btn btn-outline-secondary toggle-details-btn"
+																	title="View Details"
+																	data-order-id="<%= order._id %>">
+																	<i class="bi bi-info-circle-fill"></i>
+																	<span class="ms-1">Details</span>
+																</button>
+	
+																<% if (order.orderStatus === 'Pending') { %>
+																	<!-- Cancel button only if the order is Pending -->
+																	<button 
+																		class="btn btn-outline-danger ms-2"
+																		onclick="cancelOrder(event, '<%= order._id %>')">
+																		<i class="bi bi-x-circle-fill"></i>
+																		<span class="ms-1">Cancel</span>
+																	</button>
+																<% } %>
+															</td>
+														</tr>
+	
+														<!-- Order Details Row (collapsible) -->
+														<tr class="order-details-row" id="details-<%= order._id %>" style="display: none;">
+															<td colspan="5">
+																<div class="order-details-container">
+																	<h5>Order Details</h5>
+																	<table class="table table-bordered text-center">
+																		<thead>
+																			<tr>
+																				<th>Product</th>
+																				<th>Original Price</th>
+																				<th>Offer</th>
+																				<th>Price After Offer</th>
+																				<th>Quantity</th>
+																				<th>Subtotal</th>
+																			</tr>
+																		</thead>
+																		<tbody>
+																			<% let subtotal = 0; %>
+																			<% order.items.forEach(item => { %>
+																				<% console.log('Item:', JSON.stringify(item, null, 2)); %>
+																				<% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId) : null; %>
+																				<% console.log('Variant:', JSON.stringify(variant, null, 2)); %>
+																				<% const originalPrice = variant ? variant.price : 0; %>
+																				<% const offerPercentage = variant && variant.offer ? variant.offer.offerPercentage : 0; %>
+																				<% const priceAfterOffer = variant && variant.discount_price ? variant.discount_price : originalPrice; %>
+																				<% const itemSubtotal = priceAfterOffer * item.quantity; %>
+																				<% subtotal += itemSubtotal; %>
+																				<tr>
+																					<td>
+																						<% if (variant && variant.images && variant.images.length > 0) { %>
+																							<img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;">
+																						<% } %>
+																						<p><strong><%= item.product ? item.product.product_name : 'Unknown Product' %></strong></p>
+																						<small>Color: <%= variant ? variant.color : 'N/A' %>, Size: <%= variant ? variant.size : 'N/A' %></small>
+																					</td>
+																					<td>₹<%= originalPrice.toFixed(2) %></td>
+																					<td>
+																						<% if (offerPercentage > 0) { %>
+																							<span class="badge bg-success"><%= offerPercentage %>% OFF</span>
+																						<% } else { %>
+																							-
+																						<% } %>
+																					</td>
+																					<td>₹<%= priceAfterOffer.toFixed(2) %></td>
+																					<td><%= item.quantity %></td>
+																					<td>₹<%= itemSubtotal.toFixed(2) %></td>
+																				</tr>
+																			<% }) %>
+																		</tbody>
+																	</table>
 
-									  
-												  <!-- Order Status -->
-												  <td class="text-center">
-													<button class="btn 
-													<%= order.orderStatus === 'Pending' ? 'btn-outline-warning' : 
-														 order.orderStatus === 'Processing' ? 'btn-outline-primary' : 
-														 order.orderStatus === 'Shipped' ? 'btn-outline-info' : 
-														 order.orderStatus === 'Delivered' ? 'btn-outline-success' : 
-														 order.orderStatus === 'Cancelled' ? 'btn-outline-danger' : 
-														 'btn-outline-secondary' %>" disabled>
-													  <%= order.orderStatus %>
-													</button>
-												  </td>
-									  
-												  <!-- Total Amount -->
-												  <td class="text-center">$<%= order.totalAmount.toFixed(2) %></td>
-									  
-												  <!-- Actions (Details Button) -->
-												  <td class="text-center">
-													<button class="btn btn-outline-secondary toggle-details-btn"
-													  title="View Details" data-order-id="<%= order._id %>">
-													  <i class="bi bi-info-circle-fill"></i>
-													  <span class="ms-1">Details</span>
-													</button>
-												  </td>
-												</tr>
-									  
-												<!-- Order Details Row (collapsible) -->
-												<tr class="order-details-row" id="details-<%= order._id %>" style="display: none;">
-												  <td colspan="5">
-													<div class="order-details-container">
-													  <h5>Order Details</h5>
-													  <table class="table table-bordered text-center">
-														<thead>
-														  <tr>
-															<th>Product Image</th>
-															<th>Product Info</th>
-															<th>Delivery Address</th>
-														  </tr>
-														</thead>
-														<tbody>
-														  <% order.items.forEach(item => { %>
-															<tr>
-															  <!-- Product Image -->
-															  <td>
-																<img src="/<%= item.product.variants[0].images[0] %>" alt="Product Image"
-																  style="width: 150px; height: 180px; object-fit: cover;">
-															  </td>
-									  
-															  <!-- Product Information -->
-															  <td>
-																<p><strong>Product:</strong> <%= item.product.product_name %></p>
-																<p><strong>Color:</strong> <%= item.product.variants[0].color %></p>
-																<p><strong>Size:</strong> <%= item.product.variants[0].size %></p>
-																<p><strong>Quantity:</strong> <%= item.quantity %></p>
-															  </td>
-									  
-															  <!-- Delivery Address -->
-															  <td>
-																<h5>Delivery Address</h5>
-																<div class="address-info mt-3">
-																  <p><strong><%= order.address.fullName %></strong></p>
-																  <p><%= order.address.streetAddress %>, <%= order.address.city %></p>
-																  <p>Phone number: <%= order.address.phone %></p>
+																	<!-- Order Summary -->
+																	<div class="order-summary mt-3">
+																		<h6>Order Summary</h6>
+																		<table class="table table-bordered">
+																			<tr>
+																				<td>Subtotal:</td>
+																				<td>₹<%= subtotal.toFixed(2) %></td>
+																			</tr>
+																			<% if (order.couponCode) { %>
+																				<tr>
+																					<td>Coupon Applied:</td>
+																					<td>
+																						<span class="badge bg-info"><%= order.couponCode %></span>
+																						(<%= ((order.discountAmount / subtotal) * 100).toFixed(2) %>% OFF)
+																					</td>
+																				</tr>
+																				<tr>
+																					<td>Coupon Discount:</td>
+																					<td>-₹<%= order.discountAmount.toFixed(2) %></td>
+																				</tr>
+																			<% } %>
+																			<tr>
+																				<td><strong>Total Amount:</strong></td>
+																				<td><strong>₹<%= order.totalAmount.toFixed(2) %></strong></td>
+																			</tr>
+																		</table>
+																	</div>
+
+																	<!-- Payment and Delivery Information -->
+																	<div class="payment-delivery-info mt-3">
+																		<h6>Payment and Delivery Information</h6>
+																		<table class="table table-bordered">
+																			<tr>
+																				<td><strong>Payment Method:</strong></td>
+																				<td>
+																					<% if (order.paymentMethod === 'Cash on Delivery') { %>
+																						<span class="badge bg-warning text-dark">Cash on Delivery</span>
+																					<% } else if (order.paymentMethod === 'Bank Transfer') { %>
+																						<span class="badge bg-primary">Bank Transfer (Razorpay)</span>
+																					<% } %>
+																				</td>
+																			</tr>
+																			<tr>
+																				<td><strong>Order Status:</strong></td>
+																				<td>
+																					<span class="badge 
+																						<%= order.orderStatus === 'Pending' ? 'bg-warning' : 
+																							order.orderStatus === 'Processing' ? 'bg-info' : 
+																							order.orderStatus === 'Shipped' ? 'bg-primary' : 
+																							order.orderStatus === 'Delivered' ? 'bg-success' : 
+																							order.orderStatus === 'Cancelled' ? 'bg-danger' : 
+																							'bg-secondary' %>">
+																						<%= order.orderStatus %>
+																					</span>
+																				</td>
+																			</tr>
+																			<tr>
+																				<td><strong>Delivery Address:</strong></td>
+																				<td>
+																					<%= order.address.fullName %><br>
+																					<%= order.address.streetAddress %>, <%= order.address.city %><br>
+																					<%= order.address.state %>, <%= order.address.zipCode %><br>
+																					<%= order.address.country %><br>
+																					Phone: <%= order.address.phone %>
+																				</td>
+																			</tr>
+																		</table>
+																	</div>
 																</div>
-															  </td>
-															</tr>
-														  <% }) %>
-														</tbody>
-													  </table>
-													</div>
-												  </td>
-												</tr>
-											  <% }) %>
-											</tbody>
-										  </table>
+															</td>
+														</tr>
+													<% }) %>
+												</tbody>
+											</table>
 										<% } else { %>
-										  <p>No orders placed yet.</p>
+											<p>No orders placed yet.</p>
 										<% } %>
-									  </div>
-									  
-									
+									</div>
 
 									<div class="tab-pane fade" id="address" role="tabpanel"
 										aria-labelledby="address-tab">
-										<h2>Your Addresses</h2>
+										<h4 class="text-center mt-4 mb-4">Your Addresses</h4>
 										<p>The following addresses will be used at checkout by default.</p>
 										<button class="btn btn-primary" id="toggle-add-address">Add Address</button>
 
@@ -200,7 +293,7 @@
 
 									<div class="tab-pane fade" id="profile" role="tabpanel"
 										aria-labelledby="profile-tab">
-										<h2>User Profile</h2>
+										<h4 class="text-center mt-4 mb-4">User Profile</h4>
 										<div id="userProfile">
 											<p><strong>Name:</strong> <span id="userName">
 													<%= User.name %>
@@ -236,7 +329,7 @@
 																	value="<%= User.name %>" required>
 															</div>
 															<div class="form-group">
-																<label  class="pl-4" for="editEmail">Email</label>
+																<label class="pl-4" for="editEmail">Email</label>
 																<input type="email" id="editEmail" class="form-control"
 																	placeholder="Enter your email"
 																	value="<%= User.email %>" required>
@@ -267,23 +360,31 @@
 														</button>
 													</div>
 													<div class="modal-body">
-													<!-- Normal Password Change Form -->
-													<form id="changePasswordForm" class="form">
-														<div id="normalPasswordChange">
-															<div class="form-group">
-																<label  class="pl-4" for="currentPasswordChange">Current Password</label>
-																<input type="password" id="currentPasswordChange" class="form-control" required>
+														<!-- Normal Password Change Form -->
+														<form id="changePasswordForm" class="form">
+															<div id="normalPasswordChange">
+																<div class="form-group">
+																	<label class="pl-4"
+																		for="currentPasswordChange">Current
+																		Password</label>
+																	<input type="password" id="currentPasswordChange"
+																		class="form-control" required>
+																</div>
+																<div class="form-group">
+																	<label class="pl-4" for="newPasswordChange">New
+																		Password</label>
+																	<input type="password" id="newPasswordChange"
+																		class="form-control" required>
+																</div>
+																<div class="form-group">
+																	<label class="pl-4"
+																		for="confirmPasswordChange">Confirm New
+																		Password</label>
+																	<input type="password" id="confirmPasswordChange"
+																		class="form-control" required>
+																</div>
 															</div>
-															<div class="form-group">
-																<label  class="pl-4" for="newPasswordChange">New Password</label>
-																<input type="password" id="newPasswordChange" class="form-control" required>
-															</div>
-															<div class="form-group">
-																<label  class="pl-4" for="confirmPasswordChange">Confirm New Password</label>
-																<input type="password" id="confirmPasswordChange" class="form-control" required>
-															</div>
-														</div>
-													</form>
+														</form>
 
 
 														<!-- Forgot Password Flow -->
@@ -291,7 +392,7 @@
 															<!-- Step 1: Email Entry -->
 															<form id="forgotPasswordForm" class="form">
 																<div class="form-group">
-																	<label  class="pl-4" for="forgotEmail">Email</label>
+																	<label class="pl-4" for="forgotEmail">Email</label>
 																	<input type="email" id="forgotEmail"
 																		class="form-control"
 																		placeholder="Enter your email" required>
@@ -308,7 +409,8 @@
 																		placeholder="Enter the OTP" required>
 																</div>
 																<div class="form-group">
-																	<label  class="pl-4" for="newPasswordForgot">New Password</label>
+																	<label class="pl-4" for="newPasswordForgot">New
+																		Password</label>
 																	<input type="password" id="newPasswordForgot"
 																		class="form-control"
 																		placeholder="Enter your new password" required>
@@ -332,6 +434,50 @@
 											</div>
 										</div>
 									</div>
+
+									<div class="tab-pane fade" id="wallet" role="tabpanel" aria-labelledby="wallet-tab">
+										<h4 class="text-center mt-4 mb-4">Your Wallet</h4>
+										<!-- Wallet balance display -->
+										<p><strong>Current Balance:</strong> ₹<span id="walletBalance">5000.00</span></p>
+									
+										<!-- Add money to wallet -->
+										<h5 class="mt-4">Add Money to Wallet</h5>
+										<form id="addMoneyForm">
+											<div class="mb-3">
+												<label for="amountToAdd" class="form-label">Amount:</label>
+												<input type="number" class="form-control" id="amountToAdd" min="0" step="0.01">
+											</div>
+											<button type="button" id="payButton" class="btn btn-primary">Add Money</button>
+										</form>
+									
+										<!-- Wallet transactions history -->
+										<h5 class="mt-4">Transaction History</h5>
+										<% if (walletTransactions.length > 0) { %>
+										<table class="table table-bordered text-center">
+											<thead>
+												<tr>
+													<th>Date</th>
+													<th>Transaction Type</th>
+													<th>Amount</th>
+													<th>Status</th>
+												</tr>
+											</thead>
+											<tbody>
+												<% walletTransactions.forEach(transaction => { %>
+												<tr>
+													<td><%= new Date(transaction.date).toLocaleDateString() %></td>
+													<td><%= transaction.type %></td>
+													<td>₹<%= transaction.amount.toFixed(2) %></td>
+													<td><%= transaction.status %></td>
+												</tr>
+												<% }) %>
+											</tbody>
+										</table>
+										<% } else { %>
+											<p>No transactions yet.</p>
+										<% } %>
+									</div>
+									
 
 
 
@@ -585,79 +731,79 @@
 				$('#editProfileModal').modal('show');
 			});
 			document.getElementById('saveProfileChanges').addEventListener('click', function () {
-    const name = document.getElementById('editName').value;
-    const email = document.getElementById('editEmail').value;
+				const name = document.getElementById('editName').value;
+				const email = document.getElementById('editEmail').value;
 
-    fetch('/profile/profile/edit', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email }),
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json(); // Parse JSON response only if OK
-        } else {
-            return response.json().then(err => {
-                throw new Error(err.message); // Throw error with specific message
-            });
-        }
-    })
-    .then(data => {
-        swal("Profile Updated!", data.message, "success")
-            .then(() => {
-                location.reload();
-            });
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        swal("Error!", error.message || "An error occurred while updating your profile.", "error");
-    });
-});
+				fetch('/profile/profile/edit', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ name, email }),
+				})
+					.then(response => {
+						if (response.ok) {
+							return response.json(); // Parse JSON response only if OK
+						} else {
+							return response.json().then(err => {
+								throw new Error(err.message); // Throw error with specific message
+							});
+						}
+					})
+					.then(data => {
+						swal("Profile Updated!", data.message, "success")
+							.then(() => {
+								location.reload();
+							});
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						swal("Error!", error.message || "An error occurred while updating your profile.", "error");
+					});
+			});
 
 			// Change Password Modal - Save New Password
 			document.getElementById('savePasswordChanges').addEventListener('click', function () {
-    const currentPassword = document.getElementById('currentPasswordChange').value.trim();
-    const newPassword = document.getElementById('newPasswordChange').value.trim();
-    const confirmPassword = document.getElementById('confirmPasswordChange').value.trim();
+				const currentPassword = document.getElementById('currentPasswordChange').value.trim();
+				const newPassword = document.getElementById('newPasswordChange').value.trim();
+				const confirmPassword = document.getElementById('confirmPasswordChange').value.trim();
 
-    // Check if any field is empty
-    if (!currentPassword || !newPassword || !confirmPassword) {
-        swal("Error!", "Please fill in all fields.", "error");
-        return;
-    }
+				// Check if any field is empty
+				if (!currentPassword || !newPassword || !confirmPassword) {
+					swal("Error!", "Please fill in all fields.", "error");
+					return;
+				}
 
-    // Check if new password and confirm password match
-    if (newPassword !== confirmPassword) {
-        swal("Error!", "New password and confirm password do not match.", "error");
-        return;
-    }
+				// Check if new password and confirm password match
+				if (newPassword !== confirmPassword) {
+					swal("Error!", "New password and confirm password do not match.", "error");
+					return;
+				}
 
-    // Send the fetch request to update password
-    fetch('/profile/password/change', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ currentPassword, newPassword }),
-    })
-    .then(response => response.json().then(data => ({ status: response.status, body: data })))
-    .then(({ status, body }) => {
-        if (status === 200) {
-            swal("Password Changed!", "Your password has been successfully changed.", "success")
-                .then(() => {
-                    $('#changePasswordModal').modal('hide'); // Hide the modal if using Bootstrap
-                });
-        } else {
-            swal("Error!", body.message || "Failed to change password. Please check your current password.", "error");
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        swal("Error!", "An error occurred while changing your password.", "error");
-    });
-});
+				// Send the fetch request to update password
+				fetch('/profile/password/change', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({ currentPassword, newPassword }),
+				})
+					.then(response => response.json().then(data => ({ status: response.status, body: data })))
+					.then(({ status, body }) => {
+						if (status === 200) {
+							swal("Password Changed!", "Your password has been successfully changed.", "success")
+								.then(() => {
+									$('#changePasswordModal').modal('hide'); // Hide the modal if using Bootstrap
+								});
+						} else {
+							swal("Error!", body.message || "Failed to change password. Please check your current password.", "error");
+						}
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						swal("Error!", "An error occurred while changing your password.", "error");
+					});
+			});
 
 
 			// Send OTP for Forgot Password
@@ -806,32 +952,107 @@
 
 
 		<script>
-			
+
 			document.addEventListener('DOMContentLoaded', function () {
-    // Select all toggle details buttons
-    const detailButtons = document.querySelectorAll('.toggle-details-btn');
+				// Select all toggle details buttons
+				const detailButtons = document.querySelectorAll('.toggle-details-btn');
 
-    // Add click event to each button
-    detailButtons.forEach(button => {
-        button.addEventListener('click', function () {
-            // Get the corresponding details row ID
-            const orderId = button.getAttribute('data-order-id');
-            const detailsRow = document.getElementById(`details-${orderId}`);
+				// Add click event to each button
+				detailButtons.forEach(button => {
+					button.addEventListener('click', function () {
+						// Get the corresponding details row ID
+						const orderId = button.getAttribute('data-order-id');
+						const detailsRow = document.getElementById(`details-${orderId}`);
 
-            // Use getComputedStyle to check the current display property
-            const currentDisplay = window.getComputedStyle(detailsRow).display;
+						// Use getComputedStyle to check the current display property
+						const currentDisplay = window.getComputedStyle(detailsRow).display;
 
-            // Toggle the visibility of the details row
-            if (currentDisplay === 'none') {
-                detailsRow.style.display = 'table-row';
-            } else {
-                detailsRow.style.display = 'none';
-            }
-        });
-    });
-});
+						// Toggle the visibility of the details row
+						if (currentDisplay === 'none') {
+							detailsRow.style.display = 'table-row';
+						} else {
+							detailsRow.style.display = 'none';
+						}
+					});
+				});
+			});
 
 		</script>
+
+<script>
+	document.getElementById('payButton').addEventListener('click', function(event) {
+		event.preventDefault();
+		const amountToAdd = parseFloat(document.getElementById('amountToAdd').value);
+	
+		if (amountToAdd && amountToAdd > 0) {
+			// Create Razorpay order via your backend
+			fetch("/create-order", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({
+					amount: amountToAdd
+				})
+			})
+			.then(response => response.json())
+			.then(data => {
+				// Razorpay options
+				const options = {
+					"key": "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay Key ID
+					"amount": data.amount, // Amount in paise (for Razorpay)
+					"currency": data.currency,
+					"name": "Your Website",
+					"description": "Wallet Recharge",
+					"order_id": data.id, // Order ID from backend
+					"handler": function (response) {
+						// Handle successful payment here
+						alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+	
+						// Optionally, update wallet balance here
+						let currentBalance = parseFloat(document.getElementById('walletBalance').innerText);
+						currentBalance += amountToAdd;
+						document.getElementById('walletBalance').innerText = currentBalance.toFixed(2);
+	
+						// Optionally, send payment details to server for final processing
+						fetch("/verify-payment", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json"
+							},
+							body: JSON.stringify({
+								razorpayPaymentId: response.razorpay_payment_id,
+								razorpayOrderId: response.razorpay_order_id,
+								razorpaySignature: response.razorpay_signature,
+								amount: amountToAdd
+							})
+						})
+						.then(() => {
+							alert("Payment Verified and Wallet Updated");
+						})
+						.catch(err => {
+							alert("Payment Verification Failed");
+						});
+					},
+					"prefill": {
+						"name": "<%= User.name %>", // Prefill user details
+						"email": "<%= User.email %>"
+					},
+					"theme": {
+						"color": "#3399cc"
+					}
+				};
+	
+				const rzp1 = new Razorpay(options);
+				rzp1.open();
+			})
+			.catch(error => console.error("Error creating Razorpay order:", error));
+		} else {
+			alert("Please enter a valid amount.");
+		}
+	});
+	</script>
+
 
 
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

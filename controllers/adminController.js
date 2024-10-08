@@ -387,55 +387,56 @@ const admin_get_logout=(req, res) => {
 const admin_edit_product=async (req,res)=>{
   const {id} = req.params;
   const product=await Product.findById(id).populate('category_id').populate('brand_id')
-  const categories = await Category.find(); // Fetch categories from the DB
+  const categories = await Category.find();
   const brands = await Brand.find();
-  // res.json(product)
   res.render('admin_editproduct',{product,categories,brands})
 }
 
-// Controller to update product information
+
+
 const admin_update_product = async (req, res) => {
   try {
       const productId = req.params.id;
-      const { product_name, product_highlights, product_description } = req.body;
+      const productData = req.body;
+      const variants = productData.variants || [];
 
-      // Process uploaded files using Multer
-      const productImages = req.files['productImage'] || []; // Files for 'productImage' field
-      const additionalImages = req.files['additionalImages'] || []; // Files for 'additionalImages' field
-
-      // Get the current product to retain existing images if no new images are uploaded
+      // Check if the product exists
       const product = await Product.findById(productId);
-
       if (!product) {
-          return res.status(404).json({ message: 'Product not found' });
+          return res.status(404).json({ message: 'Product not found.' });
       }
 
-      // Get the file paths from the uploaded files
-      const productImagePaths = productImages.map(file => file.path);
-      const additionalImagePaths = additionalImages.map(file => file.path);
+      // Process uploaded images for each variant
+      const productImagePaths = req.files['variant_images_1[]'] ? req.files['variant_images_1[]'].map(file => file.path) : [];
+      // Add more image processing as necessary
 
-      // Update the product details, ensuring that images are updated only if new ones are provided
-      const updatedProduct = await Product.findByIdAndUpdate(
-          productId,
-          {
-              product_name: product_name || product.product_name,
-              product_highlights: product_highlights || product.product_highlights,
-              product_description: product_description || product.product_description,
-              variants: product.variants.map((variant, index) => ({
-                  ...variant,
-                  images: productImagePaths.length > 0 ? productImagePaths : variant.images // Use new images if available
-              })),
-              additionalImages: additionalImagePaths.length > 0 ? additionalImagePaths : product.additionalImages // Use new additional images if available
-          },
-          { new: true } // Return the updated product
-      );
+      // Update product data
+      const updatedVariants = [];
+      for (let i = 0; i < Math.max(product.variants.length, variants.length); i++) {
+          updatedVariants[i] = {
+              ...product.variants[i], // Keep existing data
+              price: variants[i]?.price || product.variants[i].price,
+              stock: variants[i]?.stock || product.variants[i].stock,
+              size: variants[i]?.size || product.variants[i].size,
+              color: variants[i]?.color || product.variants[i].color,
+              images: productImagePaths.length > 0 ? productImagePaths : (product.variants[i]?.images || [])
+          };
+      }
 
-      res.status(200).json({ success: true, message: 'Product updated successfully', updatedProduct });
+      // Save updated product details
+      product.product_name = productData.product_name;
+      product.product_highlights = productData.product_highlights;
+      product.product_description = productData.product_description;
+      product.variants = updatedVariants;
+
+      await product.save();
+      res.status(200).json({ message: 'Product updated successfully!', product });
   } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Server error' });
+      res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 
 
 const ordermanagment=async(req,res)=>{

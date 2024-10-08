@@ -3,23 +3,21 @@ const path = require("path");
 const app = express();
 const session = require("express-session");
 const nocache = require("nocache");
-const port = 4000;
 const mongoose = require("mongoose");
 
 require('dotenv').config();
-const passport=require("./config/passport")
-const userRouter=require('./router/userRouter');
-const googleRouter=require('./router/googleRouter')
-const adminRouter=require('./router/adminRouter')
-const brandRouter=require('./router/brandRouter')
-const profileRouter=require('./router/profileRouter');
-const cartRouter=require('./router/cartRouter')
+const passport = require("./config/passport")
+const userRouter = require('./router/userRouter');
+const googleRouter = require('./router/googleRouter')
+const adminRouter = require('./router/adminRouter')
+const brandRouter = require('./router/brandRouter')
+const profileRouter = require('./router/profileRouter');
+const cartRouter = require('./router/cartRouter')
 const wishlistRouter = require('./router/wishlistRouter');
-
-
-
-
-
+const coupenRouter = require('./router/coupenRouter');
+// Add new routers
+const paymentRouter = require('./router/paymentRouter');
+const walletRouter = require('./router/walletRouter');
 
 mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
 app.use('/uploads',express.static('uploads'))
@@ -32,16 +30,22 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.set('views', path.join(__dirname, 'views'));
 app.set("view engine", "ejs");
-app.use('/user',userRouter)
-app.use('/auth',googleRouter)
-app.use('/admin',adminRouter)
-app.use('/brand',brandRouter)
-app.use('/profile',profileRouter)
+app.use('/user', userRouter)
+app.use('/auth', googleRouter)
+app.use('/admin', adminRouter)
+app.use('/brand', brandRouter)
+app.use('/profile', profileRouter)
 app.use('/api/cart', cartRouter);
 app.use('/wishlist', wishlistRouter);
+app.use('/coupons', coupenRouter);
+// Add new routes
+app.use('/payments', paymentRouter);
+app.use('/wallet', walletRouter);
 
-
-
+app.use((req, res, next) => {
+    res.locals.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
+    next();
+});
 
 app. get('/',(req,res)=>{
   res.redirect('/user/')
@@ -50,7 +54,26 @@ app.get('/*',(req,res)=>{
   res.render('error')
 })
 
+const PORT = process.env.PORT || 3001;
+const server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+server.on('error', (error) => {
+    if (error.syscall !== 'listen') {
+        throw error;
+    }
+
+    switch (error.code) {
+        case 'EACCES':
+            console.error(`Port ${PORT} requires elevated privileges`);
+            process.exit(1);
+            break;
+        case 'EADDRINUSE':
+            console.error(`Port ${PORT} is already in use`);
+            process.exit(1);
+            break;
+        default:
+            throw error;
+    }
 });

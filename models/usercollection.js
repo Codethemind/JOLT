@@ -1,4 +1,3 @@
-
 const mongoose=require('mongoose')
 
 const userschema=mongoose.Schema({
@@ -20,8 +19,8 @@ const userschema=mongoose.Schema({
   isBlock:{
     type:Boolean,
     default:false
-  }
-
+  },
+  usedCoupons: [String]
 })
 
 const user=mongoose.model('user',userschema);

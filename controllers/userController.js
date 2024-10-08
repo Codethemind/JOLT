@@ -5,6 +5,7 @@ const OTP =require('../models/otpcollection')
 const Category =require('../models/catagorycollection')
 const Product=require('../models/poductcollection')
 const Cart=require('../models/cartCollection')
+const Wallet = require('../models/walletCollection')
 
 
 
@@ -413,41 +414,59 @@ const getlogout=(req,res)=>{
 
 const get_myaccount = async (req, res) => {
   try {
-      // Check if session exists
-      if (!req.session.user) {
-          console.error('User not authenticated');
-          return res.status(401).send('User not authenticated');
-      }
+    if (!req.session.user) {
+      console.error('User not authenticated');
+      return res.status(401).send('User not authenticated');
+    }
 
-      // Log user ID from session
-      console.log('Fetching user:', req.session.user);
+    console.log('Fetching user:', req.session.user);
 
-      // Fetch the user from the database
-      const User = await user.findById(req.session.user);
-      if (!User) {
-          console.error('User not found');
-          return res.status(404).send('User not found');
-      }
+    const User = await user.findById(req.session.user);
+    if (!User) {
+      console.error('User not found');
+      return res.status(404).send('User not found');
+    }
 
-      // Log that the user was found
-      console.log('User found:', User);
+    console.log('User found:', User);
 
-      // Fetch the user's orders
-      const orders = await Order.find({ user: req.session.user })
-          .populate('items.product')
-          .populate('address');
+    const orders = await Order.find({ user: req.session.user })
+      .populate({
+        path: 'items.product',
+        populate: {
+          path: 'variants.offer'
+        }
+      })
+      .populate('address');
 
-          const addresses=await Address.find({userId:req.session.user})
+    console.log('Orders found:', JSON.stringify(orders, null, 2));
 
-      // Log the retrieved orders
-      console.log('Orders found:', orders);
+    // Log each order's items and their variants
+    orders.forEach((order, index) => {
+      console.log(`Order ${index + 1}:`);
+      order.items.forEach((item, itemIndex) => {
+        console.log(`  Item ${itemIndex + 1}:`);
+        console.log('    Product:', item.product);
+        console.log('    Variant:', item.product.variants.find(v => v._id.toString() === item.variantId));
+      });
+    });
 
-      // Render the 'myaccount' page with user and orders data
-      res.render('myaccount', { User, orders,addresses });
+    const addresses = await Address.find({userId: req.session.user});
+
+    const wallet = await Wallet.findOne({ userId: req.session.user });
+    const walletTransactions = wallet ? wallet.transactions : [];
+
+    res.render('myaccount', { 
+      User, 
+      orders, 
+      addresses,
+      wallet,
+      walletTransactions,
+      RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID
+    });
 
   } catch (error) {
-      console.error('Error in get_myaccount:', error.message);
-      res.status(500).send('Server Error');
+    console.error('Error in get_myaccount:', error.message);
+    res.status(500).send('Server Error');
   }
 };
 
@@ -522,5 +541,84 @@ const deleteaddress=async (req, res) => {
   }
 }
 
+const post_forgot_password = async (req, res) => {
+  const { email } = req.body;
 
-  module.exports={deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout};
+  try {
+    const userRecord = await user.findOne({ email });
+    if (!userRecord) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate OTP
+    const otp = otpGenerator.generate(6, {
+      digits: true,
+      specialChars: false,
+      upperCase: false,
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+    });
+
+    // Save OTP to database
+    const otpRecord = new OTP({ email, otp });
+    await otpRecord.save();
+
+    // Send OTP email
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Password Reset OTP",
+      text: `Your OTP for password reset is: ${otp}`,
+    };
+    await transporter.sendMail(mailOptions);
+
+    // Store email in session for later use
+    req.session.resetEmail = email;
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error in forgot password:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
+const post_verify_reset_otp = async (req, res) => {
+  const { otp } = req.body;
+  const email = req.session.resetEmail;
+
+  try {
+    const otpRecord = await OTP.findOne({ email, otp });
+    if (!otpRecord) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // OTP is valid, allow password reset
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error in OTP verification:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
+const post_reset_password = async (req, res) => {
+  const { newPassword } = req.body;
+  const email = req.session.resetEmail;
+
+  try {
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password
+    await user.findOneAndUpdate({ email }, { password: hashedPassword });
+
+    // Clear the session
+    delete req.session.resetEmail;
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error in password reset:", error);
+    res.status(500).json({ error: "An error occurred" });
+  }
+};
+
+  module.exports={deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout, post_forgot_password, post_verify_reset_otp, post_reset_password};
