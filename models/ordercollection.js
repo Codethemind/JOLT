@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const orderSchema = new mongoose.Schema({
     orderId: {
         type: String,
-        unique: true,
+        required: true,
+        unique: true
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -70,6 +71,20 @@ const orderSchema = new mongoose.Schema({
         shipped: { type: Date },
         delivered: { type: Date },
         cancelled: { type: Date }
+    },
+    returnStatus: {
+        type: String,
+        enum: ['None', 'Pending', 'Accepted', 'Rejected'],
+        default: 'None' // Default value when no return has been initiated
+    },
+    returnRequestDate: {
+        type: Date // Date when return request was made
+    },
+    returnAcceptedDate: {
+        type: Date // Date when return request was accepted
+    },
+    returnRejectedDate: {
+        type: Date // Date when return request was rejected
     },
     placedAt: {
         type: Date,

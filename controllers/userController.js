@@ -111,7 +111,7 @@ const otps = {};
             email,
             password: hashedPassword,
         });
-        console.log(hashedPassword);
+        
         
 
         // Generate OTP and save it
@@ -239,7 +239,7 @@ const post_login = async (req, res) => {
         specialChars: false,
         alphabets: false,
       });
-      console.log('Generated OTP:', otp);
+      
   
       // Find if an OTP record exists for the email
       const otpRecord = await OTP.findOne({ email });
@@ -262,7 +262,7 @@ const post_login = async (req, res) => {
       // Send OTP email
       await transporter.sendMail(mailOptions);
   
-      console.log('OTP resent to email:', email);
+      
       res.json({ success: true });
     } catch (error) {
       console.error('Error resending OTP:', error);
@@ -415,43 +415,31 @@ const getlogout=(req,res)=>{
 const get_myaccount = async (req, res) => {
   try {
     if (!req.session.user) {
-      console.error('User not authenticated');
+
       return res.status(401).send('User not authenticated');
     }
 
-    console.log('Fetching user:', req.session.user);
-
     const User = await user.findById(req.session.user);
     if (!User) {
-      console.error('User not found');
       return res.status(404).send('User not found');
     }
 
-    console.log('User found:', User);
+    let orders = await Order.find({ user: req.session.user })
+  .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+  .populate({
+    path: 'items.product',
+    populate: {
+      path: 'variants.offer'
+    }
+  })
+  .populate('address');
+  
 
-    const orders = await Order.find({ user: req.session.user })
-      .populate({
-        path: 'items.product',
-        populate: {
-          path: 'variants.offer'
-        }
-      })
-      .populate('address');
-
-    console.log('Orders found:', JSON.stringify(orders, null, 2));
-
-    // Log each order's items and their variants
     orders.forEach((order, index) => {
-      console.log(`Order ${index + 1}:`);
       order.items.forEach((item, itemIndex) => {
-        console.log(`  Item ${itemIndex + 1}:`);
-        console.log('    Product:', item.product);
-        console.log('    Variant:', item.product.variants.find(v => v._id.toString() === item.variantId));
       });
     });
-
     const addresses = await Address.find({userId: req.session.user});
-
     const wallet = await Wallet.findOne({ userId: req.session.user });
     const walletTransactions = wallet ? wallet.transactions : [];
 
@@ -472,9 +460,7 @@ const get_myaccount = async (req, res) => {
 
 
 
-const postaddressadd=async (req, res) => {
-  console.log('add');
-  
+const postaddressadd=async (req, res) => {  
   const { fullName, streetAddress, city, state, zipCode, country, phone } = req.body;
   const userId = req.session.user; // Assuming userId is available here
 
@@ -499,7 +485,6 @@ const postaddressadd=async (req, res) => {
 }
 
 const postaddressedit=async (req, res) => {
-  console.log(63456);
   
   try {
       const addressId = req.params.id;
@@ -528,7 +513,6 @@ const postaddressedit=async (req, res) => {
 }
 
 const deleteaddress=async (req, res) => {
-  console.log(`Deleting address with ID: ${req.params.id}`);
   try {
       const result = await Address.findByIdAndDelete(req.params.id);
       if (!result) {

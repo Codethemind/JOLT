@@ -635,648 +635,6 @@
   </div>
   
 
-<%- include('./partial/header') %>
-
-
-  <header class="header header-intro-clearance header-4">
-    <div class="header-top">
-      <div class="container p-3">
-        <div class="header-left">
-          <a href="tel:#"><i class="icon-phone"></i>Call: 9747604603</a>
-        </div>
-        <!-- End .header-left -->
-
-        <div class="header-right">
-          <ul class="top-menu">
-            <li>
-              <!-- <a href="#">Links</a> -->
-              <ul>
-                <li>
-                  <div class="header-">
-                    <a href="#">USD</a>
-                  </div>
-                </li>
-                <li>
-                  <div class="header-">
-                    <a href="#">English</a>
-                  </div>
-                </li>
-                <% if(User){ %>
-
-                <li>
-                  <a href="#"><%= User.email %></a>
-                </li>
-                <li>
-                  <a href="/user/logout">Log out</a>
-                </li>
-                <% }else{ %>
-                           
-                  <li>
-                    <a href="#signin-modal" data-toggle="modal"
-                      >Sign in / Sign up</a
-                    >
-                  </li>
-                  <% } %>
-                
-              </ul>
-            </li>
-          </ul>
-          <!-- End .top-menu -->
-        </div>
-        <!-- End .header-right -->
-      </div>
-      <!-- End .container -->
-    </div>
-    <!-- End .header-top -->
-
-    <div class="header-middle">
-      <div class="container ">
-        <div class="header-left ">
-          <!-- <button class="mobile-menu-toggler">
-                            <span class="sr-only">Toggle mobile menu</span>
-                            <i class="icon-bars"></i>
-                        </button> -->
-
-          <a href="index.html" class="">
-            <img
-              src="/images/demos/demo-4/logo.png"
-              alt="JOLT Logo"
-              width="105"
-              height="15"
-            />
-          </a>
-        </div>
-        <!-- End .header-left -->
-
-        <div class="header-center">
-          <div
-            class="header-search header-search-extended header-search-visible d-none d-lg-block"
-          >
-            <a href="#" class="search-toggle" role="button">
-              <i class="icon-search"></i>
-            </a>
-            <form action="/user/productpage" method="get">
-              <div class="header-search-wrapper search-wrapper-wide">
-                <label for="q" class="sr-only">Search</label>
-                <button class="btn btn-primary" type="submit">
-                  <i class="icon-search"></i>
-                </button>
-                <input
-                  type="search"
-                  class="form-control"
-                  name="search" <!-- Change the name attribute to "search" -->
-                  id="q"
-                  placeholder="Search product ..."
-                  required
-                />
-              </div>
-              <!-- End .header-search-wrapper -->
-            </form>
-          </div>
-          <!-- End .header-search -->
-        </div>
-        
-
-        <div class="header-right">
-          <div class="wishlist">
-            <a href="/wishlist/" title="Wishlist">
-              <div class="icon">
-                <i class="icon-heart-o"></i>
-                <!-- <span class="wishlist-count badge">3</span> -->
-              </div>
-              <p>Wishlist</p>
-            </a>
-          </div>
-          <!-- End .compare-dropdown -->
-
-          <div class="dropdown cart-dropdown">
-            <a href="/api/cart" class="dropdown-toggle">
-              <div class="icon">
-                <i class="icon-shopping-cart"></i>
-                <!-- <span class="cart-count">2</span> -->
-              </div>
-              <p>Cart</p>
-            </a>
-          </div>
-          <!-- End .cart-dropdown -->
-        </div>
-        <!-- End .header-right -->
-      </div>
-      <!-- End .container -->
-    </div>
-    <!-- End .header-middle -->
-
-    <div class="header-bottom sticky-header">
-      <div class="container pl-0 bg-light">
-        <div class="header-left">
-          <div class="dropdown category-dropdown">
-            <a
-              href="#"
-              class="dropdown-toggle"
-              role="button"
-              data-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              data-display="static"
-              title="Browse Categories"
-            >
-              Browse Categories <i class="icon-angle-down"></i>
-            </a>
-
-            <div class="dropdown-menu">
-              <nav class="side-nav">
-                <ul class="menu-vertical sf-arrows">
-                  <% categories.forEach(category => { %>
-                      <li><a href="/user/category/<%= category._id %>"><%= category.name %></a></li>
-                  <% }) %>
-              </ul>
-                <!-- End .menu-vertical -->
-              </nav>
-              
-              <!-- End .side-nav -->
-            </div>
-            <!-- End .dropdown-menu -->
-          </div>
-          <!-- End .category-dropdown -->
-        </div>
-        <!-- End .header-left -->
-
-        <div class="header-center">
-          <nav class="main-nav">
-            <ul class="menu sf-arrows">
-              <li class="megamenu-container active"><a href="/user/" class="">Home</a></li>
-              <li> <a href="/user/productpage" class="">Product</a></li>
-              <li><a href="#" class="sf-with-ul">Pages</a>
-                <ul>
-                  <li><a href="/user/about" class="">About</a> </li>
-                  <li><a href="/user/contact" class="">Contact</a> </li>
-                  <!-- <li><a href="login.html">Login</a></li> -->
-                  <li><a href="/user/faq">FAQs</a></li>
-                  <li><a href="/user/error">Error 404</a></li>
-                  <li><a href="/user/Myaccount">My account</a></li>
-                  <!-- <li><a href="coming-soon.html">Coming Soon</a></li> -->
-                </ul>
-              </li>
-            </ul>
-            <!-- End .menu -->
-          </nav>
-          <!-- End .main-nav -->
-        </div>
-        <!-- End .header-center -->
-
-        <div class="header-right">
-          <i class="la la-lightbulb-o"></i>
-          <p>Clearance<span class="highlight">&nbsp;Up to 30% Off</span></p>
-        </div>
-      </div>
-      <!-- End .container -->
-    </div>
-    <!-- End .header-bottom -->
-  </header>
-  <!-- End .header -->
-
-
-
-
-
-
-  
-  <div class="page-wrapper">
-  <main class="main">
-    <div class="intro-slider-container mb-5">
-      <div
-        class="intro-slider owl-carousel owl-theme owl-nav-inside owl-light"
-        data-toggle="owl"
-        data-owl-options='{
-                        "dots": true,
-                        "nav": false, 
-                        "responsive": {
-                            "1200": {
-                                "nav": true,
-                                "dots": false
-                            }
-                        }
-                    }'
-      >
-        <div
-          class="intro-slide"
-          style="
-            background-image: url(/images/demos/demo-4/slider/slide-1.png);
-          "
-        >
-          <div class="container intro-content">
-            <div class="row justify-content-end">
-              <div class="col-auto col-sm-7 col-md-6 col-lg-5">
-                <h3 class="intro-subtitle text-third">Deals and Promotions</h3>
-                <!-- End .h3 intro-subtitle -->
-                <h1 class="intro-title">Beats by</h1>
-                <h1 class="intro-title">Dre Studio 3</h1>
-                <!-- End .intro-title -->
-
-                <div class="intro-price">
-                  <sup class="intro-old-price">$349,95</sup>
-                  <span class="text-third"> $279<sup>.99</sup> </span>
-                </div>
-                <!-- End .intro-price -->
-
-                <a href="category.html" class="btn btn-primary btn-round">
-                  <span>Shop More</span>
-                  <i class="icon-long-arrow-right"></i>
-                </a>
-              </div>
-              <!-- End .col-lg-11 offset-lg-1 -->
-            </div>
-            <!-- End .row -->
-          </div>
-          <!-- End .intro-content -->
-        </div>
-        <!-- End .intro-slide -->
-
-        <div
-          class="intro-slide"
-          style="
-            background-image: url(/images/demos/demo-4/slider/slide-2.png);
-          "
-        >
-          <div class="container intro-content">
-            <div class="row justify-content-end">
-              <div class="col-auto col-sm-7 col-md-6 col-lg-5">
-                <h3 class="intro-subtitle text-primary">New Arrival</h3>
-                <!-- End .h3 intro-subtitle -->
-                <h1 class="intro-title">
-                  Apple iPad Pro <br />12.9 Inch, 64GB
-                </h1>
-                <!-- End .intro-title -->
-
-                <div class="intro-price">
-                  <sup>Today:</sup>
-                  <span class="text-primary"> $999<sup>.99</sup> </span>
-                </div>
-                <!-- End .intro-price -->
-
-                <a href="category.html" class="btn btn-primary btn-round">
-                  <span>Shop More</span>
-                  <i class="icon-long-arrow-right"></i>
-                </a>
-              </div>
-              <!-- End .col-md-6 offset-md-6 -->
-            </div>
-            <!-- End .row -->
-          </div>
-          <!-- End .intro-content -->
-        </div>
-        <!-- End .intro-slide -->
-      </div>
-      <!-- End .intro-slider owl-carousel owl-simple -->
-
-      <span class="slider-loader"></span
-      ><!-- End .slider-loader -->
-    </div>
-    <!-- End .intro-slider-container -->
-
-
-    <div class="container">
-      <h2 class="title text-center mb-4">Explore Popular Categories</h2>
-      <!-- End .title text-center -->
-
-
-      <div class="cat-blocks-container">
-        <div class="row">
-          <div class="col-6 col-sm-4 col-lg-2">
-            <a href="/api/cart/" class="cat-block">
-              <figure>
-                <span>
-                  <img
-                    src="/images/demos/demo-4/cats/1.png"
-                    alt="Category image"
-                  />
-                </span>
-              </figure>
-
-              <h3 class="cat-block-title">Computer & Laptop</h3>
-              <!-- End .cat-block-title -->
-            </a>
-          </div>
-          <!-- End .col-sm-4 col-lg-2 -->
-
-          <div class="col-6 col-sm-4 col-lg-2">
-            <a href="category.html" class="cat-block">
-              <figure>
-                <span>
-                  <img
-                    src="/images/demos/demo-4/cats/2.png"
-                    alt="Category image"
-                  />
-                </span>
-              </figure>
-
-              <h3 class="cat-block-title">Digital Cameras</h3>
-              <!-- End .cat-block-title -->
-            </a>
-          </div>
-          <!-- End .col-sm-4 col-lg-2 -->
-
-          <div class="col-6 col-sm-4 col-lg-2">
-            <a href="category.html" class="cat-block">
-              <figure>
-                <span>
-                  <img
-                    src="/images/demos/demo-4/cats/3.png"
-                    alt="Category image"
-                  />
-                </span>
-              </figure>
-
-              <h3 class="cat-block-title">Smart Phones</h3>
-              <!-- End .cat-block-title -->
-            </a>
-          </div>
-          <!-- End .col-sm-4 col-lg-2 -->
-
-          <div class="col-6 col-sm-4 col-lg-2">
-            <a href="category.html" class="cat-block">
-              <figure>
-                <span>
-                  <img
-                    src="/images/demos/demo-4/cats/4.png"
-                    alt="Category image"
-                  />
-                </span>
-              </figure>
-
-              <h3 class="cat-block-title">Televisions</h3>
-              <!-- End .cat-block-title -->
-            </a>
-          </div>
-          <!-- End .col-sm-4 col-lg-2 -->
-
-          <div class="col-6 col-sm-4 col-lg-2">
-            <a href="category.html" class="cat-block">
-              <figure>
-                <span>
-                  <img
-                    src="/images/demos/demo-4/cats/5.png"
-                    alt="Category image"
-                  />
-                </span>
-              </figure>
-
-              <h3 class="cat-block-title">Audio</h3>
-              <!-- End .cat-block-title -->
-            </a>
-          </div>
-          <!-- End .col-sm-4 col-lg-2 -->
-
-          <div class="col-6 col-sm-4 col-lg-2">
-            <a href="category.html" class="cat-block">
-              <figure>
-                <span>
-                  <img
-                    src="/images/demos/demo-4/cats/6.png"
-                    alt="Category image"
-                  />
-                </span>
-              </figure>
-
-              <h3 class="cat-block-title">Smart Watches</h3>
-              <!-- End .cat-block-title -->
-            </a>
-          </div>
-          <!-- End .col-sm-4 col-lg-2 -->
-        </div>
-        <!-- End .row -->
-      </div>
-      <!-- End .cat-blocks-container -->
-    </div>
-    <!-- End .container -->
-
-
-
-
-
-
-    <div class="mb-4"></div>
-    <!-- End .mb-4 -->
-
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-4">
-          <div class="banner banner-overlay banner-overlay-light">
-            <a href="#">
-              <img
-                src="/images/demos/demo-4/banners/banner-1.png"
-                alt="Banner"
-              />
-            </a>
-
-            <div class="banner-content">
-              <h4 class="banner-subtitle"><a href="#">Smart Offer</a></h4>
-              <!-- End .banner-subtitle -->
-              <h3 class="banner-title">
-                <a href="#"
-                  >Save $150 <strong>on Samsung <br />Galaxy Note9</strong></a
-                >
-              </h3>
-              <!-- End .banner-title -->
-              <a href="#" class="banner-link"
-                >Shop Now<i class="icon-long-arrow-right"></i
-              ></a>
-            </div>
-            <!-- End .banner-content -->
-          </div>
-          <!-- End .banner -->
-        </div>
-        <!-- End .col-md-4 -->
-
-        <div class="col-md-6 col-lg-4">
-          <div class="banner banner-overlay banner-overlay-light">
-            <a href="#">
-              <img
-                src="/images/demos/demo-4/banners/banner-2.jpg"
-                alt="Banner"
-              />
-            </a>
-
-            <div class="banner-content">
-              <h4 class="banner-subtitle"><a href="#">Time Deals</a></h4>
-              <!-- End .banner-subtitle -->
-              <h3 class="banner-title">
-                <a href="#"
-                  ><strong>Bose SoundSport</strong> <br />Time Deal -30%</a
-                >
-              </h3>
-              <!-- End .banner-title -->
-              <a href="#" class="banner-link"
-                >Shop Now<i class="icon-long-arrow-right"></i
-              ></a>
-            </div>
-            <!-- End .banner-content -->
-          </div>
-          <!-- End .banner -->
-        </div>
-        <!-- End .col-md-4 -->
-
-        <div class="col-md-6 col-lg-4">
-          <div class="banner banner-overlay banner-overlay-light">
-            <a href="#">
-              <img
-                src="/images/demos/demo-4/banners/banner-3.png"
-                alt="Banner"
-              />
-            </a>
-
-            <div class="banner-content">
-              <h4 class="banner-subtitle"><a href="#">Clearance</a></h4>
-              <!-- End .banner-subtitle -->
-              <h3 class="banner-title">
-                <a href="#"
-                  ><strong>GoPro - Fusion 360</strong> <br />Save $70</a
-                >
-              </h3>
-              <!-- End .banner-title -->
-              <a href="#" class="banner-link"
-                >Shop Now<i class="icon-long-arrow-right"></i
-              ></a>
-            </div>
-            <!-- End .banner-content -->
-          </div>
-          <!-- End .banner -->
-        </div>
-        <!-- End .col-lg-4 -->
-      </div>
-      <!-- End .row -->
-    </div>
-    <!-- End .container -->
-
-
-
-
-
-
-
-
-
-
-<!-- End .mb-5 -->
-<div class="mb-3"></div>
-<div class="container new-arrivals">
-  <div class="heading heading-flex mb-3">
-    <div class="heading-left">
-      <h2 class="title">New Arrivals</h2>
-    </div>
-    <div class="heading-right">
-      <ul class="nav nav-pills nav-border-anim justify-content-center" role="tablist">
-        <!-- Iterate over categories to create navigation pills -->
-        <% categories.forEach(category => { %>
-          <li class="nav-item">
-            <!-- Add 'active' class if the current category matches the selected one -->
-            <a class="nav-link <%= category._id == queryCategory ? 'active' : '' %>" 
-              href="/user/?category=<%= category._id %>"><%= category.name %>
-            </a>
-          </li>
-        <% }) %>
-      </ul>
-    </div>
-  </div>
-  <div class="tab-content tab-content-carousel just-action-icons-sm">
-    <div class="tab-pane p-0 fade show active" id="new-all-tab" role="tabpanel" aria-labelledby="new-all-link">
-      <div class="owl-carousel owl-full carousel-equal-height carousel-with-shadow" 
-           data-toggle="owl" 
-           data-owl-options='{
-             "nav": true, "dots": true, "margin": 20, "loop": false, 
-             "responsive": { "0": {"items":2}, "480": {"items":2}, "768": {"items":3}, "992": {"items":4}, "1200": {"items":5}}}'>
-        
-        <!-- Display products from the selected category -->
-        <% if (product.length > 0) { %>
-          <% product.forEach(function(product) { %>
-            <% product.variants.forEach(function(variant) { %>
-              <div class="product product-2">
-                <figure class="product-media">
-  
-                  <!-- Display offer badge if the variant has an offer -->
-                  <% if (variant.offer && variant.offer.offerPercentage) { %>
-                    <span class="offer-badge position-absolute top-0 start-0 bg-success text-white p-2" style="font-size: 12px;">
-                      <%= variant.offer.offerPercentage %> % off
-                    </span>
-                  <% } %>
-  
-                  <!-- Check if stock is low, display "Low Stock" label -->
-                  <% if (variant.stock < 10) { %>
-                    <span class="product-label label-circle label-top">Low Stock</span>
-                  <% } %>
-  
-                  <a href="/user/product?id=<%= product._id %>">
-                    <img src="/<%= variant.images[0] %>" 
-                         alt="Product image" 
-                         class="product-image" 
-                         style="width: 250px; height: 250px; object-fit: cover;" />
-                  </a>
-  
-                  <div class="product-action-vertical">
-                    <a href="javascript:void(0)" class="btn-product-icon btn-wishlist" title="Add to wishlist" 
-                       data-product-id="<%= product._id %>" 
-                       data-variant-id="<%= variant._id %>"></a>
-                  </div>
-                  
-                  <div class="product-action">
-                    <a href="javascript:void(0)" 
-                       class="btn-product btn-cart" 
-                       data-product-id="<%= product._id %>" 
-                       data-variant-id="<%= variant._id %>" 
-                       data-price="<%= variant.price %>" 
-                       data-stock="<%= variant.stock %>" 
-                       title="Add to cart"><span>add to cart</span></a>
-                  </div>
-                </figure>
-  
-                <div class="product-body">
-                  <div class="product-cat">
-                    <a href="#"><%= product.category_id.name %></a> <!-- Display the category name -->
-                  </div>
-  
-                  <h3 class="product-title">
-                    <a href="/user/product?id=<%= product._id %>"><%= product.product_name %></a>
-                  </h3>
-  
-                  <div class="product-price">
-                    <% if (variant.offer && variant.offer.offerPercentage) { %>
-                      <!-- If offer is present, show original and discounted price -->
-                      <p class="text-danger">
-                        <small><del>INR <%= variant.price %></del></small> <!-- Original price -->
-                        INR <%= variant.discount_price %> <!-- Discounted price -->
-                      </p>
-                    <% } else { %>
-                      <!-- If no offer, show original price only -->
-                      INR <%= variant.price %>
-                    <% } %>
-                  </div>
-  
-                  <div class="ratings-container">
-                    <div class="ratings">
-                      <div class="ratings-val" style="width: 0%"></div>
-                    </div>
-                    <span class="ratings-text">( No Reviews )</span>
-                  </div>
-                </div>
-              </div>
-            <% }) %>
-          <% }) %>
-        <% } else { %>
-          <!-- Display a message if there are no products for the selected category -->
-          <p>No products found in this category.</p>
-        <% } %>
-  
-      </div>
-    </div>
-  </div>
-  
-</div>
-
-
-
-
-
-
 
 
     <div class="mb-6"></div>
@@ -2123,7 +1481,8 @@ aria-hidden="true"
                       <input type="checkbox" class="custom-control-input" id="signin-remember" />
                       <label class="custom-control-label" for="signin-remember">Remember Me</label>
                     </div>
-                    <a href="#" class="forgot-link">Forgot Your Password?</a>
+                    <a href="#" class="forgot-link" data-toggle="modal" data-target="#forgot-password-modal">Forgot Your Password?</a>
+
                   </div>
                 </form>
             
@@ -2267,7 +1626,98 @@ aria-hidden="true"
     </div>
   </div>
 </div>
+
+<!-- Forgot Password Modal -->
+<div class="modal fade" id="forgot-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true"><i class="icon-close"></i></span>
+        </button>
+
+        <div class="form-box">
+          <h4 class="text-center">Forgot Password</h4>
+          <form id="forgot-password-form" method="post" onsubmit="forgotPassword(event)">
+            <div class="form-group">
+              <label for="forgot-email">Enter your email address *</label>
+              <input type="email" class="form-control" id="forgot-email" name="forgot-email"  />
+            </div>
+
+            <div class="form-footer">
+              <button type="submit" class="btn btn-outline-primary-2 btn-block">
+                <span>RESET PASSWORD</span>
+                <i class="icon-long-arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+<!-- OTP Verification Modal -->
+
+<div class="modal fade" id="otp-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <h3 class="text-center">Enter the OTP sent to your email</h3>
+        <form id="otp-form-password" onsubmit="verifyOtppassword(event)">
+          <!-- Hidden input to store the email -->
+          <input type="hidden" id="otp-email" name="otp-email" />
+
+          <div class="form-group">
+            <label for="otp-input-password">OTP *</label>
+            <input type="text" class="form-control" id="otp-input-password" name="otp-input"  />
+          </div>
+
+          <div class="form-footer">
+            <button type="submit" class="btn btn-outline-primary-2">Verify OTP</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="reset-password-modal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true"><i class="icon-close"></i></span>
+        </button>
+
+        <div class="form-box">
+          <h4 class="text-center">Reset Password</h4>
+          <form id="reset-password-form" method="post" onsubmit="resetPassword(event)">
+            <div class="form-group">
+              <label for="new-password">New Password *</label>
+              <input type="password" class="form-control" id="new-password" name="new-password"  />
+            </div>
+
+            <div class="form-group">
+              <label for="confirm-password">Confirm Password *</label>
+              <input type="password" class="form-control" id="confirm-password" name="confirm-password"  />
+            </div>
+
+            <div class="form-footer">
+              <button type="submit" class="btn btn-outline-primary-2 btn-block">
+                <span>RESET PASSWORD</span>
+                <i class="icon-long-arrow-right"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
@@ -2539,8 +1989,7 @@ function isValidEmail(email) {
         url: `/user/product?category=${categoryId}`,
         method: 'GET',
         success: function (data) {
-            // Replace the products in the carousel with the new ones
-            $('.owl-carousel').html(data); // Update your product section
+            $('.owl-carousel').html(data); 
         },
         error: function (error) {
             console.error('Error fetching products', error);
@@ -2551,29 +2000,22 @@ function isValidEmail(email) {
 </script>
 <script>
  document.addEventListener('DOMContentLoaded', function() {
-    // Get all the add to cart buttons
     const addToCartButtons = document.querySelectorAll('.btn-cart');
-
     addToCartButtons.forEach(button => {
         button.addEventListener('click', async function(event) {
             event.preventDefault();
-
             const productId = this.getAttribute('data-product-id');
             const variantId = this.getAttribute('data-variant-id');
-            const quantity = 1; // Default quantity
-            const stock = parseInt(this.getAttribute('data-stock')); // Get stock level
-
-            // Check if stock is less than or equal to zero
-            if (stock <= 0) {
-                // SweetAlert for out of stock notification
+            const quantity = 1;
+            const stock = parseInt(this.getAttribute('data-stock')); 
+            if (stock <= 0) {            
                 Swal.fire({
                     icon: 'warning',
                     title: 'Out of Stock',
                     text: 'This product is currently out of stock.',
                 });
-                return; // Exit the function
+                return;
             }
-
             try {
                 const response = await fetch('/api/cart/add', {
                     method: 'POST',
@@ -2585,17 +2027,15 @@ function isValidEmail(email) {
 
                 const data = await response.json();
 
-                if (response.ok) {
-                    // SweetAlert for success notification
+                if (response.ok) {                 
                     Swal.fire({
                         icon: 'success',
                         title: 'Added!',
                         text: 'Product added to cart successfully!',
                         showConfirmButton: false,
-                        timer: 1500 // Automatically closes after 1.5 seconds
+                        timer: 1500 
                     });
-                } else {
-                    // SweetAlert for error notification
+                } else {                  
                     Swal.fire({
                         icon: 'error',
                         title: 'Error!',
@@ -2603,8 +2043,7 @@ function isValidEmail(email) {
                     });
                 }
             } catch (error) {
-                console.error('Error:', error);
-                // SweetAlert for catch block error
+                console.error('Error:', error);               
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops!',
@@ -2623,14 +2062,13 @@ function isValidEmail(email) {
           button.addEventListener('click', function(event) {
               event.preventDefault();
               const productId = this.getAttribute('data-product-id');
-              const variantId = this.getAttribute('data-variant-id'); // Capture variantId
-
+              const variantId = this.getAttribute('data-variant-id'); 
               fetch('/wishlist/add', {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json'
                   },
-                  body: JSON.stringify({ productId, variantId }) // Include variantId in the request
+                  body: JSON.stringify({ productId, variantId }) 
               })
               .then(response => response.json())
               .then(data => {
@@ -2666,9 +2104,173 @@ function isValidEmail(email) {
 </script>
 
 
+<script>
+  function forgotPassword(event) {
+    event.preventDefault();
+    const email = document.getElementById('forgot-email').value;
+    if (!validateEmail(email)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Email',
+        text: 'Please enter a valid email address.',
+      });
+      return;
+    }
+    fetch('/api/otp/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const otpEmailField = document.getElementById('otp-email');
+        if (otpEmailField) {
+          otpEmailField.value = email; 
+        } else {
+          console.error('OTP email input field not found');
+        }
+        $('#forgot-password-modal').modal('hide');
+        $('#otp-modal').modal('show');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message,
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'Please try again later.',
+      });
+    });
+  };
+  function verifyOtppassword(event) {
+    event.preventDefault();
+    const otp = document.getElementById('otp-input-password').value; 
+    const email = document.getElementById('otp-email').value; 
+    if (!otp) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Missing OTP',
+        text: 'Please enter the OTP sent to your email.',
+      });
+      return;
+    }
+    fetch('/api/otp/verify-otp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email, otp: otp }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        $('#otp-modal').modal('hide');
+        $('#reset-password-modal').modal('show');
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Invalid OTP',
+          text: data.message,
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'Please try again later.',
+      });
+    });
+  }
+  function resetPassword(event) {
+    event.preventDefault();
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const email = document.getElementById('otp-email').value; 
+    if (!newPassword || !confirmPassword) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Missing Fields',
+        text: 'Please fill in all password fields.',
+      });
+      return;
+    }
+  if (newPassword !== confirmPassword) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Password Mismatch',
+        text: 'Passwords do not match.',
+      });
+      return;
+    }
+    if (!validatePassword(newPassword)) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Weak Password',
+        text: 'Password must be at least 6 characters long and contain a mix of letters, numbers, and special characters.',
+      });
+      return;
+    }
+
+    fetch('/api/otp/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email: email, password: newPassword }),
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        $('#reset-password-modal').modal('hide');
+        Swal.fire({
+          icon: 'success',
+          title: 'Success',
+          text: 'Your password has been successfully reset.',
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message,
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Network Error',
+        text: 'Please try again later.',
+      });
+    });
+  }
+  function validateEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+    return re.test(String(email).toLowerCase());
+  }
+  function validatePassword(password) {
+    const re = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+    return re.test(String(password));
+  }
+</script>
+
+
+
 
   
   
 <%- include('./partial/footer') %>
+
 
 

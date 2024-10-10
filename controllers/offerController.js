@@ -206,7 +206,7 @@ const editOffers = async (req, res) => {
       const currentDate = new Date();
 
       if (!editOfferName) {
-        console.log(editOfferName);
+        
         return res.json({ success: false, error: "offer name is empty" });
       }
 

@@ -7,6 +7,7 @@ const Order =require('../models/ordercollection')
 const Address=require('../models/adresscollection')
 const bcrypt=require('bcrypt')
 const upload = require('../config/multer')
+const Wallet = require('../models/walletCollection');
 
 
 const admin_login_page=(req,res)=>{
@@ -264,9 +265,7 @@ const admin_put_updatecategory= async (req, res) => {
 };
 const admin_post_addproduct = async (req, res) => {
   try {
-    console.log('Incoming request body:', req.body);
-    console.log('Session Admin:', req.session.isAdmin);
-    console.log('Files:', req.files);
+   
 
     if (req.session.isAdmin) {
       const {
@@ -329,7 +328,7 @@ const admin_post_addproduct = async (req, res) => {
       });
 
       await product.save();
-      console.log('Product saved successfully');
+ 
       res.status(201).json({ message: 'Product added successfully!' });
     } else {
       res.status(403).json({ error: 'Unauthorized access.' });
@@ -441,10 +440,11 @@ const admin_update_product = async (req, res) => {
 
 const ordermanagment=async(req,res)=>{
 const order=await Order.find({}).populate('user').populate('address').populate('items.product')
-console.log(order);
+
 
   res.render('admin_ordermanagment',{order})
 }
+
 
 const updateorderstatus = async (req, res) => {
   const { orderId } = req.params;
@@ -452,12 +452,12 @@ const updateorderstatus = async (req, res) => {
 
   try {
     // Find the order by ID
-    const order = await Order.findById(orderId).populate('items.product'); // Populate product for stock updates
+    const order = await Order.findById(orderId).populate('items.product').populate('user');
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
-    // If the new status is 'Cancelled', increment the stock
+    // If the new status is 'Cancelled'
     if (status === 'Cancelled') {
       // Loop through the items in the order and update the stock for each product variant
       for (const item of order.items) {
@@ -472,13 +472,34 @@ const updateorderstatus = async (req, res) => {
           await product.save();
         }
       }
+
+      // If the payment method was Bank Transfer, process refund to wallet
+      if (order.paymentMethod === 'Bank Transfer') {
+        let wallet = await Wallet.findOne({ userId: order.user._id });
+        if (!wallet) {
+          wallet = new Wallet({ userId: order.user._id, balance: 0 });
+        }
+        wallet.balance += order.totalAmount;
+        wallet.transactions.push({
+          amount: order.totalAmount,
+          type: 'Credit',
+          description: `Refund for cancelled order ${order.orderId}`,
+          date: new Date()
+        });
+        await wallet.save();
+      }
     }
 
     // Update the order status
     order.orderStatus = status;
+    order.orderStatusTimestamps[status.toLowerCase()] = new Date();
     await order.save(); // Save the updated order
 
-    return res.json({ success: true, message: 'Order status updated successfully' });
+    return res.json({ 
+      success: true, 
+      message: 'Order status updated successfully',
+      refundProcessed: status === 'Cancelled' && order.paymentMethod === 'Bank Transfer'
+    });
   } catch (error) {
     console.error('Error updating order status:', error);
     return res.status(500).json({ success: false, message: 'Failed to update order status' });

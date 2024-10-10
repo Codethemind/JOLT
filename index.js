@@ -15,9 +15,10 @@ const profileRouter = require('./router/profileRouter');
 const cartRouter = require('./router/cartRouter')
 const wishlistRouter = require('./router/wishlistRouter');
 const coupenRouter = require('./router/coupenRouter');
-// Add new routers
+const otpRouter = require('./router/otpRouter');
 const paymentRouter = require('./router/paymentRouter');
 const walletRouter = require('./router/walletRouter');
+const returnRouter = require('./router/returnRouter')
 
 mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
 app.use('/uploads',express.static('uploads'))
@@ -38,9 +39,10 @@ app.use('/profile', profileRouter)
 app.use('/api/cart', cartRouter);
 app.use('/wishlist', wishlistRouter);
 app.use('/coupons', coupenRouter);
-// Add new routes
+app.use('/api/otp', otpRouter);
 app.use('/payments', paymentRouter);
 app.use('/wallet', walletRouter);
+app.use('/return', returnRouter);
 
 app.use((req, res, next) => {
     res.locals.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
@@ -77,3 +79,5 @@ server.on('error', (error) => {
             throw error;
     }
 });
+
+

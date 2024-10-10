@@ -348,7 +348,7 @@
                     <% if (element.product_name != product.product_name) { %>
                         <div class="product product-7 text-center">
                             <figure class="product-media">
-                                <!-- Display offer badge if the variant has an offer -->
+                               
                                 <% if (element.variants[0].offer && element.variants[0].offer.offerPercentage) { %>
                                     <span class="offer-badge position-absolute top-0 start-0 bg-success text-white p-2" style="font-size: 12px;">
                                         <%= element.variants[0].offer.offerPercentage %> % off
@@ -535,7 +535,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Select all Add to Cart buttons
+           
             const addToCartButtons = document.querySelectorAll('.btn-cart');
     
             addToCartButtons.forEach(button => {
@@ -543,34 +543,21 @@
                     const productId = this.getAttribute('data-product-id');
                     const variantId = this.getAttribute('data-variant-id');
                     const quantity = document.getElementById('qty') ? document.getElementById('qty').value : 1;
-                    const stock = this.getAttribute('data-stock'); // Fetch stock value
-    
-                    // DEBUGGING: Check if all values are correctly fetched
-                    console.log('Product ID:', productId);
-                    console.log('Variant ID:', variantId);
-                    console.log('Quantity:', quantity);
-                    console.log('Stock:', stock);
-    
-                    // Check if stock is less than or equal to zero
-                    if (stock <= 0) {
-                        // Using SweetAlert v2 syntax
+                    const stock = this.getAttribute('data-stock');
+                    if (stock <= 0) {                 
                         Swal.fire({
                             title: "Out of Stock",
                             text: "This product is currently out of stock.",
                             icon: "warning",
                             confirmButtonText: "OK",
                         });
-                        return; // Exit the function to prevent adding to cart
+                        return; 
                     }
-    
-                    // Prepare the data to send to the backend
                     const data = {
                         productId: productId,
                         variantId: variantId,
                         quantity: quantity
                     };
-    
-                    // Call the server-side route to add the product to the cart using fetch (AJAX)
                     fetch('/api/cart/add', {
                         method: 'POST',
                         headers: {
@@ -587,7 +574,6 @@
                                 icon: "success",
                                 confirmButtonText: "OK",
                             });
-                            // Optionally, update cart icon or cart counter
                         } else {
                             Swal.fire({
                                 title: "Error!",
@@ -610,30 +596,22 @@
             });
         });
     </script>
-    
   <script>
   function changeImage(imageSrc, element) {
     const mainProductImage = document.getElementById('mainProductImage');
-
-    // Ensure the image source has proper slashes
-    // If the path is missing a forward slash after '/uploads', we add it
     if (!imageSrc.startsWith('/uploads/')) {
-        imageSrc = imageSrc.replace('\\', '/'); // Replace backslashes with forward slashes
-        imageSrc = imageSrc.replace('/uploads', '/uploads/'); // Ensure there is a slash after 'uploads'
+        imageSrc = imageSrc.replace('\\', '/'); 
+        imageSrc = imageSrc.replace('/uploads', '/uploads/');
     }
 
-    // Change the main image source to the clicked thumbnail
     mainProductImage.src = imageSrc;
 
-    // Update zoom data for the new image (if using zoom)
     mainProductImage.setAttribute('data-zoom-image', imageSrc);
 
-    // Remove the 'active-thumbnail' class from all thumbnails
     document.querySelectorAll('.thumb').forEach(function(img) {
         img.classList.remove('active-thumbnail');
     });
 
-    // Add 'active-thumbnail' class to the clicked thumbnail
     element.classList.add('active-thumbnail');
 }
 
@@ -641,18 +619,16 @@
     const productImage = document.getElementById('mainProductImage');
     const imageContainer = document.getElementById('imageContainer');
 
-    // Zoom functionality
     imageContainer.addEventListener('mousemove', function(e) {
         const rect = imageContainer.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
 
-        // Set transform origin to mouse position for zoom effect
         productImage.style.transformOrigin = `${(x / rect.width) * 100}% ${(y / rect.height) * 100}%`;
     });
 
     imageContainer.addEventListener('mouseleave', function() {
-        // Reset the zoom position when the mouse leaves
+  
         productImage.style.transformOrigin = 'center';
     });
 </script>
@@ -662,14 +638,14 @@
           button.addEventListener('click', function(event) {
               event.preventDefault();
               const productId = this.getAttribute('data-product-id');
-              const variantId = this.getAttribute('data-variant-id'); // Capture variantId
+              const variantId = this.getAttribute('data-variant-id');
 
               fetch('/wishlist/add', {
                   method: 'POST',
                   headers: {
                       'Content-Type': 'application/json'
                   },
-                  body: JSON.stringify({ productId, variantId }) // Include variantId in the request
+                  body: JSON.stringify({ productId, variantId }) 
               })
               .then(response => response.json())
               .then(data => {
@@ -717,7 +693,6 @@
     <script src="/js/jquery.elevateZoom.min.js"></script>
     <script src="/js/bootstrap-input-spinner.js"></script>
     <script src="/js/jquery.magnific-popup.min.js"></script>
-    <!-- Main JS File -->
-    <!-- <script src="/js/main.js"></script> -->
+
 
     <%- include('./partial/footer') %>

@@ -15,7 +15,7 @@ exports.getAllCoupons = async (req, res) => {
 exports.createCoupon = async (req, res) => {
     
     const { couponName, couponCode, discountPercentage, couponStartDate, couponEndDate } = req.body;
- console.log(req.body);
+ 
  
     // Ensure couponCode is not empty
     if (!couponCode || couponCode.trim() === "") {
@@ -37,7 +37,7 @@ exports.createCoupon = async (req, res) => {
             couponStartDate: new Date(couponStartDate),
             couponEndDate: new Date(couponEndDate),
         });
-console.log(6354);
+
 
         // Save coupon to the database
         await newCoupon.save();

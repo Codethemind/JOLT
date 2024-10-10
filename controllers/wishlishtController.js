@@ -88,8 +88,7 @@ exports.getWishlist = async (req, res) => {
         // Find the user's wishlist, populating product information
         const wishlist = await Wishlist.findOne({ user_id: userId }).populate('items.product');
 
-        // Log the fetched wishlist for debugging
-        console.log('Fetched Wishlist:', wishlist);
+        
 
         // If the wishlist is empty or does not exist
         if (!wishlist || wishlist.items.length === 0) {

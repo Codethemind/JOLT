@@ -94,7 +94,7 @@ exports.postPasswordChange= async (req, res) => {
 exports.postSentOtp=async (req, res) => {
     const { email } = req.body;
     const userId = req.session.user ; // Adjust according to your session structure
-    console.log(userId);
+    
     
         if (!email || !userId) {
             return res.status(400).json({ message: 'Email and user ID are required.' });
@@ -125,20 +125,20 @@ exports.postSentOtp=async (req, res) => {
 
 exports.postResetPassword=async (req, res) => {
     try {
-        console.log("Request Body:", req.body);
+        
 
         const { otpCode, newPassword } = req.body;
-        console.log("OTP Code:", otpCode);
+        
 
         const otpEntry = await Otp.findOne({ otp: otpCode });
-        console.log("OTP Entry:", otpEntry);
+       
 
         if (!otpEntry) {
             return res.status(400).json({ message: 'Invalid OTP.' });
         }
 
         const userId = req.session.user; // Retrieve userId from otpEntry
-        console.log("User ID from OTP Entry:", userId);
+       
 
         if (!userId) {
             return res.status(400).json({ message: 'User ID not found in OTP entry.' });

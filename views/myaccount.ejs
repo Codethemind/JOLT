@@ -10,32 +10,32 @@
 								<ul class="nav nav-tabs flex-column mb-3" id="myTab" role="tablist">
 									<li class="nav-item">
 										<a class="nav-link active" id="dashboard-tab" data-bs-toggle="tab"
-										   href="#dashboard" role="tab" aria-controls="dashboard"
-										   aria-selected="true">Dashboard</a>
+											href="#dashboard" role="tab" aria-controls="dashboard"
+											aria-selected="true">Dashboard</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="orders-tab" data-bs-toggle="tab" href="#orders"
-										   role="tab" aria-controls="orders" aria-selected="false">Orders</a>
+											role="tab" aria-controls="orders" aria-selected="false">Orders</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="address-tab" data-bs-toggle="tab" href="#address"
-										   role="tab" aria-controls="address" aria-selected="false">Addresses</a>
+											role="tab" aria-controls="address" aria-selected="false">Addresses</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#profile"
-										   role="tab" aria-controls="profile" aria-selected="false">Profile</a>
+											role="tab" aria-controls="profile" aria-selected="false">Profile</a>
 									</li>
 									<!-- New Wallet Tab -->
 									<li class="nav-item">
 										<a class="nav-link" id="wallet-tab" data-bs-toggle="tab" href="#wallet"
-										   role="tab" aria-controls="wallet" aria-selected="false">Wallet</a>
+											role="tab" aria-controls="wallet" aria-selected="false">Wallet</a>
 									</li>
 									<li class="nav-item">
 										<a class="nav-link" href="/logout">Sign Out</a>
 									</li>
 								</ul>
 							</aside>
-							
+
 
 							<div class="col-md-9">
 								<div class="tab-content" id="myTabContent">
@@ -49,7 +49,7 @@
 
 									<div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
 										<h4 class="text-center mt-4 mb-4">Your Orders</h4>
-										<% if (orders.length > 0) { %>
+										<% if (orders.length> 0) { %>
 											<table class="table">
 												<thead class="text-center">
 													<tr>
@@ -61,23 +61,23 @@
 													</tr>
 												</thead>
 												<tbody>
-													<% orders.forEach(order => { %>
+													<% orders.forEach(order=> { %>
 														<!-- Single Order Row -->
 														<tr>
 															<!-- Order ID -->
 															<td class="text-center">
 																<%= order.orderId %>
 															</td>
-	
+
 															<!-- Product Name -->
 															<td class="text-center">
-																<% order.items.forEach(item => { %>
+																<% order.items.forEach(item=> { %>
 																	<a href="/user/product?id=<%= item.product._id %>">
 																		<%= item.product.product_name %>
 																	</a><br> <!-- Making the Product Name clickable -->
-																<% }) %>
+																	<% }) %>
 															</td>
-	
+
 															<!-- Order Status -->
 															<td class="text-center">
 																<button class="btn 
@@ -90,10 +90,11 @@
 																	<%= order.orderStatus %>
 																</button>
 															</td>
-	
+
 															<!-- Total Amount -->
-															<td class="text-center">₹<%= order.totalAmount.toFixed(2) %></td>
-	
+															<td class="text-center">₹<%= order.totalAmount.toFixed(2) %>
+															</td>
+
 															<!-- Actions (Details and Cancel Button for Pending Orders) -->
 															<td class="text-center">
 																<button
@@ -103,21 +104,32 @@
 																	<i class="bi bi-info-circle-fill"></i>
 																	<span class="ms-1">Details</span>
 																</button>
-	
-																<% if (order.orderStatus === 'Pending') { %>
+
+																<% if (order.orderStatus==='Pending' ) { %>
 																	<!-- Cancel button only if the order is Pending -->
-																	<button 
-																		class="btn btn-outline-danger ms-2"
+																	<button class="btn btn-outline-danger ms-2"
 																		onclick="cancelOrder(event, '<%= order._id %>')">
 																		<i class="bi bi-x-circle-fill"></i>
 																		<span class="ms-1">Cancel</span>
 																	</button>
-																<% } %>
+																	<% } %>
+
+																		<% if (order.orderStatus==='Delivered' ) { %>
+																			<!-- Return button only if the order is Delivered -->
+																			<button class="btn btn-outline-warning ms-2"
+																				onclick="showReturnModal('<%= order._id %>')">
+																				<i
+																					class="bi bi-arrow-left-circle-fill"></i>
+																				<span class="ms-1">Return</span>
+																			</button>
+																			<% } %>
 															</td>
 														</tr>
-	
+
 														<!-- Order Details Row (collapsible) -->
-														<tr class="order-details-row" id="details-<%= order._id %>" style="display: none;">
+														<!-- Order Details Row (collapsible) -->
+														<tr class="order-details-row" id="details-<%= order._id %>"
+															style="display: none;">
 															<td colspan="5">
 																<div class="order-details-container">
 																	<h5>Order Details</h5>
@@ -133,37 +145,88 @@
 																			</tr>
 																		</thead>
 																		<tbody>
-																			<% let subtotal = 0; %>
-																			<% order.items.forEach(item => { %>
-																				<% console.log('Item:', JSON.stringify(item, null, 2)); %>
-																				<% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId) : null; %>
-																				<% console.log('Variant:', JSON.stringify(variant, null, 2)); %>
-																				<% const originalPrice = variant ? variant.price : 0; %>
-																				<% const offerPercentage = variant && variant.offer ? variant.offer.offerPercentage : 0; %>
-																				<% const priceAfterOffer = variant && variant.discount_price ? variant.discount_price : originalPrice; %>
-																				<% const itemSubtotal = priceAfterOffer * item.quantity; %>
-																				<% subtotal += itemSubtotal; %>
-																				<tr>
-																					<td>
-																						<% if (variant && variant.images && variant.images.length > 0) { %>
-																							<img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;">
-																						<% } %>
-																						<p><strong><%= item.product ? item.product.product_name : 'Unknown Product' %></strong></p>
-																						<small>Color: <%= variant ? variant.color : 'N/A' %>, Size: <%= variant ? variant.size : 'N/A' %></small>
-																					</td>
-																					<td>₹<%= originalPrice.toFixed(2) %></td>
-																					<td>
-																						<% if (offerPercentage > 0) { %>
-																							<span class="badge bg-success"><%= offerPercentage %>% OFF</span>
-																						<% } else { %>
-																							-
-																						<% } %>
-																					</td>
-																					<td>₹<%= priceAfterOffer.toFixed(2) %></td>
-																					<td><%= item.quantity %></td>
-																					<td>₹<%= itemSubtotal.toFixed(2) %></td>
-																				</tr>
-																			<% }) %>
+																			<% let subtotal=0; %>
+																				<% order.items.forEach(item=> { %>
+																					<% const variant=item.product &&
+																						item.product.variants ?
+																						item.product.variants.find(v=>
+																						v._id.toString() ===
+																						item.variantId) : null; %>
+																						<% const originalPrice=variant ?
+																							variant.price : 0; %>
+																							<% const
+																								offerPercentage=variant
+																								&& variant.offer ?
+																								variant.offer.offerPercentage
+																								: 0; %>
+																								<% const
+																									priceAfterOffer=variant
+																									&&
+																									variant.discount_price
+																									?
+																									variant.discount_price
+																									: originalPrice; %>
+																									<% const
+																										itemSubtotal=priceAfterOffer
+																										* item.quantity;
+																										%>
+																										<% subtotal
+																											+=itemSubtotal;
+																											%>
+																											<tr>
+																												<td>
+																													<img src="/<%= variant.images[0] %>"
+																														alt="Product Image"
+																														style="width: 50px; height: 50px; object-fit: cover;">
+																													<p><strong>
+																															<%= item.product.product_name
+																																%>
+																														</strong>
+																													</p>
+																													<small>Color:
+																														<%= variant.color
+																															%>
+																															,
+																															Size:
+																															<%= variant.size
+																																%>
+																													</small>
+																												</td>
+																												<td>₹<%= originalPrice.toFixed(2)
+																														%>
+																												</td>
+																												<td>
+																													<% if
+																														(offerPercentage>
+																														0)
+																														{
+																														%>
+																														<span
+																															class="badge bg-success">
+																															<%= offerPercentage
+																																%>
+																																%
+																																OFF
+																														</span>
+																														<% } else
+																															{
+																															%>
+																															-
+																															<% }
+																																%>
+																												</td>
+																												<td>₹<%= priceAfterOffer.toFixed(2)
+																														%>
+																												</td>
+																												<td>
+																													<%= item.quantity
+																														%>
+																												</td>
+																												<td>₹<%= itemSubtotal.toFixed(2)
+																														%>
+																												</td>
+																											</tr>
+																											<% }); %>
 																		</tbody>
 																	</table>
 
@@ -173,25 +236,38 @@
 																		<table class="table table-bordered">
 																			<tr>
 																				<td>Subtotal:</td>
-																				<td>₹<%= subtotal.toFixed(2) %></td>
+																				<td>₹<%= subtotal.toFixed(2) %>
+																				</td>
 																			</tr>
 																			<% if (order.couponCode) { %>
+																			
+																				
 																				<tr>
 																					<td>Coupon Applied:</td>
 																					<td>
-																						<span class="badge bg-info"><%= order.couponCode %></span>
-																						(<%= ((order.discountAmount / subtotal) * 100).toFixed(2) %>% OFF)
+																						<span class="badge bg-info">
+																							<%= order.couponCode %>
+																						</span> (<%=
+																							((order.discountAmount /
+																							subtotal) * 100).toFixed(2)
+																							%>% OFF)
 																					</td>
 																				</tr>
 																				<tr>
 																					<td>Coupon Discount:</td>
-																					<td>-₹<%= order.discountAmount.toFixed(2) %></td>
+																					<td>-₹<%=
+																							order.discountAmount.toFixed(2)
+																							%>
+																					</td>
 																				</tr>
-																			<% } %>
-																			<tr>
-																				<td><strong>Total Amount:</strong></td>
-																				<td><strong>₹<%= order.totalAmount.toFixed(2) %></strong></td>
-																			</tr>
+																				<% } %>
+																					<tr>
+																						<td><strong>Total
+																								Amount:</strong></td>
+																						<td><strong>₹<%=
+																									order.totalAmount.toFixed(2)
+																									%></strong></td>
+																					</tr>
 																		</table>
 																	</div>
 
@@ -200,51 +276,115 @@
 																		<h6>Payment and Delivery Information</h6>
 																		<table class="table table-bordered">
 																			<tr>
-																				<td><strong>Payment Method:</strong></td>
+																				<td><strong>Payment Method:</strong>
+																				</td>
 																				<td>
-																					<% if (order.paymentMethod === 'Cash on Delivery') { %>
-																						<span class="badge bg-warning text-dark">Cash on Delivery</span>
-																					<% } else if (order.paymentMethod === 'Bank Transfer') { %>
-																						<span class="badge bg-primary">Bank Transfer (Razorpay)</span>
-																					<% } %>
+																					<span
+																						class="badge <%= order.paymentMethod === 'Cash on Delivery' ? 'bg-warning text-dark' : 'bg-primary' %>">
+																						<%= order.paymentMethod %>
+																					</span>
 																				</td>
 																			</tr>
 																			<tr>
 																				<td><strong>Order Status:</strong></td>
 																				<td>
-																					<span class="badge 
-																						<%= order.orderStatus === 'Pending' ? 'bg-warning' : 
-																							order.orderStatus === 'Processing' ? 'bg-info' : 
-																							order.orderStatus === 'Shipped' ? 'bg-primary' : 
-																							order.orderStatus === 'Delivered' ? 'bg-success' : 
-																							order.orderStatus === 'Cancelled' ? 'bg-danger' : 
-																							'bg-secondary' %>">
+																					<span
+																						id="order-status-<%= order._id %>"
+																						class="badge 
+																							<%= order.orderStatus === 'Pending' ? 'bg-warning' : 
+																								order.orderStatus === 'Processing' ? 'bg-info' : 
+																								order.orderStatus === 'Shipped' ? 'bg-primary' : 
+																								order.orderStatus === 'Delivered' ? 'bg-success' : 
+																								order.orderStatus === 'Cancelled' ? 'bg-danger' : 
+																								order.orderStatus === 'Return Requested' ? 'bg-warning text-dark' :
+																								'bg-secondary' %>">
 																						<%= order.orderStatus %>
 																					</span>
+
+																					<% if
+																						(order.orderStatus==='Delivered'
+																						) { %>
+																						<span
+																							id="return-status-<%= order._id %>"
+																							class="badge 
+																								<%= order.returnStatus === 'Pending' ? 'bg-warning' : 
+																									order.returnStatus === 'Accepted' ? 'bg-success' : 
+																									order.returnStatus === 'Rejected' ? 'bg-danger' : 
+																									'd-none' %>">
+																							<% if
+																								(order.returnStatus==='Pending'
+																								) { %>
+																								Return Pending
+																								<% } else if
+																									(order.returnStatus==='Accepted'
+																									) { %>
+																									Return Accepted
+																									<% } else if
+																										(order.returnStatus==='Rejected'
+																										) { %>
+																										Return Rejected
+																										<% } %>
+																						</span>
+																						<% } else if
+																							(order.returnStatus==='None'
+																							) { %>
+																							<span
+																								id="return-status-<%= order._id %>"
+																								class="badge d-none">
+																								<!-- This will remain hidden if order is delivered and returnStatus is None -->
+																							</span>
+																							<% } %>
 																				</td>
+
 																			</tr>
 																			<tr>
-																				<td><strong>Delivery Address:</strong></td>
+																				<td><strong>Delivery Address:</strong>
+																				</td>
 																				<td>
 																					<%= order.address.fullName %><br>
-																					<%= order.address.streetAddress %>, <%= order.address.city %><br>
-																					<%= order.address.state %>, <%= order.address.zipCode %><br>
-																					<%= order.address.country %><br>
-																					Phone: <%= order.address.phone %>
+																						<%= order.address.streetAddress
+																							%>, <%= order.address.city
+																								%><br>
+																								<%= order.address.state
+																									%>, <%=
+																										order.address.zipCode
+																										%><br>
+																										<%= order.address.country
+																											%><br>
+																											Phone: <%=
+																												order.address.phone
+																												%>
 																				</td>
 																			</tr>
 																		</table>
 																	</div>
+
+
+																	<!-- Return Button (Only for Delivered orders) -->
+																	<% if (order.orderStatus==='Delivered' ) { %>
+																		<div class="mt-3">
+																			<button class="btn btn-outline-warning"
+																				onclick="showReturnModal('<%= order._id %>')">
+																				<i
+																					class="bi bi-arrow-left-circle-fill"></i>
+																				Return
+																			</button>
+																		</div>
+																		<% } %>
 																</div>
 															</td>
 														</tr>
-													<% }) %>
+
+														<% }) %>
 												</tbody>
 											</table>
-										<% } else { %>
-											<p>No orders placed yet.</p>
-										<% } %>
+											<% } else { %>
+												<p>No orders placed yet.</p>
+												<% } %>
+
+
 									</div>
+
 
 									<div class="tab-pane fade" id="address" role="tabpanel"
 										aria-labelledby="address-tab">
@@ -436,48 +576,48 @@
 									</div>
 
 									<div class="tab-pane fade" id="wallet" role="tabpanel" aria-labelledby="wallet-tab">
-										<h4 class="text-center mt-4 mb-4">Your Wallet</h4>
-										<!-- Wallet balance display -->
-										<p><strong>Current Balance:</strong> ₹<span id="walletBalance">5000.00</span></p>
-									
-										<!-- Add money to wallet -->
-										<h5 class="mt-4">Add Money to Wallet</h5>
-										<form id="addMoneyForm">
-											<div class="mb-3">
-												<label for="amountToAdd" class="form-label">Amount:</label>
-												<input type="number" class="form-control" id="amountToAdd" min="0" step="0.01">
-											</div>
-											<button type="button" id="payButton" class="btn btn-primary">Add Money</button>
-										</form>
-									
-										<!-- Wallet transactions history -->
-										<h5 class="mt-4">Transaction History</h5>
-										<% if (walletTransactions.length > 0) { %>
-										<table class="table table-bordered text-center">
-											<thead>
-												<tr>
-													<th>Date</th>
-													<th>Transaction Type</th>
-													<th>Amount</th>
-													<th>Status</th>
-												</tr>
-											</thead>
-											<tbody>
-												<% walletTransactions.forEach(transaction => { %>
-												<tr>
-													<td><%= new Date(transaction.date).toLocaleDateString() %></td>
-													<td><%= transaction.type %></td>
-													<td>₹<%= transaction.amount.toFixed(2) %></td>
-													<td><%= transaction.status %></td>
-												</tr>
-												<% }) %>
-											</tbody>
-										</table>
-										<% } else { %>
-											<p>No transactions yet.</p>
-										<% } %>
-									</div>
-									
+    <h4 class="text-center mt-4 mb-4">Your Wallet</h4>
+    <!-- Wallet balance display -->
+    <p><strong>Current Balance:</strong> ₹<span id="walletBalance"><%= wallet ? wallet.balance.toFixed(2) : '0.00' %></span></p>
+
+    <!-- Add money to wallet -->
+    <h5 class="mt-4">Add Money to Wallet</h5>
+    <form id="addMoneyForm">
+        <div class="mb-3">
+            <label for="amountToAdd" class="form-label">Amount:</label>
+            <input type="number" class="form-control" id="amountToAdd" min="1" step="0.01" required>
+        </div>
+        <button type="button" id="payButton" class="btn btn-primary">Add Money</button>
+    </form>
+
+    <!-- Wallet transactions history -->
+    <h5 class="mt-4">Transaction History</h5>
+    <% if (wallet && wallet.transactions.length > 0) { %>
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Transaction Type</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% wallet.transactions.reverse().forEach(transaction => { %>
+                    <tr>
+                        <td><%= new Date(transaction.date).toLocaleString() %></td>
+                        <td><%= transaction.type %></td>
+                        <td>₹<%= transaction.amount.toFixed(2) %></td>
+                        <td><%= transaction.description %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    <% } else { %>
+        <p>No transactions yet.</p>
+    <% } %>
+</div>
+
 
 
 
@@ -616,6 +756,49 @@
 				</div>
 			</div>
 		</div>
+
+		<!-- Return Modal -->
+
+
+		<div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="returnModalLabel">Request Return</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+					<div class="modal-body">
+						<form id="returnForm">
+							<input type="hidden" id="orderIdForReturn" name="orderId">
+							<div class="mb-3">
+								<label for="returnReasonSelect" class="form-label">Reason for Return</label>
+								<select class="form-select" id="returnReasonSelect" required>
+									<option value="">Select a reason</option>
+									<option value="Defective Product">Defective Product</option>
+									<option value="Wrong Item Received">Wrong Item Received</option>
+									<option value="Product Doesn't Match Description">Product Doesn't Match Description
+									</option>
+									<option value="Other">Other</option>
+								</select>
+							</div>
+							<div class="mb-3">
+								<label for="returnDescription" class="form-label">Additional Information
+									(Optional)</label>
+								<textarea class="form-control" id="returnDescription" rows="3"></textarea>
+							</div>
+							<button type="button" class="btn btn-primary" onclick="submitReturn()">Submit Return
+								Request</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+
+
+
 		<button id="scroll-top" title="Back to Top"><i class="icon-arrow-up"></i></button>
 
 		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -627,7 +810,9 @@
 		<script src="/js/superfish.min.js"></script>
 		<script src="/js/owl.carousel.min.js"></script>
 		<script src="/js/main.js"></script>
-		<!-- address script -->
+		<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+
 
 
 		<script>
@@ -724,7 +909,7 @@
 			}
 		</script>
 
-		<!-- profile script -->
+
 		<script>
 			// Edit Profile Modal - Open and Save Changes
 			document.getElementById('openProfileModal').addEventListener('click', function () {
@@ -979,84 +1164,208 @@
 
 		</script>
 
+
+		
+		<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-	document.getElementById('payButton').addEventListener('click', function(event) {
-		event.preventDefault();
-		const amountToAdd = parseFloat(document.getElementById('amountToAdd').value);
-	
-		if (amountToAdd && amountToAdd > 0) {
-			// Create Razorpay order via your backend
-			fetch("/create-order", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: JSON.stringify({
-					amount: amountToAdd
+document.getElementById('payButton').addEventListener('click', function(event) {
+    event.preventDefault();
+    const amountToAdd = parseFloat(document.getElementById('amountToAdd').value);
+
+    if (amountToAdd && amountToAdd > 0) {
+        fetch("/wallet/add-funds", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ amount: amountToAdd })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const options = {
+                "key": data.keyId,
+                "amount": data.amount,
+                "currency": data.currency,
+                "name": "Your Website",
+                "description": "Wallet Recharge",
+                "order_id": data.orderId,
+                "handler": function (response) {
+                    verifyPayment(response, amountToAdd);
+                },
+                "prefill": {
+                    "name": "<%= User.name %>",
+                    "email": "<%= User.email %>"
+                },
+                "theme": {
+                    "color": "#3399cc"
+                }
+            };
+            const rzp1 = new Razorpay(options);
+            rzp1.open();
+        })
+        .catch(error => {
+            console.error("Error creating Razorpay order:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to create order. Please try again.'
+            });
+        });
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Amount',
+            text: 'Please enter a valid amount greater than 0.'
+        });
+    }
+});
+
+function verifyPayment(response, amount) {
+    fetch("/wallet/verify-payment", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            amount: amount
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('walletBalance').innerText = data.newBalance.toFixed(2);
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: 'Payment verified and wallet updated successfully!'
+            }).then(() => {
+                location.reload(); // Reload to update transaction history
+            });
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Verification Failed',
+                text: 'Failed to verify payment. Please contact support.'
+            });
+        }
+    })
+    .catch(err => {
+        console.error("Error verifying payment:", err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while verifying the payment. Please contact support.'
+        });
+    });
+}
+</script>
+
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+		<script>
+			// Show the return modal for a specific order
+			function showReturnModal(orderId) {
+				const returnModal = new bootstrap.Modal(document.getElementById('returnModal'));
+				document.getElementById('orderIdForReturn').value = orderId; // Set order ID in the hidden input
+				returnModal.show();
+			}
+
+			// Function to handle the return submission
+			function submitReturn() {
+				const orderId = document.getElementById('orderIdForReturn').value;
+				const selectedReason = document.getElementById('returnReasonSelect').value;
+				const additionalDescription = document.getElementById('returnDescription').value;
+
+				if (!selectedReason) {
+					Swal.fire({
+						icon: 'error',
+						title: 'Oops...',
+						text: 'Please select a reason for the return.',
+					});
+					return;
+				}
+
+				// Send return request to backend via POST request
+				fetch(`/return/return-request/${orderId}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify({
+						reason: selectedReason,
+						description: additionalDescription
+					})
 				})
-			})
-			.then(response => response.json())
-			.then(data => {
-				// Razorpay options
-				const options = {
-					"key": "YOUR_RAZORPAY_KEY_ID", // Replace with your Razorpay Key ID
-					"amount": data.amount, // Amount in paise (for Razorpay)
-					"currency": data.currency,
-					"name": "Your Website",
-					"description": "Wallet Recharge",
-					"order_id": data.id, // Order ID from backend
-					"handler": function (response) {
-						// Handle successful payment here
-						alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-	
-						// Optionally, update wallet balance here
-						let currentBalance = parseFloat(document.getElementById('walletBalance').innerText);
-						currentBalance += amountToAdd;
-						document.getElementById('walletBalance').innerText = currentBalance.toFixed(2);
-	
-						// Optionally, send payment details to server for final processing
-						fetch("/verify-payment", {
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json"
-							},
-							body: JSON.stringify({
-								razorpayPaymentId: response.razorpay_payment_id,
-								razorpayOrderId: response.razorpay_order_id,
-								razorpaySignature: response.razorpay_signature,
-								amount: amountToAdd
-							})
-						})
-						.then(() => {
-							alert("Payment Verified and Wallet Updated");
-						})
-						.catch(err => {
-							alert("Payment Verification Failed");
+					.then(response => response.json())
+					.then(data => {
+						if (data.message === 'Return request submitted successfully.') {
+							// Update UI to reflect the status change
+							const orderStatusElement = document.getElementById(`order-status-${orderId}`);
+							if (orderStatusElement) {
+								orderStatusElement.innerText = 'Return Requested';
+								orderStatusElement.classList.remove('bg-success');
+								orderStatusElement.classList.add('bg-warning', 'text-dark');
+							}
+
+							// Hide the modal after successful return submission
+							const returnModal = bootstrap.Modal.getInstance(document.getElementById('returnModal'));
+							returnModal.hide();
+
+							// Hide the "Return" button
+							const returnButton = document.getElementById(`return-button-${orderId}`);
+							if (returnButton) {
+								returnButton.style.display = 'none';
+							}
+
+							Swal.fire({
+								icon: 'success',
+								title: 'Success!',
+								text: 'Return request submitted successfully!',
+							});
+						} else if (data.returnStatus) {
+							// Handle case where return has already been requested
+							Swal.fire({
+								icon: 'info',
+								title: 'Return Already Requested',
+								text: `A return request has already been made for this order. Current status: ${data.returnStatus}`,
+							});
+						} else {
+							Swal.fire({
+								icon: 'error',
+								title: 'Oops...',
+								text: data.message || 'Error submitting return request.',
+							});
+						}
+					})
+					.catch(error => {
+						console.error('Error:', error);
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: 'An error occurred while submitting the return request.',
 						});
-					},
-					"prefill": {
-						"name": "<%= User.name %>", // Prefill user details
-						"email": "<%= User.email %>"
-					},
-					"theme": {
-						"color": "#3399cc"
-					}
-				};
-	
-				const rzp1 = new Razorpay(options);
-				rzp1.open();
-			})
-			.catch(error => console.error("Error creating Razorpay order:", error));
-		} else {
-			alert("Please enter a valid amount.");
-		}
-	});
-	</script>
+					});
+			}
+		</script>
+
 
 
 
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+		<!-- Bootstrap CSS -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+		<!-- Font Awesome for icons -->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
+		<!-- Bootstrap JS (requires Popper) -->
+		<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
 
 
 		</body>

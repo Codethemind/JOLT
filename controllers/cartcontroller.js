@@ -5,6 +5,7 @@ const Order =require('../models/ordercollection')
 const Coupon  =require('../models/coupencollection')
 const Razorpay = require('razorpay');
 const crypto = require('crypto'); // Add this at the top of your file
+const Wallet = require('../models/walletCollection');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -180,47 +181,66 @@ exports.placeOrder = async (req, res) => {
         if (!req.session.user) {
             return res.status(401).json({ message: "Unauthorized" });
         }
+        
         const { addressId, paymentMethod } = req.body;
-        console.log('Received order request:', { addressId, paymentMethod, userId: req.session.user });
 
+        // Update the populate to include the offer
         const cart = await Cart.findOne({ user: req.session.user }).populate({
             path: 'items.product',
             populate: {
-                path: 'variants.offer'
+                path: 'variants',
+                populate: {
+                    path: 'offer'
+                }
             }
         });
-        console.log('Cart found:', cart ? 'Yes' : 'No');
 
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ message: "Cart is empty" });
         }
 
-        let totalAmount = 0;
+        let subtotal = 0;
+        let totalDiscount = 0;
+        
         for (const item of cart.items) {
-            const variant = item.product.variants.find(v => v._id.toString() === item.variantId);
+            const product = item.product; // No need to fetch again, it's already populated
+            const variant = product.variants.find(v => v._id.toString() === item.variantId);
+
             if (variant) {
-                const price = variant.offer && variant.offer.offerPercentage
-                    ? variant.discount_price
-                    : variant.price;
-                totalAmount += price * item.quantity;
+                if (variant.stock < item.quantity) {
+                    return res.status(400).json({ message: `Insufficient stock for ${product.product_name}` });
+                }
+                variant.stock -= item.quantity;
+                await product.save();
+
+                const regularPrice = variant.price * item.quantity;
+                let finalPrice = regularPrice;
+
+                if (variant.offer && variant.offer.offerPercentage > 0) {
+                    finalPrice = variant.discount_price * item.quantity;
+                    totalDiscount += (regularPrice - finalPrice);
+                }
+
+                subtotal += regularPrice;
+                item.finalPrice = finalPrice / item.quantity;
             }
         }
 
+        let couponDiscount = 0;
         if (cart.appliedCoupon && cart.appliedCoupon.discount) {
-            totalAmount -= cart.appliedCoupon.discount;
+            couponDiscount = cart.appliedCoupon.discount;
+            totalDiscount += couponDiscount;
         }
 
-        // Ensure totalAmount is a valid number and at least 1
-        totalAmount = Math.max(1, Math.round(totalAmount * 100)) / 100;
-        console.log('Calculated total amount:', totalAmount);
+        let totalAmount = Math.max(0, subtotal - totalDiscount);
+        totalAmount = Math.round(totalAmount * 100) / 100;
 
-        if (isNaN(totalAmount)) {
+        if (isNaN(totalAmount) || totalAmount < 0) {
             throw new Error('Invalid total amount calculated');
         }
 
         const newOrderId = generateOrderId();
-        console.log('Generated order ID:', newOrderId);
-
+        
         const newOrder = new Order({
             orderId: newOrderId,
             user: req.session.user,
@@ -232,40 +252,38 @@ exports.placeOrder = async (req, res) => {
                     variantId: item.variantId,
                     quantity: item.quantity,
                     price: variant.price,
-                    discount_price: variant.discount_price || variant.price,
+                    discount_price: item.finalPrice,
                     offerPercentage: variant.offer ? variant.offer.offerPercentage : 0
                 };
             }),
             paymentMethod: paymentMethod,
             totalAmount: totalAmount,
+            subtotal: subtotal,
+            totalDiscount: totalDiscount,
             couponCode: cart.appliedCoupon ? cart.appliedCoupon.code : null,
-            discountAmount: cart.appliedCoupon ? cart.appliedCoupon.discount : 0,
+            discountAmount: couponDiscount,
             orderStatus: 'Pending',
             orderStatusTimestamps: {
                 pending: new Date()
             }
         });
-        console.log('New order object created:', newOrder);
 
         if (paymentMethod === 'Bank Transfer') {
-            console.log('Creating Razorpay order');
             const razorpayOrder = await razorpay.orders.create({
-                amount: Math.round(totalAmount * 100), // Razorpay expects amount in paise
+                amount: Math.round(totalAmount * 100),
                 currency: 'INR',
                 receipt: newOrderId,
             });
-            console.log('Razorpay order created:', razorpayOrder);
-
+            
             return res.status(200).json({
                 message: "Razorpay order created",
                 razorpayOrder: razorpayOrder,
                 order: newOrder
             });
         } else if (paymentMethod === 'Cash on Delivery') {
-            console.log('Saving COD order');
             await newOrder.save();
             await Cart.deleteOne({ user: req.session.user });
-            console.log('COD order saved and cart cleared');
+  
             return res.status(201).json({ message: "Order placed successfully", order: newOrder });
         } else {
             return res.status(400).json({ message: "Invalid payment method" });
@@ -275,7 +293,7 @@ exports.placeOrder = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message, stack: error.stack });
     }
 };
-
+    
 
 function generateOrderId() {
     const timestamp = Date.now().toString(36);
@@ -289,39 +307,48 @@ exports.cancelOrder = async (req, res) => {
     
     try {
         const { orderId } = req.params;
-
-        // Find the order by ID
         const order = await Order.findById(orderId).populate('items.product');
 
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
         }
 
-        // Check if the order is still in "Pending" status
         if (order.orderStatus !== 'Pending') {
             return res.status(400).json({ message: "Only pending orders can be canceled" });
         }
 
-        // Revert stock for each item in the order
+        // Restore stock for each item in the order
         for (const item of order.items) {
-            const product = item.product;
+            const product = await Product.findById(item.product);
             const variant = product.variants.find(v => v._id.toString() === item.variantId);
-
             if (variant) {
-                variant.stock += item.quantity; // Re-add the stock
-                await product.save(); // Save the product with updated stock
+                variant.stock += item.quantity; // Restore the stock
+                await product.save();
             }
         }
 
-        // Update the order status to 'Cancelled'
         order.orderStatus = 'Cancelled';
-        order.orderStatusTimestamps.cancelled = new Date(); // Log cancellation time
+        order.orderStatusTimestamps.cancelled = new Date();
 
-        // Save the updated order
+        // Process refund to wallet if payment method was Bank Transfer
+        if (order.paymentMethod === 'Bank Transfer') {
+            let wallet = await Wallet.findOne({ userId: order.user });
+            if (!wallet) {
+                wallet = new Wallet({ userId: order.user, balance: 0 });
+            }
+            wallet.balance += order.totalAmount;
+            wallet.transactions.push({
+                amount: order.totalAmount,
+                type: 'Credit',
+                description: `Refund for cancelled order ${order.orderId}`,
+                date: new Date()
+            });
+            await wallet.save();
+        }
+
         await order.save();
 
-        // Redirect back to the user's order page or show success
-        res.redirect('/user/orders');
+        res.status(200).json({ message: "Order cancelled successfully and refund processed if applicable" });
     } catch (error) {
         console.error("Error canceling order:", error);
         res.status(500).json({ message: "Internal Server Error" });
@@ -456,7 +483,7 @@ exports.verifyPayment = async (req, res) => {
 
         if (razorpay_signature === expectedSign) {
             const newOrder = new Order(order);
-            newOrder.orderStatus = 'Processing';
+            newOrder.orderStatus = 'Pending';
             newOrder.orderStatusTimestamps.processing = new Date();
             await newOrder.save();
 
