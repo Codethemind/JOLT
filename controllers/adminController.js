@@ -8,7 +8,13 @@ const Address=require('../models/adresscollection')
 const bcrypt=require('bcrypt')
 const upload = require('../config/multer')
 const Wallet = require('../models/walletCollection');
-
+const Settings = require('../models/settingsCollection');
+const PDFDocument = require('pdfkit');
+const ExcelJS = require('exceljs');
+const fs = require('fs');
+const path = require('path');
+const moment = require('moment');
+const pdf = require('html-pdf-node');
 
 const admin_login_page=(req,res)=>{
     res.render('admin_login_page')
@@ -438,12 +444,38 @@ const admin_update_product = async (req, res) => {
 
 
 
-const ordermanagment=async(req,res)=>{
-const order=await Order.find({}).populate('user').populate('address').populate('items.product')
+const ordermanagment = async (req, res) => {
+  try {
+      // Get the page number from query params, default to 1
+      const page = parseInt(req.query.page) || 1;
+      const limit = 5; // Number of orders per page
+      const skip = (page - 1) * limit;
 
+      // Get total number of orders for pagination calculation
+      const totalOrders = await Order.countDocuments();
 
-  res.render('admin_ordermanagment',{order})
-}
+      // Calculate total number of pages
+      const totalPages = Math.ceil(totalOrders / limit);
+
+      // Fetch orders with pagination, populate necessary fields
+      const order = await Order.find({})
+          .populate('user')
+          .populate('address')
+          .populate('items.product')
+          .skip(skip) // Skip previous orders
+          .limit(limit); // Limit the number of orders per page
+
+      // Render the order management page with pagination info
+      res.render('admin_ordermanagment', {
+          order, // Orders for the current page
+          currentPage: page, // Current page number
+          totalPages, // Total number of pages
+      });
+  } catch (error) {
+      console.error("Error fetching orders:", error);
+      res.status(500).send("An error occurred while fetching orders.");
+  }
+};
 
 
 const updateorderstatus = async (req, res) => {
@@ -506,6 +538,256 @@ const updateorderstatus = async (req, res) => {
   }
 };
 
+const updateReferralBonus = async (req, res) => {
+    try {
+        const { referralBonus } = req.body;
+        await Settings.findOneAndUpdate({}, { referralBonus: referralBonus }, { upsert: true });
+        res.json({ success: true, message: 'Referral bonus updated successfully' });
+    } catch (error) {
+        console.error('Error updating referral bonus:', error);
+        res.status(500).json({ success: false, message: 'Failed to update referral bonus' });
+    }
+};
 
-  module.exports={updateorderstatus,ordermanagment,admin_login_page,admin_post_login,admin_get_dashboard,admin_get_usermanagment,admin_get_productmanagment,admin_get_addproduct,
-    admin_get_catagorymanagment,admin_get_brandmanagment,admin_blockuser,admin_unblockuser,admin_post_addcategory,admin_put_deletcategory,admin_put_restorecategory,admin_put_updatecategory,admin_post_addproduct,admin_get_logout,admin_put_restoreproduct,admin_put_deletproduct,admin_edit_product,admin_update_product};
+
+
+const generateSalesReport = async (req, res) => {
+    try {
+        const { startDate, endDate } = req.body;
+        const orders = await Order.find({
+            createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) }
+        })
+        .populate('user', 'name email')
+        .populate({
+            path: 'items.product',
+            populate: {
+                path: 'variants.offer'
+            }
+        })
+        .populate('address')
+        .sort({ createdAt: -1 });
+
+        const doc = new PDFDocument();
+        const filename = `sales_report_${startDate}_to_${endDate}.pdf`;
+        const stream = fs.createWriteStream(path.join(__dirname, '..', 'public', 'reports', filename));
+
+        doc.pipe(stream);
+
+        // Add title and date range
+        doc.fontSize(20).text('Detailed Sales Report', { align: 'center' });
+        doc.fontSize(12).text(`From ${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`, { align: 'center' });
+        doc.moveDown();
+
+        // Add summary
+        let totalSales = 0;
+        let totalOfferDiscount = 0;
+        let totalCouponDiscount = 0;
+
+        orders.forEach((order) => {
+            totalSales += order.totalAmount;
+            totalCouponDiscount += order.discountAmount || 0;
+            order.items.forEach((item) => {
+                const variant = item.product.variants.find(v => v._id.toString() === item.variantId.toString());
+                if (variant && variant.offer) {
+                    const originalPrice = variant.price;
+                    const discountedPrice = variant.discount_price || originalPrice;
+                    totalOfferDiscount += (originalPrice - discountedPrice) * item.quantity;
+                }
+            });
+        });
+
+        doc.fontSize(14).text(`Total Orders: ${orders.length}`);
+        doc.text(`Original Total: $${totalSales.toFixed(2)}`);
+        doc.text(`Offer Discount: $${totalOfferDiscount.toFixed(2)}`);
+        doc.text(`Total After Offers: $${(totalSales - totalOfferDiscount).toFixed(2)}`);
+        doc.text(`Coupon Discount: $${totalCouponDiscount.toFixed(2)}`);
+        doc.text(`Final Total: $${(totalSales - totalOfferDiscount - totalCouponDiscount).toFixed(2)}`);
+        doc.moveDown();
+
+        // Add detailed order information
+        orders.forEach((order, index) => {
+            doc.fontSize(12).text(`Order ${index + 1}: ${order.orderId}`);
+            doc.fontSize(10).text(`Customer: ${order.user.name} (${order.user.email})`);
+            doc.text(`Date: ${new Date(order.createdAt).toLocaleString()}`);
+            doc.text(`Status: ${order.orderStatus}`);
+            doc.text(`Payment Method: ${order.paymentMethod}`);
+            doc.moveDown(0.5);
+
+            // Add item details
+            order.items.forEach(item => {
+                const variant = item.product.variants.find(v => v._id.toString() === item.variantId.toString());
+                doc.text(`Product: ${item.product.product_name}`);
+                doc.text(`  Color: ${variant.color}, Size: ${variant.size}`);
+                doc.text(`  Quantity: ${item.quantity}`);
+                doc.text(`  Original Price: $${variant.price.toFixed(2)}`);
+                if (variant.offer) {
+                    doc.text(`  Offer: ${variant.offer.offerName} (${variant.offer.offerPercentage}% off)`);
+                    doc.text(`  Discounted Price: $${(variant.discount_price || variant.price).toFixed(2)}`);
+                }
+                doc.text(`  Subtotal: $${(item.price * item.quantity).toFixed(2)}`);
+                doc.moveDown(0.5);
+            });
+
+            doc.text(`Subtotal: $${order.totalAmount.toFixed(2)}`);
+            if (order.discountAmount) {
+                doc.text(`Coupon Discount: $${order.discountAmount.toFixed(2)}`);
+            }
+            doc.text(`Total: $${(order.totalAmount - (order.discountAmount || 0)).toFixed(2)}`);
+            doc.moveDown();
+            doc.text('---------------------------------------------------');
+            doc.moveDown();
+        });
+
+        doc.end();
+
+        stream.on('finish', () => {
+            res.download(path.join(__dirname, '..', 'public', 'reports', filename));
+        });
+
+    } catch (error) {
+        console.error('Error generating sales report:', error);
+        res.status(500).json({ error: 'Error generating sales report' });
+    }
+};
+
+const downloadReport = async (req, res) => {
+  console.log('Generating sales report...');
+  try {
+    const { startDate, endDate } = req.body;
+    
+    const query = {
+      createdAt: {
+        $gte: moment(startDate).startOf("day").toDate(),
+        $lte: moment(endDate).endOf("day").toDate()
+      }
+    };
+
+    const orders = await Order.find(query)
+      .populate("user", "name email")
+      .populate({
+          path: "items.product",
+          select: "product_name variants",
+        populate: {
+          path: "variants.offer",
+          select: "offerName offerPercentage"
+        }
+      })
+      .populate("address")
+      .exec();
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ success: false, error: "No orders found for the selected date range." });
+    }
+
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
+    const filename = `salesReport_${moment().format('YYYYMMDD_HHmmss')}.pdf`;
+    const pdfPath = path.join(__dirname, '..', 'public', 'reports', filename);
+    const writeStream = fs.createWriteStream(pdfPath);
+
+    doc.pipe(writeStream);
+
+    // Add title and date range
+    doc.fontSize(20).text('Sales Report', { align: 'center' });
+    doc.fontSize(12).text(`Report Period: ${moment(startDate).format('MMMM Do YYYY')} to ${moment(endDate).format('MMMM Do YYYY')}`, { align: 'center' });
+    doc.moveDown();
+
+    // Add summary
+    let totalOrders = orders.length;
+    let totalSales = 0;
+    let totalOfferDiscount = 0;
+    let totalCouponDiscount = 0;
+
+    orders.forEach(order => {
+      totalSales += order.totalAmount;
+      totalCouponDiscount += order.discountAmount || 0;
+      order.items.forEach(item => {
+        const variant = item.product.variants.find(v => v._id.toString() === item.variantId.toString());
+        if (variant && variant.offer) {
+          const originalPrice = variant.price;
+          const discountedPrice = variant.discount_price || originalPrice;
+          totalOfferDiscount += (originalPrice - discountedPrice) * item.quantity;
+        }
+      });
+    });
+
+    doc.fontSize(14).text('Summary', { underline: true });
+    doc.fontSize(12).text(`Total Orders: ${totalOrders}`);
+    doc.text(`Original Total: ₹${totalSales.toFixed(2)}`);
+    doc.text(`Offer Discount: ₹${totalOfferDiscount.toFixed(2)}`);
+    doc.text(`Total After Offers: ₹${(totalSales - totalOfferDiscount).toFixed(2)}`);
+    doc.text(`Coupon Discount: ₹${totalCouponDiscount.toFixed(2)}`);
+    doc.text(`Final Total: ₹${(totalSales - totalOfferDiscount - totalCouponDiscount).toFixed(2)}`);
+    doc.moveDown();
+
+    // Add order details
+    doc.fontSize(14).text('Order Details', { underline: true });
+    orders.forEach((order, index) => {
+      doc.fontSize(12).text(`Order ${index + 1}: ${order.orderId}`, { bold: true });
+      doc.fontSize(10).text(`Customer: ${order.user.name} (${order.user.email})`);
+      doc.text(`Date: ${moment(order.createdAt).format('MMMM Do YYYY, h:mm:ss a')}`);
+      doc.text(`Status: ${order.orderStatus}`);
+      doc.text(`Payment Method: ${order.paymentMethod}`);
+
+      doc.text('Delivery Address:');
+      doc.text(`${order.address.fullName}, ${order.address.streetAddress}`);
+      doc.text(`${order.address.city}, ${order.address.state}, ${order.address.zipCode}`);
+      doc.text(`${order.address.country}, Phone: ${order.address.phone}`);
+
+      doc.moveDown(0.5);
+      doc.text('Order Items:', { underline: true });
+      order.items.forEach(item => {
+        const variant = item.product.variants.find(v => v._id.toString() === item.variantId.toString());
+        doc.text(`- ${item.product.product_name}`);
+        doc.text(`  Color: ${variant.color}, Size: ${variant.size}`);
+        doc.text(`  Quantity: ${item.quantity}`);
+        doc.text(`  Original Price: ₹${variant.price.toFixed(2)}`);
+        if (variant.offer) {
+          doc.text(`  Offer: ${variant.offer.offerName} (${variant.offer.offerPercentage}% off)`);
+          doc.text(`  Discounted Price: ₹${(variant.discount_price || variant.price).toFixed(2)}`);
+        }
+        doc.text(`  Subtotal: ₹${(item.price * item.quantity).toFixed(2)}`);
+      });
+
+      doc.moveDown(0.5);
+      doc.text(`Subtotal: ₹${order.totalAmount.toFixed(2)}`);
+      if (order.discountAmount) {
+        doc.text(`Coupon Discount: ₹${order.discountAmount.toFixed(2)}`);
+      }
+      doc.text(`Total: ₹${(order.totalAmount - (order.discountAmount || 0)).toFixed(2)}`);
+      doc.moveDown();
+      doc.text('---------------------------------------------------');
+      doc.moveDown();
+    });
+
+    // Add page numbers
+    const pageCount = doc.bufferedPageRange().count;
+    for (let i = 0; i < pageCount; i++) {
+      doc.switchToPage(i);
+      doc.text(`Page ${i + 1} of ${pageCount}`, 
+        50, 
+        doc.page.height - 50, 
+        { align: 'center' }
+      );
+    }
+
+    doc.end();
+
+    writeStream.on('finish', () => {
+      res.download(pdfPath, filename, (err) => {
+        if (err) {
+          console.error("Error sending file:", err);
+          res.status(500).json({ success: false, error: "Error sending file" });
+        }
+        // Delete the file after sending
+        fs.unlinkSync(pdfPath);
+      });
+    });
+
+  } catch (error) {
+    console.error("Error generating sales report:", error);
+    res.status(500).json({ success: false, error: "An error occurred while generating the sales report" });
+  }
+};
+
+  module.exports={updateReferralBonus,updateorderstatus,ordermanagment,admin_login_page,admin_post_login,admin_get_dashboard,admin_get_usermanagment,admin_get_productmanagment,admin_get_addproduct,
+    admin_get_catagorymanagment,admin_get_brandmanagment,admin_blockuser,admin_unblockuser,admin_post_addcategory,admin_put_deletcategory,admin_put_restorecategory,admin_put_updatecategory,admin_post_addproduct,admin_get_logout,admin_put_restoreproduct,admin_put_deletproduct,admin_edit_product,admin_update_product,generateSalesReport,downloadReport};

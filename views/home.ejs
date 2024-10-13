@@ -17,7 +17,7 @@
               <ul>
                 <li>
                   <div class="header-">
-                    <a href="#">USD</a>
+                   
                   </div>
                 </li>
                 <li>
@@ -238,8 +238,8 @@
                 <!-- End .intro-title -->
 
                 <div class="intro-price">
-                  <sup class="intro-old-price">$349,95</sup>
-                  <span class="text-third"> $279<sup>.99</sup> </span>
+                  <sup class="intro-old-price">INR 34999</sup>
+                  <span class="text-third"> INR 27999<sup>.99</sup> </span>
                 </div>
                 <!-- End .intro-price -->
 
@@ -274,7 +274,7 @@
 
                 <div class="intro-price">
                   <sup>Today:</sup>
-                  <span class="text-primary"> $999<sup>.99</sup> </span>
+                  <span class="text-primary"> INR 999<sup>.99</sup> </span>
                 </div>
                 <!-- End .intro-price -->
 
@@ -1530,6 +1530,11 @@ aria-hidden="true"
                    
                     />
                   </div>
+                  <!-- Add this to your signup form -->
+<div class="form-group">
+  <label for="referralCode">Referral Code (Optional)</label>
+  <input type="text" class="form-control" id="referralCode" name="referralCode">
+</div>
 
                   <div class="form-group">
                     <label for="register-password">Password *</label>
@@ -1728,6 +1733,7 @@ function signup(event) {
     const name = document.getElementById("register-name").value.trim();
     const email = document.getElementById("register-email").value.trim();
     const password = document.getElementById("register-password").value.trim();
+    const referralCode = document.getElementById("referralCode").value.trim();
     const confirmPassword = document.getElementById("register-password-confirm").value.trim();
 
     // Check if all fields are filled
@@ -1786,7 +1792,7 @@ function signup(event) {
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password,referralCode }),
     })
     .then((res) => res.json())
     .then((data) => {

@@ -441,10 +441,15 @@
 											<p><strong>Email:</strong> <span id="userEmail">
 													<%= User.email %>
 												</span></p>
+												<p><strong>Your Referral Code:</strong> <span id="referralCode"><%= User.referralCode %></span></p>
+    <button id="copyReferralCode" class="btn btn-secondary">Copy Referral Code</button>
+    <p><strong>Referral Earnings:</strong> ₹<%= User.referralEarnings.toFixed(2) %></p>
 											<button id="openProfileModal" class="btn btn-primary">Edit Profile</button>
 											<button id="changePasswordButton" class="btn btn-secondary"
 												data-toggle="modal" data-target="#changePasswordModal">Change
 												Password</button>
+
+
 										</div>
 
 										<!-- Edit Profile Modal -->
@@ -1351,6 +1356,16 @@ function verifyPayment(response, amount) {
 			}
 		</script>
 
+		<script>
+document.getElementById('copyReferralCode').addEventListener('click', function() {
+    const referralCode = document.getElementById('referralCode').textContent;
+    navigator.clipboard.writeText(referralCode).then(function() {
+        alert('Referral code copied to clipboard!');
+    }, function(err) {
+        console.error('Could not copy text: ', err);
+    });
+});
+</script>
 
 
 

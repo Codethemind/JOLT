@@ -1,120 +1,272 @@
-
 <%- include('./partial/admin_header') %>
 
-
-
-    <div class="container-fluid">
-        <div class="row">
-         
-
-            <!-- Main Content -->
-            <main role="main" class="col-md-10 content">
-                <div class="container">
-                    <h1>Dashboard</h1>
-                    <div class="row">
-                        <!-- Example Chart -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    Sales Overview
-                                </div>
-                                <div class="card-body">
-                                    <canvas id="salesChart"></canvas>
-                                    <!-- View and Download Report Buttons -->
-                                    <button class="btn btn-primary mt-3" id="viewReportBtn">View Report</button>
-                                    <a href="#" class="btn btn-success mt-3" id="downloadReportBtn" download="sales_report.csv">Download Report</a>
-                                </div>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Main Content -->
+        <main role="main" class="col-md-10 content">
+            <div class="container">
+                <h1>Dashboard</h1>
+                <div class="row">
+                    <!-- Sales Report Section -->
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                Sales Report
+                            </div>
+                            <div class="card-body">
+                                <form id="salesReportForm">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-2">
+                                            <label for="startDate">Start Date</label>
+                                            <input type="date" class="form-control" id="startDate" name="startDate" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label for="endDate">End Date</label>
+                                            <input type="date" class="form-control" id="endDate" name="endDate" required>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label for="reportType">Report Type</label>
+                                            <select class="form-control" id="reportType" name="reportType">
+                                                <option value="json">View Online</option>
+                                                <option value="pdf">Download PDF</option>
+                                                <option value="excel">Download Excel</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group col-md-2">
+                                            <label>&nbsp;</label>
+                                            <button type="submit" class="btn btn-primary btn-block">Generate Report</button>
+                                        </div>
+                                        <div class="form-group col-md-4">
+                                            <label for="dateRangeSelect">Quick Select</label>
+                                            <select id="dateRangeSelect" class="form-control" onchange="setDateRange(this.value)">
+                                                <option value="">Select Date Range</option>
+                                                <option value="today">Today</option>
+                                                <option value="thisWeek">This Week</option>
+                                                <option value="thisMonth">This Month</option>
+                                                <option value="thisYear">This Year</option>
+                                            </select>
+                                        </div>
+                                        
+                                    </div>
+                                </form>
+                                <div id="reportResults" class="mt-4"></div>
                             </div>
                         </div>
-                        <!-- Example Table -->
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    Recent Orders
-                                </div>
-                                <div class="card-body">
-                                    <table class="table">
-                                        <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Order ID</th>
-                                                <th>Date</th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>1</td>
-                                                <td>#001</td>
-                                                <td>2024-09-01</td>
-                                                <td>Shipped</td>
-                                            </tr>
-                                            <tr>
-                                                <td>2</td>
-                                                <td>#002</td>
-                                                <td>2024-09-02</td>
-                                                <td>Processing</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                    </div>
+                    
+                    <!-- Example Chart -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Sales Overview
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Example Table -->
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Recent Orders
+                            </div>
+                            <div class="card-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Order ID</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>1</td>
+                                            <td>#001</td>
+                                            <td>2024-09-01</td>
+                                            <td>Shipped</td>
+                                        </tr>
+                                        <tr>
+                                            <td>2</td>
+                                            <td>#002</td>
+                                            <td>2024-09-02</td>
+                                            <td>Processing</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
-        </div>
+            </div>
+        </main>
     </div>
+</div>
 
-    <!-- JavaScript dependencies -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- JavaScript dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Sales Chart Script -->
-    <script>
-        var ctx = document.getElementById('salesChart').getContext('2d');
-        var salesChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-                datasets: [{
-                    label: 'Sales',
-                    data: [10, 20, 30, 40, 50, 60],
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+<!-- Sales Chart Script -->
+<script>
+    var ctx = document.getElementById('salesChart').getContext('2d');
+    var salesChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+            datasets: [{
+                label: 'Sales',
+                data: [10, 20, 30, 40, 50, 60],
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
-        });
+        }
+    });
+</script>
 
-        // Generate and Download CSV Report
-        document.getElementById('downloadReportBtn').addEventListener('click', function () {
-            var csvContent = "data:text/csv;charset=utf-8,Month,Sales\n" +
-                "January,10\n" +
-                "February,20\n" +
-                "March,30\n" +
-                "April,40\n" +
-                "May,50\n" +
-                "June,60\n";
-            
-            var encodedUri = encodeURI(csvContent);
-            this.setAttribute("href", encodedUri);
-        });
+<!-- Sales Report Script -->
+<script>
 
-        // View Report Button Logic
-        document.getElementById('viewReportBtn').addEventListener('click', function () {
-            alert("Sales Report:\nJanuary: 10\nFebruary: 20\nMarch: 30\nApril: 40\nMay: 50\nJune: 60");
-        });
-    </script>
+
+document.getElementById('salesReportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    
+    const formData = new URLSearchParams(new FormData(this)).toString();
+    const reportType = new FormData(this).get('reportType');
+
+    fetch('/admin/reports/generate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: formData
+    })
+    .then(response => {
+        if (reportType === 'json') {
+            return response.json();
+        } else {
+            return response.blob();
+        }
+    })
+    .then(data => {
+        if (reportType === 'json') {
+            displayReportResults(data);
+        } else {
+            downloadReport(data, reportType);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while generating the report.');
+    });
+});
+
+
+
+function displayReportResults(data) {
+    console.log('Report data:', data);
+    
+    // Create a table to display the report data
+    const table = document.createElement('table');
+    table.className = 'table table-bordered';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Total Orders</td><td>${data.totalOrders || 0}</td></tr>
+            <tr><td>Original Total</td><td>${(data.originalTotal || 0).toFixed(2)}</td></tr>
+            <tr><td>Offer Discount</td><td>${(data.offerDiscount || 0).toFixed(2)}</td></tr>
+            <tr><td>Total After Offers</td><td>${(data.afterOfferTotal || 0).toFixed(2)}</td></tr>
+            <tr><td>Coupon Discount</td><td>${(data.totalCouponDiscount || 0).toFixed(2)}</td></tr>
+            <tr><td>Final Total</td><td>${(data.finalTotal || 0).toFixed(2)}</td></tr>
+        </tbody>
+    `;
+
+    // Clear previous results and append the new table
+    const resultsContainer = document.getElementById('reportResults');
+    if (resultsContainer) {
+        resultsContainer.innerHTML = '';
+        resultsContainer.appendChild(table);
+    } else {
+        console.error('Element with id "reportResults" not found in the DOM');
+    }
+}
+
+function updateRecentOrdersTable(recentOrders) {
+    const tableBody = document.querySelector('#recentOrdersTable tbody');
+    tableBody.innerHTML = '';
+
+    recentOrders.forEach((order, index) => {
+        const row = tableBody.insertRow();
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${order.orderId}</td>
+            <td>${order.date}</td>
+            <td>${order.status}</td>
+        `;
+    });
+}
+
+function downloadReport(blob, type) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `sales_report.${type === 'pdf' ? 'pdf' : 'xlsx'}`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+
+
+// Add quick date range selection
+const quickRanges = {
+    'today': () => {
+        const today = new Date();
+        return { start: today, end: today };
+    },
+    'thisWeek': () => {
+        const today = new Date();
+        const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+        return { start: startOfWeek, end: new Date() };
+    },
+    'thisMonth': () => {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        return { start: startOfMonth, end: today };
+    },
+    'thisYear': () => {
+        const today = new Date();
+        const startOfYear = new Date(today.getFullYear(), 0, 1);
+        return { start: startOfYear, end: today };
+    }
+};
+
+function setDateRange(range) {
+    const { start, end } = quickRanges[range]();
+    document.getElementById('startDate').valueAsDate = start;
+    document.getElementById('endDate').valueAsDate = end;
+}
+</script>
+
+
 </body>
 </html>
-

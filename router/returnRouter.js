@@ -51,37 +51,88 @@ router.get('/admin/pending-returns', async (req, res) => {
     }
 });
 
-// Update the admin accept return route
 router.post('/admin/accept-return/:orderId', async (req, res) => {
     try {
         const order = await Order.findById(req.params.orderId);
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found.' });
         }
+
+        // Update order's return status
         order.returnStatus = 'Accepted';
         order.returnAcceptedDate = new Date();
 
-        // Process refund to wallet
-        const wallet = await Wallet.findOne({ userId: order.user });
-        if (!wallet) {
-            return res.status(404).json({ success: false, message: 'Wallet not found.' });
+        let refundProcessed = false;
+
+        // Check the payment method used for the order
+        if (order.paymentMethod === 'Cash on Delivery') {
+            // Refund to wallet if payment was Cash on Delivery
+            let wallet = await Wallet.findOne({ userId: order.user });
+
+            if (!wallet) {
+                // Create a new wallet for the user if it doesn't exist
+                wallet = new Wallet({
+                    userId: order.user,
+                    balance: 0,
+                    transactions: []
+                });
+            }
+
+            // Add the refund amount to the wallet balance
+            wallet.balance += order.totalAmount;
+            wallet.transactions.push({
+                amount: order.totalAmount,
+                type: 'Credit',
+                description: `Refund for order ${order.orderId}`,
+                date: new Date()
+            });
+
+            // Save the order and wallet
+            await Promise.all([order.save(), wallet.save()]);
+
+            refundProcessed = true;
+        } else if (order.paymentMethod === 'Bank Transfer') {
+            // Refund to bank account logic can be handled here
+            // For the sake of this example, we will still refund to the wallet first
+            let wallet = await Wallet.findOne({ userId: order.user });
+
+            if (!wallet) {
+                // Create a new wallet for the user if it doesn't exist
+                wallet = new Wallet({
+                    userId: order.user,
+                    balance: 0,
+                    transactions: []
+                });
+            }
+
+            // Add the refund amount to the wallet balance
+            wallet.balance += order.totalAmount;
+            wallet.transactions.push({
+                amount: order.totalAmount,
+                type: 'Credit',
+                description: `Refund for order ${order.orderId} (Bank Transfer)`,
+                date: new Date()
+            });
+
+            // Additional logic to transfer money from wallet to bank account
+            // This could involve integrating with a payment gateway or bank transfer API
+            // For now, we'll just refund to the wallet.
+            await Promise.all([order.save(), wallet.save()]);
+
+            refundProcessed = true;
         }
 
-        wallet.balance += order.totalAmount;
-        wallet.transactions.push({
-            amount: order.totalAmount,
-            type: 'Credit',
-            description: `Refund for order ${order.orderId}`,
-            date: new Date()
-        });
-
-        await Promise.all([order.save(), wallet.save()]);
-        res.json({ success: true, message: 'Return request accepted and refund processed successfully.' });
+        if (refundProcessed) {
+            res.json({ success: true, message: 'Return request accepted and refund processed successfully.' });
+        } else {
+            res.status(400).json({ success: false, message: 'Refund process failed. Unsupported payment method.' });
+        }
     } catch (error) {
         console.error('Error accepting return request:', error);
         res.status(500).json({ success: false, message: 'Error accepting return request.' });
     }
 });
+
 
 // New route for admin to reject a return request
 router.post('/admin/reject-return/:orderId', async (req, res) => {

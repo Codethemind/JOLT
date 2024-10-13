@@ -6,6 +6,7 @@ const Category =require('../models/catagorycollection')
 const Product=require('../models/poductcollection')
 const Cart=require('../models/cartCollection')
 const Wallet = require('../models/walletCollection')
+const Settings = require('../models/settingsCollection');
 
 
 
@@ -23,6 +24,19 @@ const transporter = nodemailer.createTransport({
 });
 
 const otps = {};
+
+// Add this function at the top of the file
+async function generateUniqueReferralCode() {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code;
+  do {
+    code = '';
+    for (let i = 0; i < 6; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+  } while (await user.findOne({ referralCode: code }));
+  return code;
+}
 
 
 
@@ -80,7 +94,9 @@ const otps = {};
   
 
   const post_signup = async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, email, password, referralCode } = req.body;
+
+    
 
     // Check if all fields are provided
     if (!name || !email || !password) {
@@ -106,13 +122,6 @@ const otps = {};
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new user({
-            name,
-            email,
-            password: hashedPassword,
-        });
-        
-        
 
         // Generate OTP and save it
         const otp = otpGenerator.generate(6, {
@@ -125,9 +134,13 @@ const otps = {};
         const otpmodel = new OTP({ otp: otp, email: email });
         await otpmodel.save();
 
-        // Store user and OTP in the session
-        req.session.email = email;
-        req.session.newUser = newUser;
+        // Store user data in the session
+        req.session.pendingUser = {
+            name,
+            email,
+            password: hashedPassword,
+            referralCode
+        };
 
         // Send OTP email
         const mailOptions = {
@@ -187,43 +200,88 @@ const post_login = async (req, res) => {
 
   const post_verify_otp = async (req, res) => {
     try {
-      const { otp } = req.body;
-      const newUserData = req.session.newUser;
-      const email = req.session.email;
+        const { otp } = req.body;
+        const pendingUserData = req.session.pendingUser;
+        
+        if (!pendingUserData) {
+    
+            return res.status(400).json({ error: "Session data missing or expired" });
+        }
+
+        const { name, email, password, referralCode } = pendingUserData;
+
+
+        // Find the OTP record
+        const otpcheck = await OTP.findOne({ email });
+
+        if (!otpcheck) {
+ 
+            return res.status(400).json({ error: "Invalid OTP" });
+        }
+
+        // Check if OTP matches and is for the correct email
+        if (otpcheck.otp === otp && otpcheck.email === email) {
+ 
+            const newUser = new user({
+                name,
+                email,
+                password,
+                referralCode: await generateUniqueReferralCode()
+            });
+
+
+            if (referralCode) {
+                
+                const referrer = await user.findOne({ referralCode });
+                if (referrer) {
+                  
+                    newUser.referredBy = referrer._id;
+                    
   
-      // Validate session data
-      if (!newUserData || !email) {
-        return res.status(400).json({ error: "Session data missing or expired" });
-      }
-  
-      // Find the OTP record
-      const otpcheck = await OTP.findOne({ email });
-  
-      if (!otpcheck) {
-        return res.status(400).json({ error: "Invalid OTP" });
-      }
-  
-      // Check if OTP matches and is for the correct email
-      if (otpcheck.otp === otp && otpcheck.email === email) {
-        // Create new user and save to database
-        const newUser = new user(newUserData);
-        await newUser.save();
-  
-        // Optionally, you might want to delete or invalidate the OTP record
-        // await OTP.deleteOne({ email });
-  
-        return res.status(200).json({
-          success: true,
-          successRedirectUrl: "#login-form",
-        });
-      } else {
-        return res.status(400).json({ error: "Invalid OTP or email" });
-      }
+                    const referralBonus = await getReferralBonus();
+
+                    let wallet = await Wallet.findOne({ userId: referrer._id });
+                    if (!wallet) {
+            
+                        wallet = new Wallet({ userId: referrer._id, balance: 0 });
+                    }
+                    wallet.balance += referralBonus;
+                    wallet.transactions.push({
+                        amount: referralBonus,
+                        type: 'Credit',
+                        description: 'Referral Bonus',
+                        date: new Date()
+                    });
+                    await wallet.save();
+                    referrer.referralEarnings += referralBonus;
+                    await referrer.save();
+                } else {
+                    console.log(`No referrer found for code: ${referralCode}`);
+                }
+            } else {
+                console.log("No referral code provided");
+            }
+
+            await newUser.save();
+   
+            delete req.session.pendingUser;
+
+            // Optionally, delete the OTP record
+            await OTP.deleteOne({ email });
+
+            return res.status(200).json({
+                success: true,
+                successRedirectUrl: "#login-form",
+            });
+        } else {
+            console.log("OTP verification failed");
+            return res.status(400).json({ error: "Invalid OTP" });
+        }
     } catch (error) {
-      console.error("Error verifying OTP:", error);
-      return res.status(500).json({ error: "An error occurred while verifying OTP" });
+        console.error("Error verifying OTP:", error);
+        return res.status(500).json({ error: "An error occurred while verifying OTP" });
     }
-  };
+};
   
 
   const post_resend_otp = async (req, res) => {
@@ -605,4 +663,10 @@ const post_reset_password = async (req, res) => {
   }
 };
 
-  module.exports={deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout, post_forgot_password, post_verify_reset_otp, post_reset_password};
+async function getReferralBonus() {
+    const settings = await Settings.findOne();
+    const bonus = settings ? settings.referralBonus : 100; // Default to 100 if not set
+    return bonus;
+}
+
+  module.exports={deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout, post_forgot_password, post_verify_reset_otp, post_reset_password, generateUniqueReferralCode};

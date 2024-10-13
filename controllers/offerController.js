@@ -5,6 +5,7 @@ const Brand = require("../models/brandcollection");
 const Product = require("../models/poductcollection");
 const Order = require("../models/ordercollection");
 const Offer = require("../models/offercollection");
+const Settings = require('../models/settingsCollection');
 
 const offers = async (req, res) => {
   if (req.session.isAdmin) {
@@ -13,10 +14,12 @@ const offers = async (req, res) => {
     const products = await Product.find({ isDelete: false }).populate(
       "variants.offer"
     );
+    const settings = await Settings.findOne();
+    const currentReferralBonus = settings ? settings.referralBonus : 100;
     const category = await Category.find({ isDeleted: false }).populate(
       "offer"
     );
-    res.render("admin_offermanagement", { offer, products, category ,offerSelect });
+    res.render("admin_offermanagement", { offer, products, category ,offerSelect, currentReferralBonus });
   } else {
     res.redirect("/admin/");
   }
@@ -470,6 +473,16 @@ const removeProductOffer = async (req,res)=>{
   
   }
 
+  const updateReferralBonus = async (req, res) => {
+    try {
+        const { referralBonus } = req.body;
+        await Settings.findOneAndUpdate({}, { referralBonus: referralBonus }, { upsert: true });
+        res.json({ success: true, message: 'Referral bonus updated successfully' });
+    } catch (error) {
+        console.error('Error updating referral bonus:', error);
+        res.status(500).json({ success: false, message: 'Failed to update referral bonus' });
+    }
+};
 
 module.exports = {
   offers,
@@ -481,4 +494,5 @@ module.exports = {
   updateCategoryOffer,
   removeProductOffer,
   removeCategoryOffer,
+  updateReferralBonus
 };

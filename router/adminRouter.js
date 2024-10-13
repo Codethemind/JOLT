@@ -39,5 +39,14 @@ adminRouter.post("/updateCategoryOffer",offerController.updateCategoryOffer);
 adminRouter.post("/removeCategoryOffer",offerController.removeCategoryOffer);
 
 adminRouter.get('/logout', adminController.admin_get_logout);
-  
+adminRouter.post('/update-referral-bonus', adminauth, adminController.updateReferralBonus);
+
+
+
+adminRouter.get('/sales-report', adminauth, adminController.generateSalesReport);
+
+adminRouter.post('/generate-sales-report', adminauth, adminController.generateSalesReport);
+
+adminRouter.post('/downloadReport', adminauth, adminController.downloadReport);
+
 module.exports=adminRouter;

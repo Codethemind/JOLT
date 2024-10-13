@@ -19,6 +19,7 @@ const otpRouter = require('./router/otpRouter');
 const paymentRouter = require('./router/paymentRouter');
 const walletRouter = require('./router/walletRouter');
 const returnRouter = require('./router/returnRouter')
+const reportRouter = require('./router/reportRouter');
 
 mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
 app.use('/uploads',express.static('uploads'))
@@ -43,6 +44,7 @@ app.use('/api/otp', otpRouter);
 app.use('/payments', paymentRouter);
 app.use('/wallet', walletRouter);
 app.use('/return', returnRouter);
+app.use('/admin/reports', reportRouter);
 
 app.use((req, res, next) => {
     res.locals.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
@@ -57,27 +59,8 @@ app.get('/*',(req,res)=>{
 })
 
 const PORT = process.env.PORT || 3001;
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-});
-
-server.on('error', (error) => {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-
-    switch (error.code) {
-        case 'EACCES':
-            console.error(`Port ${PORT} requires elevated privileges`);
-            process.exit(1);
-            break;
-        case 'EADDRINUSE':
-            console.error(`Port ${PORT} is already in use`);
-            process.exit(1);
-            break;
-        default:
-            throw error;
-    }
 });
 
 

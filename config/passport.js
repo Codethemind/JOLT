@@ -4,13 +4,11 @@ const user = require("../models/usercollection");
 require("dotenv").config();
 
 // Configure Google Strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/auth/google/callback"
-    },
+passport.use(new GoogleStrategy({
+  clientID: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  callbackURL: "http://localhost:3001/auth/google/callback"  // This should match exactly in Google Console
+},
     async (accessToken, refreshToken, profile, done) => {
       try {
         // Find if the user already exists in the database
@@ -63,3 +61,5 @@ passport.deserializeUser(async (id, done) => {
 });
 
 module.exports = passport;
+
+
