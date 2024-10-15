@@ -411,6 +411,20 @@ a:focus {
     text-decoration: none
 }
 
+a {
+    color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+    text-decoration: none; 
+    
+    &:hover {
+      color: rgba(var(--bs-link-hover-color-rgb), var(--bs-link-opacity, 1));
+      text-decoration: underline; 
+    }
+  }
+  a {
+    text-decoration: none !important;
+  }
+
+
 .link-underline {
     box-shadow: 0 1px 0 0 #c96
 }

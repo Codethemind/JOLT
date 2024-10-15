@@ -1,5 +1,25 @@
 
 <%- include('./partial/header') %>
+<style>
+  .cart-count, .wishlist-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #c96;
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.icon {
+    position: relative;
+    display: inline-block;
+}
+</style>
 
 
   <header class="header header-intro-clearance header-4">
@@ -103,27 +123,31 @@
 
         <div class="header-right">
           <div class="wishlist">
-            <a href="/wishlist/" title="Wishlist">
-              <div class="icon">
-                <i class="icon-heart-o"></i>
-                <!-- <span class="wishlist-count badge">3</span> -->
-              </div>
-              <p>Wishlist</p>
-            </a>
+              <a href="/wishlist/" title="Wishlist">
+                  <div class="icon">
+                      <i class="icon-heart-o"></i>
+                      <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
+                          <span class="wishlist-count badge"><%= wishlistCount %></span>
+                      <% } %>
+                  </div>
+                  <p>Wishlist</p>
+              </a>
           </div>
           <!-- End .compare-dropdown -->
-
+      
           <div class="dropdown cart-dropdown">
-            <a href="/api/cart" class="dropdown-toggle">
-              <div class="icon">
-                <i class="icon-shopping-cart"></i>
-                <!-- <span class="cart-count">2</span> -->
-              </div>
-              <p>Cart</p>
-            </a>
+              <a href="/api/cart" class="dropdown-toggle">
+                  <div class="icon">
+                      <i class="icon-shopping-cart"></i>
+                      <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                          <span class="cart-count"><%= cartCount %></span>
+                      <% } %>
+                  </div>
+                  <p>Cart</p>
+              </a>
           </div>
           <!-- End .cart-dropdown -->
-        </div>
+      </div>
         <!-- End .header-right -->
       </div>
       <!-- End .container -->
@@ -438,7 +462,7 @@
               <!-- End .banner-subtitle -->
               <h3 class="banner-title">
                 <a href="#"
-                  >Save $150 <strong>on Samsung <br />Galaxy Note9</strong></a
+                  >Save INR 15099 <strong>on Samsung <br />Galaxy Note9</strong></a
                 >
               </h3>
               <!-- End .banner-title -->
@@ -661,7 +685,7 @@
               </div>
               <!-- End .cta-text -->
               <a href="#" class="btn btn-primary btn-round"
-                ><span>Shop Now - $429.99</span
+                ><span>Shop Now - INR 4299.99</span
                 ><i class="icon-long-arrow-right"></i
               ></a>
             </div>
@@ -1171,7 +1195,7 @@
               <div class="icon-box-content">
                 <h3 class="icon-box-title">Free Shipping</h3>
                 <!-- End .icon-box-title -->
-                <p>Orders $50 or more</p>
+                <p>Orders  INR 500 or more</p>
               </div>
               <!-- End .icon-box-content -->
             </div>
@@ -1254,7 +1278,7 @@
               <!-- End .cta-title -->
               <p class="cta-desc text-white">
                 and receive
-                <span class="font-weight-normal">$20 coupon</span> for first
+                <span class="font-weight-normal">20 coupon</span> for first
                 shopping
               </p>
               <!-- End .cta-desc -->

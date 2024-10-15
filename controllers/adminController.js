@@ -446,34 +446,39 @@ const admin_update_product = async (req, res) => {
 
 const ordermanagment = async (req, res) => {
   try {
-      // Get the page number from query params, default to 1
-      const page = parseInt(req.query.page) || 1;
-      const limit = 5; // Number of orders per page
-      const skip = (page - 1) * limit;
+    const page = parseInt(req.query.page) || 1;
+    const limit = 5;
+    const skip = (page - 1) * limit;
+    const searchQuery = req.query.search;
 
-      // Get total number of orders for pagination calculation
-      const totalOrders = await Order.countDocuments();
+    let query = {};
 
-      // Calculate total number of pages
-      const totalPages = Math.ceil(totalOrders / limit);
+    if (searchQuery) {
+      query = {
+        $or: [
+          { orderId: { $regex: searchQuery, $options: 'i' } },
+          { 'user.name': { $regex: searchQuery, $options: 'i' } }
+        ]
+      };
+    }
+    const totalOrders = await Order.countDocuments(query);
+    const orders = await Order.find(query)
+      .populate('user', 'name email')
+      .populate('address')
+      .populate('items.product')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-      // Fetch orders with pagination, populate necessary fields
-      const order = await Order.find({})
-          .populate('user')
-          .populate('address')
-          .populate('items.product')
-          .skip(skip) // Skip previous orders
-          .limit(limit); // Limit the number of orders per page
-
-      // Render the order management page with pagination info
-      res.render('admin_ordermanagment', {
-          order, // Orders for the current page
-          currentPage: page, // Current page number
-          totalPages, // Total number of pages
-      });
+    res.render('admin_ordermanagment', {
+      order: orders,
+      currentPage: page,
+      totalPages: Math.ceil(totalOrders / limit),
+      searchQuery
+    });
   } catch (error) {
-      console.error("Error fetching orders:", error);
-      res.status(500).send("An error occurred while fetching orders.");
+    console.error("Error fetching orders:", error);
+    res.status(500).send("An error occurred while fetching orders.");
   }
 };
 

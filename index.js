@@ -20,6 +20,21 @@ const paymentRouter = require('./router/paymentRouter');
 const walletRouter = require('./router/walletRouter');
 const returnRouter = require('./router/returnRouter')
 const reportRouter = require('./router/reportRouter');
+// index.js
+
+const cartWishlistCount = require('./middleware/cartWishlistCount');
+const authMiddleware = require('./middleware/authMiddleware');
+
+// Set up session middleware
+app.use(session({
+  secret: "nothg",
+  resave: false,
+  saveUninitialized: false,
+  cookie: { secure: process.env.NODE_ENV === 'production' }
+}));
+
+// Add this line right after the session middleware
+app.use(cartWishlistCount);
 
 mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
 app.use('/uploads',express.static('uploads'))
@@ -27,7 +42,6 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(nocache());
-app.use(session({ secret: "nothg", resave: false, saveUninitialized: false }));
 app.use(passport.initialize())
 app.use(passport.session())
 app.set('views', path.join(__dirname, 'views'));
@@ -62,5 +76,3 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-

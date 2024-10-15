@@ -9,6 +9,20 @@
 
              
 
+                <!-- Add this search form near the top of the page, before the order table -->
+                <div class="row mb-3 justify-content-end">
+                    <div class="col-md-4">
+                        <form action="/admin/admin_ordermanagment" method="GET" class="form-inline">
+                            <div class="input-group">
+                                <input type="text" name="search" class="form-control" placeholder="Search by Order ID or Customer Name" value="<%= searchQuery || '' %>">
+                                <div class="input-group-append">
+                                    <button type="submit" class="btn btn-primary">Search</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
                 <!-- Order Table -->
                 <div class="container mt-4">
                     <table class="table mt-5">
@@ -23,229 +37,107 @@
                         </thead>
                         <tbody>
                             <% if (order && order.length > 0) { %>
-                                <% 
-                                // Sort orders by createdAt or updatedAt, assuming it exists in the order object
-                                order.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Most recent first
-                                %>
-
-                                <!-- New orders (Pending, Processing) -->
                                 <% order.forEach((element) => { %>
-                                    <% if (element.orderStatus === 'Pending' || element.orderStatus === 'Processing') { %>
-                                        <tr class="order-row">
-                                            <td>
-                                                <%= element.orderId %>
-                                                <input type="hidden" value="<%= element._id %>" id="orderId">
-                                            </td>
-                                            <td>
-                                                <%= element.user.name %>
-                                            </td>
-                                            <td>
-                                                <%= element.paymentMethod %>
-                                            </td>
-                                            <td>
-                                                <button class="btn 
-                                                    <%= element.orderStatus === 'Pending' ? 'btn-outline-warning' : 
-                                                        element.orderStatus === 'Processing' ? 'btn-outline-primary' : '' %>" disabled>
+                                    <tr class="order-row">
+                                        <td><%= element.orderId %></td>
+                                        <td><%= element.user.name %></td>
+                                        <td>
+                                            <%= element.paymentMethod %>
+                                        </td>
+                                        <td>
+                                            <button class="btn 
+                                                <%= element.orderStatus === 'Pending' ? 'btn-outline-warning' : 
+                                                    element.orderStatus === 'Processing' ? 'btn-outline-primary' : '' %>" disabled>
+                                                <%= element.orderStatus %>
+                                            </button>
+                                        </td>
+                                        <td>
+                                            <!-- Details Button -->
+                                            <button class="btn btn-outline-secondary toggle-details-btn" title="View Details" data-bs-toggle="tooltip">
+                                                <i class="bi bi-info-circle-fill"></i>
+                                                <span class="ms-1">Details</span>
+                                            </button>
+
+                                            <!-- Edit Button -->
+                                            <% if (element.orderStatus !== 'Cancelled') { %>
+                                                <button class="btn btn-outline-success edit-status-btn" 
+                                                        data-order-id="<%= element._id %>" 
+                                                        data-toggle="modal" 
+                                                        data-target="#orderStatusModal" 
+                                                        title="Edit Status" data-bs-toggle="tooltip">
+                                                    <i class="bi bi-pencil-square"></i>
+                                                    <span class="ms-1">Edit</span>
+                                                </button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Order Details Row -->
+                                    <tr class="order-details-row" style="display: none;">
+                                        <td colspan="5">
+                                            <div class="order-details-container">
+                                                <h5>Order Details</h5>
+                                                <table class="table table-bordered">
+                                                    <tbody>
+                                                        <% element.items.forEach(item => { %>
+                                                            <% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId.toString()) : null; %>
+                                                            <% if (variant) { %>
+                                                                <tr>
+                                                                    <td><img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 150px; height: 180px; object-fit: cover;"></td>
+                                                                    <td>
+                                                                        <p><strong>Product:</strong> <%= item.product.product_name %></p>
+                                                                        <p><strong>Color:</strong> <%= variant.color %></p>
+                                                                        <p><strong>Size:</strong> <%= variant.size %></p>
+                                                                        <p><strong>Quantity:</strong> <%= item.quantity %></p>
+                                                                    </td>
+                                                                    <td>
+                                                                        <h5>Delivery Address</h5>
+                                                                        <div class="address-info mt-3">
+                                                                            <p><strong><%= element.address.fullName %></strong></p>
+                                                                            <p><%= element.address.streetAddress %>, <%= element.address.city %></p>
+                                                                            <p>Phone number: <%= element.address.phone %></p>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            <% } else { %>
+                                                                <tr>
+                                                                    <td colspan="3">Product details not available</td>
+                                                                </tr>
+                                                            <% } %>
+                                                        <% }) %>
+                                                    </tbody>
+                                                </table>
+
+                                                <!-- Order Status in Details -->
+                                                <h6>Order Status: <span class="badge 
+                                                    <%= element.orderStatus === 'Pending' ? 'bg-warning' : 
+                                                        element.orderStatus === 'Processing' ? 'bg-info' : 
+                                                        element.orderStatus === 'Shipped' ? 'bg-primary' : 
+                                                        element.orderStatus === 'Delivered' ? 'bg-success' : 
+                                                        element.orderStatus === 'Cancelled' ? 'bg-danger' : 
+                                                        'bg-secondary' %>">
                                                     <%= element.orderStatus %>
-                                                </button>
-                                            </td>
-                                            <td>
-                                                <!-- Details Button -->
-                                                <button class="btn btn-outline-secondary toggle-details-btn" title="View Details" data-bs-toggle="tooltip">
-                                                    <i class="bi bi-info-circle-fill"></i>
-                                                    <span class="ms-1">Details</span>
-                                                </button>
+                                                </span></h6>
 
-                                                <!-- Edit Button -->
-                                                <% if (element.orderStatus !== 'Cancelled') { %>
-                                                    <button class="btn btn-outline-success edit-status-btn" 
-                                                            data-order-id="<%= element._id %>" 
-                                                            data-toggle="modal" 
-                                                            data-target="#orderStatusModal" 
-                                                            title="Edit Status" data-bs-toggle="tooltip">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                        <span class="ms-1">Edit</span>
-                                                    </button>
+                                                <!-- Return Request Section -->
+                                                <% if (element.returnStatus === 'Requested') { %>
+                                                    <h6>Return Request Status: <span class="badge bg-warning">Requested</span></h6>
+                                                    <button class="btn btn-success accept-return-btn" data-order-id="<%= element._id %>">Accept Return</button>
+                                                    <button class="btn btn-danger reject-return-btn" data-order-id="<%= element._id %>">Reject Return</button>
+                                                <% } else if (element.returnStatus === 'Accepted') { %>
+                                                    <h6>Return Request Status: <span class="badge bg-success">Accepted</span></h6>
+                                                <% } else if (element.returnStatus === 'Rejected') { %>
+                                                    <h6>Return Request Status: <span class="badge bg-danger">Rejected</span></h6>
+                                                <% } else { %>
+                                                    <h6>Return Request Status: <span class="badge bg-secondary">None</span></h6>
                                                 <% } %>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Order Details Row -->
-                                        <tr class="order-details-row" style="display: none;">
-                                            <td colspan="5">
-                                                <div class="order-details-container">
-                                                    <h5>Order Details</h5>
-                                                    <table class="table table-bordered">
-                                                        <tbody>
-                                                            <% element.items.forEach(item => { %>
-                                                                <% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId.toString()) : null; %>
-                                                                <% if (variant) { %>
-                                                                    <tr>
-                                                                        <td><img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 150px; height: 180px; object-fit: cover;"></td>
-                                                                        <td>
-                                                                            <p><strong>Product:</strong> <%= item.product.product_name %></p>
-                                                                            <p><strong>Color:</strong> <%= variant.color %></p>
-                                                                            <p><strong>Size:</strong> <%= variant.size %></p>
-                                                                            <p><strong>Quantity:</strong> <%= item.quantity %></p>
-                                                                        </td>
-                                                                        <td>
-                                                                            <h5>Delivery Address</h5>
-                                                                            <div class="address-info mt-3">
-                                                                                <p><strong><%= element.address.fullName %></strong></p>
-                                                                                <p><%= element.address.streetAddress %>, <%= element.address.city %></p>
-                                                                                <p>Phone number: <%= element.address.phone %></p>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                <% } else { %>
-                                                                    <tr>
-                                                                        <td colspan="3">Product details not available</td>
-                                                                    </tr>
-                                                                <% } %>
-                                                            <% }) %>
-                                                        </tbody>
-                                                    </table>
-
-                                                    <!-- Order Status in Details -->
-                                                    <h6>Order Status: <span class="badge 
-                                                        <%= element.orderStatus === 'Pending' ? 'bg-warning' : 
-                                                            element.orderStatus === 'Processing' ? 'bg-info' : 
-                                                            element.orderStatus === 'Shipped' ? 'bg-primary' : 
-                                                            element.orderStatus === 'Delivered' ? 'bg-success' : 
-                                                            element.orderStatus === 'Cancelled' ? 'bg-danger' : 
-                                                            'bg-secondary' %>">
-                                                        <%= element.orderStatus %>
-                                                    </span></h6>
-
-                                                    <!-- Return Request Section -->
-                                                    <% if (element.returnStatus === 'Requested') { %>
-                                                        <h6>Return Request Status: <span class="badge bg-warning">Requested</span></h6>
-                                                        <button class="btn btn-success accept-return-btn" data-order-id="<%= element._id %>">Accept Return</button>
-                                                        <button class="btn btn-danger reject-return-btn" data-order-id="<%= element._id %>">Reject Return</button>
-                                                    <% } else if (element.returnStatus === 'Accepted') { %>
-                                                        <h6>Return Request Status: <span class="badge bg-success">Accepted</span></h6>
-                                                    <% } else if (element.returnStatus === 'Rejected') { %>
-                                                        <h6>Return Request Status: <span class="badge bg-danger">Rejected</span></h6>
-                                                    <% } else { %>
-                                                        <h6>Return Request Status: <span class="badge bg-secondary">None</span></h6>
-                                                    <% } %>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <% } %> <!-- End of filtering New orders -->
+                                            </div>
+                                        </td>
+                                    </tr>
                                 <% }) %>
-
-                                <!-- Old orders (Shipped, Delivered, Cancelled) -->
-                                <% order.forEach((element) => { %>
-                                    <% if (element.orderStatus !== 'Pending' && element.orderStatus !== 'Processing') { %>
-                                        <tr class="order-row">
-                                            <td>
-                                                <%= element.orderId %>
-                                                <input type="hidden" value="<%= element._id %>" id="orderId">
-                                            </td>
-                                            <td>
-                                                <%= element.user.name %>
-                                            </td>
-                                            <td>
-                                                <%= element.paymentMethod %>
-                                            </td>
-                                            <td>
-                                                <button class="btn 
-                                                    <%= element.orderStatus === 'Shipped' ? 'btn-outline-info' : 
-                                                        element.orderStatus === 'Delivered' ? 'btn-outline-success' : 
-                                                        element.orderStatus === 'Cancelled' ? 'btn-outline-danger' : '' %>" disabled>
-                                                    <%= element.orderStatus %>
-                                                </button>
-                                            </td>
-                                            <td>
-                                                <!-- Details Button -->
-                                                <button class="btn btn-outline-secondary toggle-details-btn" title="View Details" data-bs-toggle="tooltip">
-                                                    <i class="bi bi-info-circle-fill"></i>
-                                                    <span class="ms-1">Details</span>
-                                                </button>
-
-                                                <!-- Edit Button -->
-                                                <% if (element.orderStatus !== 'Cancelled') { %>
-                                                    <button class="btn btn-outline-success edit-status-btn" 
-                                                            data-order-id="<%= element._id %>" 
-                                                            data-toggle="modal" 
-                                                            data-target="#orderStatusModal" 
-                                                            title="Edit Status" data-bs-toggle="tooltip">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                        <span class="ms-1">Edit</span>
-                                                    </button>
-                                                <% } %>
-                                            </td>
-                                        </tr>
-
-                                        <!-- Order Details Row -->
-                                        <tr class="order-details-row" style="display: none;">
-                                            <td colspan="5">
-                                                <div class="order-details-container">
-                                                    <h5>Order Details</h5>
-                                                    <table class="table table-bordered">
-                                                        <tbody>
-                                                            <% element.items.forEach(item => { %>
-                                                                <% const variant = item.product && item.product.variants ? item.product.variants.find(v => v._id.toString() === item.variantId.toString()) : null; %>
-                                                                <% if (variant) { %>
-                                                                    <tr>
-                                                                        <td><img src="/<%= variant.images[0] %>" alt="Product Image" style="width: 150px; height: 180px; object-fit: cover;"></td>
-                                                                        <td>
-                                                                            <p><strong>Product:</strong> <%= item.product.product_name %></p>
-                                                                            <p><strong>Color:</strong> <%= variant.color %></p>
-                                                                            <p><strong>Size:</strong> <%= variant.size %></p>
-                                                                            <p><strong>Quantity:</strong> <%= item.quantity %></p>
-                                                                        </td>
-                                                                        <td>
-                                                                            <h5>Delivery Address</h5>
-                                                                            <div class="address-info mt-3">
-                                                                                <p><strong><%= element.address.fullName %></strong></p>
-                                                                                <p><%= element.address.streetAddress %>, <%= element.address.city %></p>
-                                                                                <p>Phone number: <%= element.address.phone %></p>
-                                                                            </div>
-                                                                        </td>
-                                                                    </tr>
-                                                                <% } else { %>
-                                                                    <tr>
-                                                                        <td colspan="3">Product details not available</td>
-                                                                    </tr>
-                                                                <% } %>
-                                                            <% }) %>
-                                                        </tbody>
-                                                    </table>
-
-                                                    <!-- Order Status in Details -->
-                                                    <h6>Order Status: <span class="badge 
-                                                        <%= element.orderStatus === 'Pending' ? 'bg-warning' : 
-                                                            element.orderStatus === 'Processing' ? 'bg-info' : 
-                                                            element.orderStatus === 'Shipped' ? 'bg-primary' : 
-                                                            element.orderStatus === 'Delivered' ? 'bg-success' : 
-                                                            element.orderStatus === 'Cancelled' ? 'bg-danger' : 
-                                                            'bg-secondary' %>">
-                                                        <%= element.orderStatus %>
-                                                    </span></h6>
-
-                                                    <!-- Return Request Section -->
-                                                    <% if (element.returnStatus === 'Pending') { %>
-                                                        <h6>Return Request Status: <span class="badge bg-warning">Requested</span></h6>
-                                                        <button class="btn btn-success accept-return-btn" data-order-id="<%= element._id %>">Accept Return</button>
-                                                        <button class="btn btn-danger reject-return-btn" data-order-id="<%= element._id %>">Reject Return</button>
-                                                    <% } else if (element.returnStatus === 'Accepted') { %>
-                                                        <h6>Return Request Status: <span class="badge bg-success">Accepted</span></h6>
-                                                    <% } else if (element.returnStatus === 'Rejected') { %>
-                                                        <h6>Return Request Status: <span class="badge bg-danger">Rejected</span></h6>
-                                                    <% } else { %>
-                                                        <h6>Return Request Status: <span class="badge bg-secondary">None</span></h6>
-                                                    <% } %>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <% } %> <!-- End of filtering Old orders -->
-                                <% }) %>
-
                             <% } else { %>
                                 <tr>
-                                    <td colspan="5" class="text-center">No orders available</td>
+                                    <td colspan="5" class="text-center">No orders found</td>
                                 </tr>
                             <% } %>
                         </tbody>
@@ -413,6 +305,22 @@
             });
         });
     });
+</script>
+
+<!-- Add this script at the end of the file -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const paginationLinks = document.querySelectorAll('.pagination a');
+    const searchQuery = '<%= searchQuery %>';
+
+    paginationLinks.forEach(link => {
+      const url = new URL(link.href);
+      if (searchQuery) {
+        url.searchParams.set('search', searchQuery);
+      }
+      link.href = url.toString();
+    });
+  });
 </script>
 
 <!-- Include SweetAlert2 CSS -->

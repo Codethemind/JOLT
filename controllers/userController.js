@@ -7,8 +7,7 @@ const Product=require('../models/poductcollection')
 const Cart=require('../models/cartCollection')
 const Wallet = require('../models/walletCollection')
 const Settings = require('../models/settingsCollection');
-
-
+const Wishlist = require('../models/wishlistCollection'); // Add this line
 
 const bcrypt=require('bcrypt')
 const path = require("path");
@@ -41,32 +40,46 @@ async function generateUniqueReferralCode() {
 
 
 
-  const get_home = async (req, res) => {
-    const categoryId = req.query.category; // Get category ID from query
-    let query = {}; // Default to an empty query to fetch all products
+const get_home = async (req, res) => {
+  try {
+    const categoryId = req.query.category;
+
+    let query = { isDelete: false };
     if (categoryId) {
-        query = { category_id: categoryId };}
-    const product = await Product.find(query,{isDelete:false}).populate('category_id').populate('brand_id').populate('variants.offer');
-    const categories = await Category.find({ isDeleted: false });
-    const top = await Product.find({'variants.stock': { $lt: 4 },isDelete:false}).populate('variants.offer');
-    const User =await user.findOne({_id:req.session.user})
-    const cart = await Cart.findOne({ user: req.session.user }).populate('items.product');
-   
-    const category = await Category.findOne({ name: 'Cameras' }).exec();
-    if (!category) {
-      throw new Error('Category not found');
+      query.category_id = categoryId;
     }
-    const categoryId1 = category._id;
-    const onsale = await Product.find({ category_id: categoryId1,isDelete:false }).populate('category_id').populate('variants.offer').exec();
-            res.render("home", {
-        categories,       // All available categories
-        product, 
-        top, 
-        onsale, 
-        User,    // Filtered or all products
-        queryCategory: categoryId,// The selected category ID, if any
-        cart
+
+    const [product, categories, top, User, cameraCategory] = await Promise.all([
+      Product.find(query).populate('category_id').populate('brand_id').populate('variants.offer'),
+      Category.find({ isDeleted: false }),
+      Product.find({ 'variants.stock': { $lt: 4 }, isDelete: false }).populate('variants.offer'),
+      user.findOne({ _id: req.session.user }),
+      Category.findOne({ name: 'Cameras' })
+    ]);
+
+    let onsale = [];
+    if (cameraCategory) {
+      onsale = await Product.find({ category_id: cameraCategory._id, isDelete: false })
+        .populate('category_id')
+        .populate('variants.offer')
+        .exec();
+    }
+
+    res.render("home", {
+      categories,
+      product,
+      top,
+      onsale,
+      User,
+      queryCategory: categoryId,
+      cartCount: res.locals.cartCount,
+      wishlistCount: res.locals.wishlistCount
     });
+
+  } catch (error) {
+    console.error('Error in get_home:', error);
+    res.status(500).send('An error occurred');
+  }
 };
 
   

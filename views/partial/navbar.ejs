@@ -1,27 +1,36 @@
+<style>
+.cart-count, .wishlist-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background-color: #c96;
+    color: #fff;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+}
+
+.dropdown-toggle {
+    position: relative;
+}
+</style>
+
+
 
 <header class="header">
     <div class="header-top">
         <div class="container">
             <div class="header-left">
                 <div class="header-dropdown">
-                    <a href="#">Usd</a>
-                    <div class="header-menu">
-                        <ul>
-                            <li><a href="#">Eur</a></li>
-                            <li><a href="#">Usd</a></li>
-                        </ul>
-                    </div><!-- End .header-menu -->
+                    
                 </div><!-- End .header-dropdown -->
 
-                <div class="header-dropdown">
-                    <a href="#">Eng</a>
-                    <div class="header-menu">
-                        <ul>
-                            <li><a href="#">English</a></li>
-                            <li><a href="#">French</a></li>
-                            <li><a href="#">Spanish</a></li>
-                        </ul>
-                    </div><!-- End .header-menu -->
+                <div class="pb-1 pt-1">
+                    <a href="#">English</a>
+                   
                 </div><!-- End .header-dropdown -->
             </div><!-- End .header-left -->
 
@@ -30,10 +39,10 @@
                     <li>
                         <a href="#">Links</a>
                         <ul>
-                            <li><a href="tel:#"><i class="icon-phone"></i>Call: +0123 456 789</a></li>
-                            <li><a href="wishlist.html"><i class="icon-heart-o"></i>Wishlist </a></li>
-                            <li><a href="about.html">About Us</a></li>
-                            <li><a href="contact.html">Contact Us</a></li>
+                            <li><a href="tel:#"><i class="icon-phone"></i>Call: 9747604603</a></li>
+                            <li><a href="/wishlist/">Wishlist </a></li>
+                            <li><a href="/user/about">About Us</a></li>
+                            <li><a href="/user/contact">Contact Us</a></li>
                             <li>   <a href="/user/logout">Log out</a></li>
                         </ul>
                     </li>
@@ -85,20 +94,34 @@
                   </nav>
             </div><!-- End .header-left -->
 
+            <!-- views/partial/navbar.ejs -->
+
             <div class="header-right">
                 <div class="dropdown cart-dropdown">
-                    <a href="/wishlist/" class="dropdown-toggle" >  
+                    <a href="/wishlist/" class="dropdown-toggle">  
                         <i class="icon-heart-o"></i>
-    
+                        <% if (typeof wishlistCount !== 'undefined' && wishlistCount > 0) { %>
+                            <span class="wishlist-count"><%= wishlistCount %></span>
+                        <% } %>
                     </a>
-                  </div>
-                  
+                </div>
+                
                 <div class="dropdown cart-dropdown">
-                    <a href="/api/cart" class="dropdown-toggle" >
+                    <a href="/api/cart" class="dropdown-toggle">
                         <i class="icon-shopping-cart"></i>
+                        <% if (typeof cartCount !== 'undefined' && cartCount > 0) { %>
+                            <span class="cart-count"><%= cartCount %></span>
+                        <% } %>
                     </a>
-                </div><!-- End .cart-dropdown -->
-            </div><!-- End .header-right -->
+                </div>
+            </div>
+
+<!-- Add this for debugging -->
+<script>
+    console.log('Cart count:', <%= locals.cartCount || 0 %>);
+    console.log('Wishlist count:', <%= locals.wishlistCount || 0 %>);
+</script>
         </div><!-- End .container -->
     </div><!-- End .header-middle -->
 </header><!-- End .header -->
+

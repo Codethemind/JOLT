@@ -1359,13 +1359,30 @@ function verifyPayment(response, amount) {
 		<script>
 document.getElementById('copyReferralCode').addEventListener('click', function() {
     const referralCode = document.getElementById('referralCode').textContent;
+    
     navigator.clipboard.writeText(referralCode).then(function() {
-        alert('Referral code copied to clipboard!');
+        // Use SweetAlert for Success Notification
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'Referral code copied to clipboard!',
+            showConfirmButton: false,
+            timer: 1500 // Alert will close automatically after 1.5 seconds
+        });
     }, function(err) {
         console.error('Could not copy text: ', err);
+
+        // Use SweetAlert for Error Notification
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Failed to copy the referral code.',
+            confirmButtonText: 'Try Again'
+        });
     });
 });
 </script>
+
 
 
 
