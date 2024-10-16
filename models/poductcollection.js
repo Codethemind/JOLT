@@ -2,10 +2,10 @@ const mongoose = require('mongoose');
 
 // Define the schema for Products
 const productSchema = new mongoose.Schema({
-    product_name: {
-        type: String,
-        required: true,
-        unique: true,
+    product_name: String,
+    sold: {
+        type: Number,
+        default: 0  // Tracks how many units of this product have been sold
     },
     product_highlights: {
         type: String,

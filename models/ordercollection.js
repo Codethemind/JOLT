@@ -89,7 +89,10 @@ const orderSchema = new mongoose.Schema({
     placedAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    razorpayOrderId: String,
+    razorpayPaymentId: String,
+    razorpaySignature: String
 }, { timestamps: true });
 
 orderSchema.index({ orderId: 'text', 'user.name': 'text' });

@@ -46,10 +46,14 @@
                                         </td>
                                         <td>
                                             <button class="btn 
-                                                <%= element.orderStatus === 'Pending' ? 'btn-outline-warning' : 
-                                                    element.orderStatus === 'Processing' ? 'btn-outline-primary' : '' %>" disabled>
-                                                <%= element.orderStatus %>
-                                            </button>
+                                            <%= element.orderStatus === 'Pending' ? 'btn-outline-warning' : 
+                                                element.orderStatus === 'Processing' ? 'btn-outline-info' : 
+                                                element.orderStatus === 'Shipped' ? 'btn-outline-primary' : 
+                                                element.orderStatus === 'Delivered' ? 'btn-outline-success' : 
+                                                element.orderStatus === 'Cancelled' ? 'btn-outline-danger' : 
+                                                '' %>" disabled>
+                                            <%= element.orderStatus %>
+                                        </button>
                                         </td>
                                         <td>
                                             <!-- Details Button -->
@@ -120,7 +124,7 @@
                                                 </span></h6>
 
                                                 <!-- Return Request Section -->
-                                                <% if (element.returnStatus === 'Requested') { %>
+                                                <% if (element.returnStatus === 'Pending') { %>
                                                     <h6>Return Request Status: <span class="badge bg-warning">Requested</span></h6>
                                                     <button class="btn btn-success accept-return-btn" data-order-id="<%= element._id %>">Accept Return</button>
                                                     <button class="btn btn-danger reject-return-btn" data-order-id="<%= element._id %>">Reject Return</button>

@@ -1,5 +1,6 @@
 const user =require('../models/usercollection')
 const OTP =require('../models/otpcollection')
+
 const Category =require('../models/catagorycollection')
 const Brand =require('../models/brandcollection')
 const Product =require('../models/poductcollection')
@@ -46,9 +47,93 @@ const admin_post_login = async (req, res) => {
 };
 
 
-const admin_get_dashboard=(req,res)=>{
-        res.render('admin_dashboard')
-    }
+const admin_get_dashboard = async (req, res) => {
+  try {
+    // Fetch top 10 best-selling products
+    const bestSellingProduct = await Product.aggregate([
+      {
+        $group: {
+          _id: "$_id",  // Group by product ID
+          product_name: { $first: "$product_name" },  // Get the product name
+          saleCount: { $sum: "$sold" }  // Sum the sold counts directly from the product
+        }
+      },
+      { $sort: { saleCount: -1 } },  // Sort by saleCount in descending order
+      { $limit: 5 }  // Limit to top 10
+    ]);
+
+    // Fetch top 10 best-selling categories
+    const bestSellingCategory = await Category.aggregate([
+      {
+        $lookup: {
+          from: 'products',  // Lookup from products collection
+          localField: '_id',
+          foreignField: 'category_id',  // Use category_id to match the field in products
+          as: 'products'
+        }
+      },
+      {
+        $unwind: {  // Unwind the products to access their sales
+          path: "$products",
+          preserveNullAndEmptyArrays: true  // Keep categories even if no products are found
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",  // Group by category ID
+          name: { $first: "$name" },  // Get the category name
+          saleCount: { $sum: "$products.sold" }  // Sum the sold counts from the product directly
+        }
+      },
+      { $sort: { saleCount: -1 } },  // Sort by saleCount in descending order
+      { $limit: 5 }  // Limit to top 10
+    ]);
+
+    // Fetch top 10 best-selling brands
+    const bestSellingBrand = await Brand.aggregate([
+      {
+        $lookup: {
+          from: 'products',  // Lookup from products collection
+          localField: '_id',
+          foreignField: 'brand_id',  // Use brand_id to match the field in products
+          as: 'products'
+        }
+      },
+      {
+        $unwind: {  // Unwind the products to access their sales
+          path: "$products",
+          preserveNullAndEmptyArrays: true  // Keep brands even if no products are found
+        }
+      },
+      {
+        $group: {
+          _id: "$_id",  // Group by brand ID
+          brand_name: { $first: "$brand_name" },  // Get the brand name
+          saleCount: { $sum: "$products.sold" }  // Sum the sold counts from the product directly
+        }
+      },
+      { $sort: { saleCount: -1 } },  // Sort by saleCount in descending order
+      { $limit: 5 }  // Limit to top 10
+    ]);
+
+    const orders=await Order.find({}).sort({createdAt:-1}).limit(5)
+
+    // Render the dashboard view with the data
+    res.render('admin_dashboard', {
+      bestSellingProduct,
+      bestSellingCategory,
+      bestSellingBrand,
+      orders
+    });
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    res.status(500).send('Server Error');
+  }
+};
+
+
+
+
 const admin_get_usermanagment = async (req, res) => {
       try {
           const page = parseInt(req.query.page) || 1; // Get current page from query, default is 1
@@ -488,15 +573,24 @@ const updateorderstatus = async (req, res) => {
   const { status } = req.body;
 
   try {
-    // Find the order by ID
-    const order = await Order.findById(orderId).populate('items.product').populate('user');
+    // Find the order by ID and populate category and brand
+    const order = await Order.findById(orderId)
+      .populate({
+        path: 'items.product',
+        populate: [
+          { path: 'category_id', model: 'Category' },  // Make sure Category is populated
+          { path: 'brand_id', model: 'Brand' }          // Make sure Brand is populated
+        ]
+      })
+      .populate('user');
+
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
     // If the new status is 'Cancelled'
     if (status === 'Cancelled') {
-      // Loop through the items in the order and update the stock for each product variant
+      // Loop through the items in the order and update stock and sales for each product variant
       for (const item of order.items) {
         const product = item.product;
         const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
@@ -505,7 +599,27 @@ const updateorderstatus = async (req, res) => {
           // Increment the stock for the variant
           variant.stock += item.quantity;
 
-          // Save the updated product to reflect the stock increment
+          // Reduce the sold count for the product
+          product.sold -= item.quantity;
+          if (product.sold < 0) product.sold = 0; // Prevent negative sold count
+
+          // Decrease total sales for the category (ensure category is populated and exists)
+          const category = product.category_id;
+          if (category && typeof category.save === 'function') {
+            category.totalSales -= item.quantity;
+            if (category.totalSales < 0) category.totalSales = 0; // Prevent negative totalSales
+            await category.save(); // Save updated category
+          }
+
+          // Decrease total sales for the brand (ensure brand is populated and exists)
+          const brand = product.brand_id;
+          if (brand && typeof brand.save === 'function') {
+            brand.totalSales -= item.quantity;
+            if (brand.totalSales < 0) brand.totalSales = 0; // Prevent negative totalSales
+            await brand.save(); // Save updated brand
+          }
+
+          // Save the updated product
           await product.save();
         }
       }
@@ -542,6 +656,8 @@ const updateorderstatus = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to update order status' });
   }
 };
+
+
 
 const updateReferralBonus = async (req, res) => {
     try {

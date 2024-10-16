@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/ordercollection');
 const Wallet = require('../models/walletCollection');
+const Product = require('../models/poductcollection');
 
 // POST /return-request/:orderId
 router.post('/return-request/:orderId', async (req, res) => {
@@ -53,9 +54,15 @@ router.get('/admin/pending-returns', async (req, res) => {
 
 router.post('/admin/accept-return/:orderId', async (req, res) => {
     try {
-        const order = await Order.findById(req.params.orderId);
+        const order = await Order.findById(req.params.orderId).populate('items.product');
+
         if (!order) {
             return res.status(404).json({ success: false, message: 'Order not found.' });
+        }
+
+        // Check if the return is already accepted
+        if (order.returnStatus === 'Accepted') {
+            return res.status(400).json({ success: false, message: 'Return already accepted.' });
         }
 
         // Update order's return status
@@ -63,6 +70,39 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
         order.returnAcceptedDate = new Date();
 
         let refundProcessed = false;
+
+        // Iterate through items in the order and adjust inventory and sales
+        for (const item of order.items) {
+            const product = await Product.findById(item.product).populate('category_id brand_id');
+            const variant = product.variants.id(item.variantId);
+
+            if (variant) {
+                // Increase the stock back since the product is returned
+                variant.stock += item.quantity;
+
+                // Reduce the sold count for the product
+                product.sold -= item.quantity;
+                if (product.sold < 0) product.sold = 0; // Ensure sold count doesn't go below 0
+
+                // Reduce total sales for the category
+                const category = product.category_id;
+                if (category) {
+                    category.totalSales -= item.quantity;
+                    if (category.totalSales < 0) category.totalSales = 0; // Ensure totalSales doesn't go below 0
+                    await category.save();
+                }
+
+                // Reduce total sales for the brand
+                const brand = product.brand_id;
+                if (brand) {
+                    brand.totalSales -= item.quantity;
+                    if (brand.totalSales < 0) brand.totalSales = 0; // Ensure totalSales doesn't go below 0
+                    await brand.save();
+                }
+
+                await product.save(); // Save the updated product
+            }
+        }
 
         // Check the payment method used for the order
         if (order.paymentMethod === 'Cash on Delivery') {
@@ -83,17 +123,16 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
             wallet.transactions.push({
                 amount: order.totalAmount,
                 type: 'Credit',
-                description: `Refund for order ${order.orderId}`,
+                description: `Refund for returned order ${order.orderId}`,
                 date: new Date()
             });
 
-            // Save the order and wallet
+            // Save both order and wallet
             await Promise.all([order.save(), wallet.save()]);
 
             refundProcessed = true;
         } else if (order.paymentMethod === 'Bank Transfer') {
             // Refund to bank account logic can be handled here
-            // For the sake of this example, we will still refund to the wallet first
             let wallet = await Wallet.findOne({ userId: order.user });
 
             if (!wallet) {
@@ -110,13 +149,11 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
             wallet.transactions.push({
                 amount: order.totalAmount,
                 type: 'Credit',
-                description: `Refund for order ${order.orderId} (Bank Transfer)`,
+                description: `Refund for returned order ${order.orderId} (Bank Transfer)`,
                 date: new Date()
             });
 
-            // Additional logic to transfer money from wallet to bank account
-            // This could involve integrating with a payment gateway or bank transfer API
-            // For now, we'll just refund to the wallet.
+            // For now, we'll just refund to the wallet
             await Promise.all([order.save(), wallet.save()]);
 
             refundProcessed = true;
@@ -132,6 +169,7 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error accepting return request.' });
     }
 });
+
 
 
 // New route for admin to reject a return request

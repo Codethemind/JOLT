@@ -1,4 +1,6 @@
 const Product = require('../models/poductcollection');
+const brand = require('../models/brandcollection');
+const category = require('../models/catagorycollection');
 const Cart=require('../models/cartCollection')
 const Address=require('../models/adresscollection')
 const Order =require('../models/ordercollection')
@@ -178,60 +180,96 @@ exports.getCheckout = async (req, res) => {
 
 exports.placeOrder = async (req, res) => {
     try {
+        // Check if the user is logged in
         if (!req.session.user) {
             return res.status(401).json({ message: "Unauthorized" });
         }
-        
+
         const { addressId, paymentMethod } = req.body;
 
-        // Update the populate to include the offer
+        // Fetch the cart for the current user, populating product variants, offers, category, and brand
         const cart = await Cart.findOne({ user: req.session.user }).populate({
             path: 'items.product',
-            populate: {
-                path: 'variants',
-                populate: {
-                    path: 'offer'
+            populate: [
+                {
+                    path: 'variants',
+                    populate: {
+                        path: 'offer'
+                    }
+                },
+                {
+                    path: 'category_id', // Populate category
+                },
+                {
+                    path: 'brand_id' // Populate brand
                 }
-            }
+            ]
         });
 
+        // Check if the cart is empty
         if (!cart || cart.items.length === 0) {
             return res.status(400).json({ message: "Cart is empty" });
         }
 
         let subtotal = 0;
         let totalDiscount = 0;
-        
+
+        // Iterate through each item in the cart
         for (const item of cart.items) {
-            const product = item.product; // No need to fetch again, it's already populated
+            const product = item.product;
             const variant = product.variants.find(v => v._id.toString() === item.variantId);
 
+            // Ensure the variant exists and has enough stock
             if (variant) {
                 if (variant.stock < item.quantity) {
                     return res.status(400).json({ message: `Insufficient stock for ${product.product_name}` });
                 }
+
+                // Reduce the variant's stock based on the order quantity
                 variant.stock -= item.quantity;
                 await product.save();
 
+                // Calculate the regular price for the quantity ordered
                 const regularPrice = variant.price * item.quantity;
                 let finalPrice = regularPrice;
 
+                // Apply discount if the variant has an offer
                 if (variant.offer && variant.offer.offerPercentage > 0) {
                     finalPrice = variant.discount_price * item.quantity;
-                    totalDiscount += (regularPrice - finalPrice);
+                    totalDiscount += (regularPrice - finalPrice); // Calculate total discount
                 }
 
-                subtotal += regularPrice;
-                item.finalPrice = finalPrice / item.quantity;
+                subtotal += regularPrice; // Calculate subtotal
+                item.finalPrice = finalPrice / item.quantity; // Store the final price of the item
+
+                // Update product's sold count
+                product.sold += item.quantity;
+                await product.save();
+
+                // Increase the total sales count for the associated category (fully populated)
+                const category = product.category_id;
+                if (category) {
+                    category.totalSales += item.quantity;
+                    await category.save();
+                }
+
+                // Increase the total sales count for the associated brand (fully populated)
+                const brand = product.brand_id;
+                if (brand) {
+                    brand.totalSales += item.quantity;
+                    await brand.save();
+                }
             }
         }
 
+        // Apply any coupon discount
         let couponDiscount = 0;
         if (cart.appliedCoupon && cart.appliedCoupon.discount) {
             couponDiscount = cart.appliedCoupon.discount;
             totalDiscount += couponDiscount;
         }
 
+        // Calculate total amount (subtotal - totalDiscount)
         let totalAmount = Math.max(0, subtotal - totalDiscount);
         totalAmount = Math.round(totalAmount * 100) / 100;
 
@@ -239,8 +277,19 @@ exports.placeOrder = async (req, res) => {
             throw new Error('Invalid total amount calculated');
         }
 
-        const newOrderId = generateOrderId();
-        
+        // Disallow Cash on Delivery (COD) for orders above ₹1000
+        if (paymentMethod === 'Cash on Delivery' && totalAmount > 1000) {
+            return res.status(400).json({ message: "Cash on Delivery is not allowed for orders above ₹1000" });
+        }
+
+        // Apply shipping cost (Free for orders over ₹2000, otherwise ₹40)
+        let shippingCost = totalAmount < 2000 ? 40 : 0;
+        totalAmount += shippingCost;
+
+        // Generate a unique order ID
+        const newOrderId = await generateOrderId(); // Await to ensure ID is generated
+
+        // Create a new order with the necessary details
         const newOrder = new Order({
             orderId: newOrderId,
             user: req.session.user,
@@ -260,6 +309,7 @@ exports.placeOrder = async (req, res) => {
             totalAmount: totalAmount,
             subtotal: subtotal,
             totalDiscount: totalDiscount,
+            shippingCost: shippingCost,
             couponCode: cart.appliedCoupon ? cart.appliedCoupon.code : null,
             discountAmount: couponDiscount,
             orderStatus: 'Pending',
@@ -267,32 +317,52 @@ exports.placeOrder = async (req, res) => {
                 pending: new Date()
             }
         });
-
+        
+        // Handle different payment methods
         if (paymentMethod === 'Bank Transfer') {
+            // Create a Razorpay order for Bank Transfer (online payment)
             const razorpayOrder = await razorpay.orders.create({
                 amount: Math.round(totalAmount * 100),
                 currency: 'INR',
                 receipt: newOrderId,
+                payment_capture: 1
             });
-            
+
+            // Save the Razorpay order ID to your order
+            newOrder.razorpayOrderId = razorpayOrder.id;
+            await newOrder.save();
+
+        
+
+            // Respond with the Razorpay order details and the new order
             return res.status(200).json({
                 message: "Razorpay order created",
                 razorpayOrder: razorpayOrder,
                 order: newOrder
             });
         } else if (paymentMethod === 'Cash on Delivery') {
+            // Save the order for COD and delete the cart
             await newOrder.save();
             await Cart.deleteOne({ user: req.session.user });
-  
+
+            // Respond with success message and order details
             return res.status(201).json({ message: "Order placed successfully", order: newOrder });
         } else {
+            // Handle invalid payment methods
             return res.status(400).json({ message: "Invalid payment method" });
         }
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({ message: "Order already exists. Please try again." });
+        }
+        // Handle any unexpected errors
         console.error("Error placing order:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message, stack: error.stack });
     }
 };
+
+
+
     
 
 function generateOrderId() {
@@ -303,8 +373,6 @@ function generateOrderId() {
 
 
 exports.cancelOrder = async (req, res) => {
-   
-    
     try {
         const { orderId } = req.params;
         const order = await Order.findById(orderId).populate('items.product');
@@ -317,16 +385,40 @@ exports.cancelOrder = async (req, res) => {
             return res.status(400).json({ message: "Only pending orders can be canceled" });
         }
 
-        // Restore stock for each item in the order
+        // Restore stock and adjust sales counts for each item in the order
         for (const item of order.items) {
-            const product = await Product.findById(item.product);
+            const product = await Product.findById(item.product).populate('category_id brand_id');
             const variant = product.variants.find(v => v._id.toString() === item.variantId);
+
             if (variant) {
-                variant.stock += item.quantity; // Restore the stock
-                await product.save();
+                // Restore stock
+                variant.stock += item.quantity;
+
+                // Reduce sold count for product
+                product.sold -= item.quantity;
+                if (product.sold < 0) product.sold = 0; // Ensure no negative sold count
+
+                // Reduce sales count for category
+                const category = product.category_id;
+                if (category) {
+                    category.totalSales -= item.quantity;
+                    if (category.totalSales < 0) category.totalSales = 0; // Ensure no negative totalSales
+                    await category.save();
+                }
+
+                // Reduce sales count for brand
+                const brand = product.brand_id;
+                if (brand) {
+                    brand.totalSales -= item.quantity;
+                    if (brand.totalSales < 0) brand.totalSales = 0; // Ensure no negative totalSales
+                    await brand.save();
+                }
+
+                await product.save(); // Save product with updated stock and sold count
             }
         }
 
+        // Mark the order as cancelled
         order.orderStatus = 'Cancelled';
         order.orderStatusTimestamps.cancelled = new Date();
 
@@ -354,6 +446,7 @@ exports.cancelOrder = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error" });
     }
 };
+
 
 exports.applycoupen = async (req, res) => {
     const { cartId, couponCode } = req.body;
@@ -496,5 +589,56 @@ exports.verifyPayment = async (req, res) => {
     } catch (error) {
         console.error("Error verifying payment:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+exports.acceptReturn = async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.orderId);
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found.' });
+        }
+
+        // Update order's return status
+        order.returnStatus = 'Accepted';
+        order.returnAcceptedDate = new Date();
+
+        let refundProcessed = false;
+
+        // Check the payment method used for the order
+        if (order.paymentMethod === 'Cash on Delivery' || order.paymentMethod === 'Bank Transfer') {
+            let wallet = await Wallet.findOne({ userId: order.user });
+
+            if (!wallet) {
+                wallet = new Wallet({
+                    userId: order.user,
+                    balance: 0,
+                    transactions: []
+                });
+            }
+
+            // Add the refund amount to the wallet balance
+            wallet.balance += order.totalAmount;
+            wallet.transactions.push({
+                amount: order.totalAmount,
+                type: 'Credit',
+                description: `Refund for order ${order.orderId} (${order.paymentMethod})`,
+                date: new Date()
+            });
+
+            // Save the order and wallet
+            await Promise.all([order.save(), wallet.save()]);
+
+            refundProcessed = true;
+        }
+
+        if (refundProcessed) {
+            res.json({ success: true, message: 'Return request accepted and refund processed successfully.' });
+        } else {
+            res.status(400).json({ success: false, message: 'Refund process failed. Unsupported payment method.' });
+        }
+    } catch (error) {
+        console.error('Error accepting return request:', error);
+        res.status(500).json({ success: false, message: 'Error accepting return request.' });
     }
 };

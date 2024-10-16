@@ -65,43 +65,150 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Example Table -->
                     <div class="col-md-6">
                         <div class="card">
-                            <div class="card-header">
-                                Recent Orders
-                            </div>
-                            <div class="card-body">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Order ID</th>
-                                            <th>Date</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>1</td>
-                                            <td>#001</td>
-                                            <td>2024-09-01</td>
-                                            <td>Shipped</td>
-                                        </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td>#002</td>
-                                            <td>2024-09-02</td>
-                                            <td>Processing</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                          <div class="card-header">
+                            Recent Orders
+                          </div>
+                          <div class="card-body">
+                            <table class="table">
+                              <thead>
+                                <tr>
+                                  <th>#</th>
+                                  <th>Order ID</th>
+                                  <th>Date</th>
+                                  <th>Status</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <% if(orders.length != 0) { %>
+                                  <% orders.forEach((order, index) => { %>
+                                    <tr>
+                                      <td><%= index + 1 %></td> <!-- To display order index -->
+                                      <td><%= order.orderId %></td>
+                                      <td><%= new Date(order.createdAt).toLocaleDateString() %></td>
+                                      <td><%= order.orderStatus || 'Pending' %></td> <!-- Adjust to your status field -->
+                                    </tr>
+                                  <% }) %>
+                                <% } else { %>
+                                  <tr>
+                                    <td colspan="4" class="text-center">No recent orders found</td>
+                                  </tr>
+                                <% } %>
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                    </div>
+                      </div>
+                         <!-- Example Table -->
+                   
                 </div>
             </div>
+            <div class="row">
+                <!-- Best Selling Products -->
+                <div class="col-lg-4">
+                  <div class="card w-100">
+                    <div class="card-body p-4">
+                      <h5 class="card-title fw-semibold mb-4">Best Selling Products</h5>
+                      <div class="table-responsive">
+                        <table class="table table-bordered">
+                          <thead>
+                            <tr>
+                              <th>Product Name</th>
+                              <th>Sale Count</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <% if(bestSellingProduct.length) { %>
+                              <% bestSellingProduct.forEach(item => { %>
+                                <tr>
+                                  <td><%= item.product_name %></td>
+                                  <td><%= item.saleCount %></td>
+                                </tr>
+                              <% }) %>
+                            <% } else { %>
+                              <tr>
+                                <td colspan="2" class="text-center">No product found</td>
+                              </tr>
+                            <% } %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              
+                <!-- Best Selling Categories -->
+                <div class="col-lg-4">
+                  <div class="card w-100">
+                    <div class="card-body p-4">
+                      <h5 class="card-title fw-semibold mb-4">Best Selling Categories</h5>
+                      <div class="table-responsive">
+                        <table class="table table-bordered">
+                          <thead>
+                            <tr>
+                              <th>Category Name</th>
+                              <th>Sale Count</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <% if(bestSellingCategory.length) { %>
+                              <% bestSellingCategory.forEach(item => { %>
+                                <tr>
+                                  <td><%= item.name %></td>
+                                  <td><%= item.saleCount %></td>
+                                </tr>
+                              <% }) %>
+                            <% } else { %>
+                              <tr>
+                                <td colspan="2" class="text-center">No category found</td>
+                              </tr>
+                            <% } %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              
+                <!-- Best Selling Brands -->
+                <div class="col-lg-4">
+                  <div class="card w-100">
+                    <div class="card-body p-4">
+                      <h5 class="card-title fw-semibold mb-4">Best Selling Brands</h5>
+                      <div class="table-responsive">
+                        <table class="table table-bordered">
+                          <thead>
+                            <tr>
+                              <th>Brand Name</th>
+                              <th>Sale Count</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <% if(bestSellingBrand.length) { %>
+                              <% bestSellingBrand.forEach(item => { %>
+                                <tr>
+                                  <td><%= item.brand_name %></td>
+                                  <td><%= item.saleCount %></td>
+                                </tr>
+                              <% }) %>
+                            <% } else { %>
+                              <tr>
+                                <td colspan="2" class="text-center">No brand found</td>
+                              </tr>
+                            <% } %>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
         </main>
+
+
+        
     </div>
 </div>
 

@@ -112,42 +112,51 @@
                 <div class="ms-lg-4 mt-4 mt-lg-0" style="max-width: 320px;">
                     <h6 class="mb-3">Summary</h6>
             
-                    <!-- Total price section -->
-                    <div class="d-flex justify-content-between">
-                        <p class="mb-2">Total price:</p>
-                        <p class="mb-2 total-price">₹<%= cart ? cart.total_price : 0 %></p>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <p class="mb-2">Discount:</p>
-                        <p class="mb-2 text-danger discount-price">₹0.0</p>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <p class="mb-2">Shipping cost:</p>
-                        <p class="mb-2">Free</p>
-                    </div>
-            
-                    <!-- Final price after discount -->
-                    <hr />
-                    <div class="d-flex justify-content-between">
-                        <p class="mb-2">Final price:</p>
-                        <p class="mb-2 fw-bold final-price">₹<%= cart ? cart.total_price : 0 %></p>
-                    </div>
+                 <!-- Total price section -->
+<div class="d-flex justify-content-between">
+    <p class="mb-2">Total price:</p>
+    <p class="mb-2 total-price">₹<%= cart ? cart.total_price : 0 %></p>
+</div>
+
+<!-- Discount section -->
+<div class="d-flex justify-content-between">
+    <p class="mb-2">Discount:</p>
+    <p class="mb-2 text-danger discount-price">₹0.0</p>
+</div>
+
+<!-- Shipping cost section -->
+<div class="d-flex justify-content-between">
+    <p class="mb-2">Shipping cost:</p>
+    <p class="mb-2 shipping-cost">₹<%= cart && cart.total_price >= 2000 ? 0 : 40 %></p>
+</div>
+
+<!-- Final price after discount -->
+<hr />
+<div class="d-flex justify-content-between">
+    <p class="mb-2">Final price:</p>
+    <p class="mb-2 fw-bold final-price">₹<%= cart ? (cart.total_price >= 2000 ? cart.total_price : cart.total_price + 40) : 0 %></p>
+</div>
+
+
             
                     <!-- Hidden field for cart ID -->
                     <input type="hidden" name="cartId" id="cartId" value="<%= cart ? cart._id : '' %>">
             
                     <!-- Payment method section -->
-                    <div class="form-group mt-4">
-                        <label>Payment Method</label>
-                        <div>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="Cash on Delivery" required> Cash on Delivery
-                            </label>
-                            <label>
-                                <input type="radio" name="paymentMethod" value="Bank Transfer"> Bank Transfer
-                            </label>
-                        </div>
-                    </div>
+                 <!-- Payment method section -->
+<div class="form-group mt-4">
+    <label>Payment Method</label>
+    <div>
+        <label>
+            <input type="radio" name="paymentMethod" value="Cash on Delivery" id="codOption" required> Cash on Delivery
+        </label>
+        <label>
+            <input type="radio" name="paymentMethod" value="Bank Transfer"> Bank Transfer
+        </label>
+    </div>
+    <p id="codDisabledMessage" class="text-danger" style="display: none;">Cash on Delivery is not available for orders above ₹1000.</p>
+</div>
+
             
                     <!-- Promo code section -->
                     <div class="input-group mt-5 mb-4">
@@ -511,6 +520,8 @@ async function placeOrder() {
 }
 
 async function verifyPayment(paymentResponse, order) {
+    console.log('Payment response:', paymentResponse);
+    console.log('Order:', order);
     try {
         const response = await fetch('/payments/verify', {
             method: 'POST',
@@ -525,9 +536,18 @@ async function verifyPayment(paymentResponse, order) {
             })
         });
 
-        const result = await response.json();
+        const responseText = await response.text();
+        console.log('Raw server response:', responseText);
 
-        if (response.ok) {
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            throw new Error('Invalid JSON response from server');
+        }
+
+        if (result.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Payment Successful',
@@ -537,19 +557,14 @@ async function verifyPayment(paymentResponse, order) {
                 window.location.href = '/user/';
             });
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Payment Verification Failed',
-                text: result.message || 'Unable to verify payment. Please contact support.',
-                confirmButtonText: 'OK'
-            });
+            throw new Error(result.message || 'Payment verification failed');
         }
     } catch (error) {
         console.error('Error verifying payment:', error);
         Swal.fire({
             icon: 'error',
-            title: 'Error',
-            text: 'An error occurred while verifying the payment. Please contact support.',
+            title: 'Payment Verification Failed',
+            text: error.message || 'Unable to verify payment. Please contact support.',
             confirmButtonText: 'OK'
         });
     }
@@ -679,5 +694,19 @@ function hideAppliedCoupon() {
     document.getElementById('promoCode').disabled = false;
     document.getElementById('promoCode').value = '';
 }
+
+document.addEventListener("DOMContentLoaded", function() {
+    const totalPrice = parseFloat(document.querySelector('.total-price').textContent.replace('₹', ''));
+    const codOption = document.getElementById('codOption');
+    const codMessage = document.getElementById('codDisabledMessage');
+
+    if (totalPrice > 1000) {
+        codOption.disabled = true;
+        codOption.parentElement.classList.add('text-muted');
+        codMessage.style.display = 'block'; // Show the message when COD is disabled
+    }
+});
+
  </script>
     <%- include('./partial/footer') %>
+
