@@ -3,6 +3,7 @@ const router = express.Router();
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/ordercollection');
+const cartController = require('../controllers/cartcontroller');
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -48,54 +49,57 @@ router.post('/create-order', async (req, res) => {
   }
 });
 
-// Verify Payment
-router.post('/verify', async (req, res) => {
+// Use the verifyPayment function from cartController
+router.post('/verify', cartController.verifyPayment);
+
+router.post('/retry-payment/:orderId', async (req, res) => {
+  console.log('Retrying payment for order:', req.params.orderId);
+  
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-    console.log('Received verification request:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
+    const { orderId } = req.params;
 
-    const generated_signature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
-      .digest('hex');
-
-    if (generated_signature === razorpay_signature) {
-      // Find the order by its Razorpay order ID
-      let order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
-      
-      if (!order) {
-        console.log(`Order not found for razorpayOrderId: ${razorpay_order_id}`);
-        // Try to find the order by other means, e.g., the most recent pending order for the user
-        order = await Order.findOne({ 
-          user: req.session.user, 
-          orderStatus: 'Pending',
-          paymentMethod: 'Bank Transfer'
-        }).sort({ createdAt: -1 });
-
-        if (!order) {
-          console.log('No matching pending order found');
-        return res.status(404).json({ success: false, message: 'Order not found' });
-      }
-
-        // Update the order with the Razorpay order ID
-        order.razorpayOrderId = razorpay_order_id;
-      }
-
-      // Update the order status
-      order.status = 'paid';
-      order.razorpayPaymentId = razorpay_payment_id;
-      order.razorpaySignature = razorpay_signature;
-      await order.save();
-      
-      console.log(`Order ${order._id} updated successfully`);
-      res.json({ success: true, message: 'Payment verified successfully' });
-    } else {
-      res.status(400).json({ success: false, message: 'Invalid signature' });
+    const order = await Order.findOne({ orderId: orderId });
+    console.log(order);
+    
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
     }
+
+    if (order.paymentStatus !== 'Failed') {
+      return res.status(400).json({ success: false, message: 'This order is not eligible for payment retry' });
+    }
+
+    const options = {
+      amount: order.totalAmount * 100, // Amount in paise
+      currency: 'INR',
+      receipt: `retry_${orderId}`,
+    };
+
+    const newRazorpayOrder = await razorpay.orders.create(options);
+
+    order.razorpayOrderId = newRazorpayOrder.id;
+    order.paymentStatus = 'Paid';
+    order.orderStatus = 'Processing';
+    
+    await order.save();
+
+    res.json({
+      success: true,
+      order: {
+        totalAmount: order.totalAmount,
+        orderId: order.orderId
+      },
+      razorpayOrderId: newRazorpayOrder.id,
+      customerName: order.address.fullName,
+      customerEmail: req.session.user ? req.session.user.email : '',
+      customerPhone: order.address.phone,
+    });
   } catch (error) {
-    console.error('Error in verify-payment:', error);
-    res.status(500).json({ success: false, message: 'Error verifying payment', error: error.message });
+    console.error('Error retrying payment:', error);
+    res.status(500).json({ success: false, message: 'Error retrying payment', error: error.message });
   }
 });
+
+router.post('/payment-failure', cartController.handlePaymentFailure);
 
 module.exports = router;

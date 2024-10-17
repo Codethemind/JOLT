@@ -276,15 +276,26 @@
 																		<h6>Payment and Delivery Information</h6>
 																		<table class="table table-bordered">
 																			<tr>
-																				<td><strong>Payment Method:</strong>
-																				</td>
-																				<td>
-																					<span
-																						class="badge <%= order.paymentMethod === 'Cash on Delivery' ? 'bg-warning text-dark' : 'bg-primary' %>">
-																						<%= order.paymentMethod %>
-																					</span>
-																				</td>
-																			</tr>
+    <td><strong>Payment Method:</strong></td>
+    <td>
+        <% if (order.paymentMethod === 'Bank Transfer') { %>
+            <span class="badge bg-primary">Bank Transfer</span>
+            <% if (order.paymentStatus === 'Paid') { %>
+                <span class="badge bg-success ms-2">Paid</span>
+            <% } else if (order.paymentStatus === 'Failed') { %>
+                <span class="badge bg-danger ms-2">Failed</span>
+                <button class="btn btn-outline-warning btn-sm ms-2" onclick="retryPayment('<%= order.orderId %>')">
+                    <i class="bi bi-arrow-repeat"></i> Retry
+                </button>
+            <% } %>
+        <% } else { %>
+            <span class="badge <%= order.paymentMethod === 'Cash on Delivery' ? 'bg-warning text-dark' : 'bg-primary' %>">
+                <%= order.paymentMethod %>
+            </span>
+        <% } %>
+    </td>
+</tr>
+
 																			<tr>
 																				<td><strong>Order Status:</strong></td>
 																				<td>
@@ -1382,10 +1393,114 @@ document.getElementById('copyReferralCode').addEventListener('click', function()
     });
 });
 </script>
+<script>
+function retryPayment(orderId) {
+    if (!confirm('Are you sure you want to retry the payment for this order?')) {
+        return;
+    }
+
+    const retryButton = document.querySelector(`button[onclick="retryPayment('${orderId}')"]`);
+    retryButton.disabled = true;
+    retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retrying...';
+
+    fetch(`/payments/retry-payment/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        retryButton.disabled = false;
+        retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retry';
+
+        if (data.success) {
+            const options = {
+                key: '<%= process.env.RAZORPAY_KEY_ID %>',
+                amount: data.order.totalAmount * 100,
+                currency: 'INR',
+                name: 'Your Company Name',
+                description: 'Payment for Order ' + orderId,
+                order_id: data.razorpayOrderId,
+                handler: function (response) {
+                    verifyPayment(response, orderId);
+                },
+                prefill: {
+                    name: data.customerName,
+                    email: data.customerEmail,
+                    contact: data.customerPhone,
+                },
+                theme: {
+                    color: "#3399cc"
+                }
+            };
+
+            const razorpayInstance = new Razorpay(options);
+            razorpayInstance.open();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Retry Failed',
+                text: data.message || 'Unable to retry payment. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error retrying payment:', error);
+        retryButton.disabled = false;
+        retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retry';
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while retrying the payment. Please try again.',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+
+function verifyPayment(response, orderId) {
+    fetch('/payments/verify', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature,
+            orderId: orderId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Payment Successful',
+                text: 'Your payment has been successfully processed.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.reload();
+            });
+        } else {
+            throw new Error(data.message || 'Payment verification failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error verifying payment:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Payment Verification Failed',
+            text: error.message || 'Unable to verify payment. Please contact support.',
+            confirmButtonText: 'OK'
+        });
+    });
+}
+</script>
 
 
-
-
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 		<!-- Bootstrap CSS -->

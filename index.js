@@ -4,6 +4,7 @@ const app = express();
 const session = require("express-session");
 const nocache = require("nocache");
 const mongoose = require("mongoose");
+const Razorpay = require('razorpay');
 
 require('dotenv').config();
 const passport = require("./config/passport")
@@ -59,6 +60,11 @@ app.use('/payments', paymentRouter);
 app.use('/wallet', walletRouter);
 app.use('/return', returnRouter);
 app.use('/admin/reports', reportRouter);
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET
+});
 
 app.use((req, res, next) => {
     res.locals.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;

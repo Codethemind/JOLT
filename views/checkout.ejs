@@ -477,7 +477,7 @@ async function placeOrder() {
         }
 
         if (paymentMethod === 'Bank Transfer') {
-            const options = {
+            var options = {
                 key: '<%= process.env.RAZORPAY_KEY_ID %>',
                 amount: orderData.razorpayOrder.amount,
                 currency: orderData.razorpayOrder.currency,
@@ -485,7 +485,7 @@ async function placeOrder() {
                 description: 'Purchase Description',
                 order_id: orderData.razorpayOrder.id,
                 handler: function (response) {
-                    verifyPayment(response, orderData.order);
+                    verifyPayment(response);
                 },
                 prefill: {
                     name: 'Customer Name',
@@ -494,6 +494,12 @@ async function placeOrder() {
                 },
                 theme: {
                     color: '#F37254'
+                },
+                modal: {
+                    ondismiss: function() {
+                        console.log('Checkout form closed');
+                        handlePaymentFailure(orderData.razorpayOrder.id);
+                    }
                 }
             };
             const rzp = new Razorpay(options);
@@ -519,35 +525,23 @@ async function placeOrder() {
     }
 }
 
-async function verifyPayment(paymentResponse, order) {
-    console.log('Payment response:', paymentResponse);
-    console.log('Order:', order);
-    try {
-        const response = await fetch('/payments/verify', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                razorpay_payment_id: paymentResponse.razorpay_payment_id,
-                razorpay_order_id: paymentResponse.razorpay_order_id,
-                razorpay_signature: paymentResponse.razorpay_signature,
-                order: order
-            })
-        });
-
-        const responseText = await response.text();
-        console.log('Raw server response:', responseText);
-
-        let result;
-        try {
-            result = JSON.parse(responseText);
-        } catch (e) {
-            console.error('Error parsing JSON:', e);
-            throw new Error('Invalid JSON response from server');
-        }
-
-        if (result.success) {
+function verifyPayment(response) {
+    console.log('Verifying payment:', response);
+    fetch('/payments/verify', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_signature: response.razorpay_signature
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Verification response:', data);
+        if (data.success) {
             Swal.fire({
                 icon: 'success',
                 title: 'Payment Successful',
@@ -557,9 +551,10 @@ async function verifyPayment(paymentResponse, order) {
                 window.location.href = '/user/';
             });
         } else {
-            throw new Error(result.message || 'Payment verification failed');
+            throw new Error(data.message || 'Payment verification failed');
         }
-    } catch (error) {
+    })
+    .catch(error => {
         console.error('Error verifying payment:', error);
         Swal.fire({
             icon: 'error',
@@ -567,9 +562,50 @@ async function verifyPayment(paymentResponse, order) {
             text: error.message || 'Unable to verify payment. Please contact support.',
             confirmButtonText: 'OK'
         });
-    }
+    });
 }
 
+function handlePaymentFailure(razorpayOrderId) {
+    console.log('Handling payment failure for order:', razorpayOrderId);
+    fetch('/payments/payment-failure', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ razorpay_order_id: razorpayOrderId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Payment failure recorded');
+            Swal.fire({
+                icon: 'error',
+                title: 'Payment Failed',
+                text: 'Your payment was not successful. The order has been marked as failed.',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '/user/orders'; // Redirect to orders page or appropriate location
+            });
+        } else {
+            console.error('Failed to record payment failure');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'An error occurred while processing your payment failure. Please contact support.',
+                confirmButtonText: 'OK'
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error handling payment failure:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred while processing your payment failure. Please contact support.',
+            confirmButtonText: 'OK'
+        });
+    });
+}
 async function applyCoupon() {
     const promoCode = document.getElementById('promoCode').value.trim();
     const cartId = document.getElementById('cartId').value;
@@ -707,6 +743,81 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+// Add this function to your existing script tag
+function retryPayment(orderId) {
+    if (!confirm('Are you sure you want to retry the payment for this order?')) {
+        return;
+    }
+
+    const retryButton = document.querySelector(`button[onclick="retryPayment('${orderId}')"]`);
+    retryButton.disabled = true;
+    retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retrying...';
+
+    fetch(`/payments/retry-payment/${orderId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        retryButton.disabled = false;
+        retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retry';
+
+        if (data.success) {
+            const options = {
+                key: '<%= process.env.RAZORPAY_KEY_ID %>',
+                amount: data.order.totalAmount * 100,
+                currency: 'INR',
+                name: 'Your Company Name',
+                description: 'Payment for Order ' + orderId,
+                order_id: data.razorpayOrderId,
+                handler: function (response) {
+                    verifyPayment(response);
+                },
+                prefill: {
+                    name: data.customerName,
+                    email: data.customerEmail,
+                    contact: data.customerPhone,
+                },
+                theme: {
+                    color: "#3399cc"
+                },
+                modal: {
+                    ondismiss: function() {
+                        console.log('Checkout form closed');
+                        handlePaymentFailure(data.razorpayOrderId);
+                    }
+                }
+            };
+
+            const razorpayInstance = new Razorpay(options);
+            razorpayInstance.open();
+        } else {
+            alert(`Payment retry failed: ${data.message}`);
+        }
+    })
+    .catch(error => {
+        console.error('Error retrying payment:', error);
+        alert('An error occurred while retrying the payment. Please try again.');
+        retryButton.disabled = false;
+        retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retry';
+    });
+}
  </script>
     <%- include('./partial/footer') %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

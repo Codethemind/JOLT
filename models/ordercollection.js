@@ -53,49 +53,32 @@ const orderSchema = new mongoose.Schema({
         min: 0.01
     },
     discountAmount: {
-        type: Number, // New field to store the discount amount
+        type: Number,
         default: 0
     },
     couponCode: {
-        type: String, // New field to store the applied coupon code
+        type: String,
         default: null
     },
     orderStatus: {
         type: String,
         required: true,
-        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+        enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Payment Failed', 'Retrying Payment'],
+        default: 'Pending'
     },
-    orderStatusTimestamps: {
-        pending: { type: Date },
-        processing: { type: Date },
-        shipped: { type: Date },
-        delivered: { type: Date },
-        cancelled: { type: Date }
-    },
-    returnStatus: {
+    paymentStatus: {
         type: String,
-        enum: ['None', 'Pending', 'Accepted', 'Rejected'],
-        default: 'None' // Default value when no return has been initiated
-    },
-    returnRequestDate: {
-        type: Date // Date when return request was made
-    },
-    returnAcceptedDate: {
-        type: Date // Date when return request was accepted
-    },
-    returnRejectedDate: {
-        type: Date // Date when return request was rejected
-    },
-    placedAt: {
-        type: Date,
-        default: Date.now
+        enum: ['Pending', 'Paid', 'Failed'],
+        default: 'Pending'
     },
     razorpayOrderId: String,
     razorpayPaymentId: String,
-    razorpaySignature: String
+    razorpaySignature: String,
+    placedAt: {
+        type: Date,
+        default: Date.now
+    }
 }, { timestamps: true });
-
-orderSchema.index({ orderId: 'text', 'user.name': 'text' });
 
 const Order = mongoose.model('Order', orderSchema);
 module.exports = Order;
