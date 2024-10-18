@@ -11,7 +11,7 @@ const razorpay = new Razorpay({
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-// Route to add funds
+
 router.post('/add-funds', userauth, async (req, res) => {
     try {
         const { amount } = req.body;

@@ -4,7 +4,7 @@ const Order = require('../models/ordercollection');
 const Wallet = require('../models/walletCollection');
 const Product = require('../models/poductcollection');
 
-// POST /return-request/:orderId
+
 router.post('/return-request/:orderId', async (req, res) => {
     const { orderId } = req.params;
     const { reason, description } = req.body;
@@ -41,7 +41,6 @@ router.post('/return-request/:orderId', async (req, res) => {
     }
 });
 
-// New route for admin to get pending return requests
 router.get('/admin/pending-returns', async (req, res) => {
     try {
         const pendingReturns = await Order.find({ returnStatus: 'Pending' });
@@ -170,9 +169,6 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
     }
 });
 
-
-
-// New route for admin to reject a return request
 router.post('/admin/reject-return/:orderId', async (req, res) => {
     try {
         const order = await Order.findById(req.params.orderId);

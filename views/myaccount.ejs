@@ -296,58 +296,46 @@
     </td>
 </tr>
 
-																			<tr>
-																				<td><strong>Order Status:</strong></td>
-																				<td>
-																					<span
-																						id="order-status-<%= order._id %>"
-																						class="badge 
-																							<%= order.orderStatus === 'Pending' ? 'bg-warning' : 
-																								order.orderStatus === 'Processing' ? 'bg-info' : 
-																								order.orderStatus === 'Shipped' ? 'bg-primary' : 
-																								order.orderStatus === 'Delivered' ? 'bg-success' : 
-																								order.orderStatus === 'Cancelled' ? 'bg-danger' : 
-																								order.orderStatus === 'Return Requested' ? 'bg-warning text-dark' :
-																								'bg-secondary' %>">
-																						<%= order.orderStatus %>
-																					</span>
+<tr>
+    <td><strong>Order Status:</strong></td>
+    <td>
+        <span
+            id="order-status-<%= order._id %>"
+            class="badge 
+                <%= order.orderStatus === 'Pending' ? 'bg-warning' : 
+                    order.orderStatus === 'Processing' ? 'bg-info' : 
+                    order.orderStatus === 'Shipped' ? 'bg-primary' : 
+                    order.orderStatus === 'Delivered' ? 'bg-success' : 
+                    order.orderStatus === 'Cancelled' ? 'bg-danger' : 
+                    order.orderStatus === 'Return Requested' ? 'bg-warning text-dark' :
+                    'bg-secondary' %>">
+            <%= order.orderStatus %>
+        </span>
 
-																					<% if
-																						(order.orderStatus==='Delivered'
-																						) { %>
-																						<span
-																							id="return-status-<%= order._id %>"
-																							class="badge 
-																								<%= order.returnStatus === 'Pending' ? 'bg-warning' : 
-																									order.returnStatus === 'Accepted' ? 'bg-success' : 
-																									order.returnStatus === 'Rejected' ? 'bg-danger' : 
-																									'd-none' %>">
-																							<% if
-																								(order.returnStatus==='Pending'
-																								) { %>
-																								Return Pending
-																								<% } else if
-																									(order.returnStatus==='Accepted'
-																									) { %>
-																									Return Accepted
-																									<% } else if
-																										(order.returnStatus==='Rejected'
-																										) { %>
-																										Return Rejected
-																										<% } %>
-																						</span>
-																						<% } else if
-																							(order.returnStatus==='None'
-																							) { %>
-																							<span
-																								id="return-status-<%= order._id %>"
-																								class="badge d-none">
-																								<!-- This will remain hidden if order is delivered and returnStatus is None -->
-																							</span>
-																							<% } %>
-																				</td>
+        <% if (order.orderStatus === 'Delivered') { %>
+            <span id="return-status-<%= order._id %>" class="badge 
+                <%= order.returnStatus === 'Pending' ? 'bg-warning' : 
+                    order.returnStatus === 'Accepted' ? 'bg-success' : 
+                    order.returnStatus === 'Rejected' ? 'bg-danger' : 
+                    'd-none' %>">
+                <% if (order.returnStatus === 'Pending') { %>
+                    Return Pending
+                <% } else if (order.returnStatus === 'Accepted') { %>
+                    Return Accepted
+                <% } else if (order.returnStatus === 'Rejected') { %>
+                    Return Rejected
+                <% } %>
+            </span>
 
-																			</tr>
+            <!-- Add Download Invoice Button -->
+            <a href="/user/orders/download-invoice/<%= order._id %>" class="btn btn-outline-primary btn-sm ms-2">
+                <i class="bi bi-download"></i> Download Invoice
+            </a>
+
+        <% } %>
+    </td>
+</tr>
+
 																			<tr>
 																				<td><strong>Delivery Address:</strong>
 																				</td>

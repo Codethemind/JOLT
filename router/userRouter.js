@@ -21,7 +21,7 @@ const {
   get_myaccount,
   postaddressadd,
   postaddressedit,
-  deleteaddress,
+  deleteaddress,downloadInvoice,
 } = require("../controllers/userController");
 
 userRouter.get("/", get_home);
@@ -43,6 +43,9 @@ userRouter.get("/Myaccount", userauth, get_myaccount);
 userRouter.post("/address/add", userauth, postaddressadd);
 userRouter.post("/address/edit/:id", postaddressedit);
 userRouter.delete("/address/delete/:id", userauth, deleteaddress);
+userRouter.get('/orders/download-invoice/:orderId', downloadInvoice);
+
+
 
 userRouter.post('/forgot-password', require('../controllers/userController').post_forgot_password);
 userRouter.post('/verify-reset-otp', require('../controllers/userController').post_verify_reset_otp);

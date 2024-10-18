@@ -7,7 +7,10 @@ const Product=require('../models/poductcollection')
 const Cart=require('../models/cartCollection')
 const Wallet = require('../models/walletCollection')
 const Settings = require('../models/settingsCollection');
-const Wishlist = require('../models/wishlistCollection'); // Add this line
+const Wishlist = require('../models/wishlistCollection'); 
+const PDFDocument = require('pdfkit'); 
+const fs = require('fs'); 
+
 
 const bcrypt=require('bcrypt')
 const path = require("path");
@@ -682,4 +685,168 @@ async function getReferralBonus() {
     return bonus;
 }
 
-  module.exports={deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout, post_forgot_password, post_verify_reset_otp, post_reset_password, generateUniqueReferralCode};
+const getOrderDetails = async (orderId) => {
+  try {
+      const order = await Order.findById(orderId)
+          .populate('user') // Populate user details
+          .populate('address') // Populate address details
+          .populate('items.product'); // Populate product details for each item
+
+      if (!order) {
+          throw new Error('Order not found');
+      }
+
+      return order;
+  } catch (error) {
+      console.error('Error fetching order:', error);
+      throw error;
+  }
+};
+
+// Controller to handle the invoice download
+const downloadInvoice = async (req, res) => {
+    try {
+        const orderId = req.params.orderId;
+        const order = await getOrderDetails(orderId);
+
+        if (!order || order.orderStatus !== 'Delivered') {
+            return res.status(404).send('Invoice not available for this order');
+        }
+
+        const invoiceNumber = generateInvoiceNumber(order);
+        const invoiceDir = path.resolve(__dirname, '../invoices');
+        const invoicePath = path.join(invoiceDir, `invoice-${orderId}.pdf`);
+
+        if (!fs.existsSync(invoiceDir)) {
+            fs.mkdirSync(invoiceDir, { recursive: true });
+        }
+
+        const pdfDoc = new PDFDocument({ margin: 50 });
+        const writeStream = fs.createWriteStream(invoicePath);
+        pdfDoc.pipe(writeStream);
+
+        // Add logo (if exists)
+        const logoPath = path.join(__dirname, '../public/images/logo.png'); // Adjust this path to where your logo is actually located
+        if (fs.existsSync(logoPath)) {
+            pdfDoc.image(logoPath, 50, 45, { width: 50 });
+        }
+
+        pdfDoc.fontSize(20)
+            .text('JOLT', 110, 57)
+            .fontSize(10)
+            .text('123 Main Street, City, Country', 200, 65, { align: 'right' })
+            .text('Phone: (123) 456-7890', 200, 80, { align: 'right' })
+            .moveDown();
+
+        generateHr(pdfDoc, 185);
+
+        // Add invoice details
+        const customerInformationTop = 200;
+        pdfDoc.fontSize(10)
+            .text(`Invoice Number: ${invoiceNumber}`, 50, customerInformationTop)
+            .text(`Invoice Date: ${new Date().toLocaleDateString()}`, 50, customerInformationTop + 15)
+            .text(`Order ID: ${order._id}`, 50, customerInformationTop + 30)
+            .text(`Order Date: ${new Date(order.placedAt).toLocaleDateString()}`, 50, customerInformationTop + 45)
+            .text(`Order Status: ${order.orderStatus}`, 50, customerInformationTop + 60)
+            .text(order.user.name, 300, customerInformationTop)
+            .text(order.address.streetAddress, 300, customerInformationTop + 15)
+            .text(`${order.address.city}, ${order.address.state} ${order.address.zipCode}`, 300, customerInformationTop + 30)
+            .text(order.address.country, 300, customerInformationTop + 45)
+            .moveDown();
+
+        generateHr(pdfDoc, 252);
+
+        // Add table header
+        let i;
+        const invoiceTableTop = 330;
+        pdfDoc.fontSize(10)
+            .text('Item', 50, invoiceTableTop)
+            .text('Description', 150, invoiceTableTop)
+            .text('Quantity', 280, invoiceTableTop, { width: 90, align: 'right' })
+            .text('Unit Price', 370, invoiceTableTop, { width: 90, align: 'right' })
+            .text('Line Total', 0, invoiceTableTop, { align: 'right' });
+
+        generateHr(pdfDoc, invoiceTableTop + 20);
+
+        // Add table rows
+        let position = invoiceTableTop + 30;
+        for (i = 0; i < order.items.length; i++) {
+            const item = order.items[i];
+            const description = item.product.description 
+                ? item.product.description.substring(0, 30) + '...'
+                : 'No description available';
+            position = generateTableRow(
+                pdfDoc,
+                position,
+                item.product.product_name,
+                description,
+                item.quantity,
+                item.price / item.quantity,
+                item.price
+            );
+        }
+
+        generateHr(pdfDoc, position + 20);
+
+        // Add total
+        const subtotalPosition = position + 30;
+        pdfDoc.fontSize(10)
+            .text('Subtotal', 400, subtotalPosition, { width: 100, align: 'right' })
+            .text(`Rs. ${order.totalAmount}`, 0, subtotalPosition, { align: 'right' });
+
+        pdfDoc.fontSize(10)
+            .text('Total', 400, subtotalPosition + 25, { width: 100, align: 'right' })
+            .text(`Rs. ${order.totalAmount}`, 0, subtotalPosition + 25, { align: 'right' });
+
+        // Add footer
+        pdfDoc.fontSize(10)
+            .text('Thank you for your business!', 50, 700, { align: 'center', width: 500 });
+
+        pdfDoc.end();
+
+        writeStream.on('finish', () => {
+            console.log(`Invoice generated: ${invoicePath}`);
+            res.download(invoicePath);
+        });
+
+        writeStream.on('error', (err) => {
+            console.error('Error writing PDF:', err);
+            res.status(500).send('Error generating invoice');
+        });
+
+    } catch (error) {
+        console.error('Error generating invoice:', error);
+        res.status(500).send('Error generating invoice');
+    }
+};
+
+function generateHr(doc, y) {
+    doc.strokeColor("#aaaaaa")
+        .lineWidth(1)
+        .moveTo(50, y)
+        .lineTo(550, y)
+        .stroke();
+}
+
+function generateTableRow(doc, y, item, description, quantity, unitCost, lineTotal) {
+    const itemName = item.length > 25 ? item.substring(0, 22) + '...' : item;
+    doc.fontSize(10)
+        .text(itemName, 50, y)
+        .text(description, 150, y)
+        .text(quantity.toString(), 280, y, { width: 90, align: 'right' })
+        .text(`Rs. ${unitCost.toFixed(2)}`, 370, y, { width: 90, align: 'right' })
+        .text(`Rs. ${lineTotal.toFixed(2)}`, 0, y, { align: 'right' });
+    return y + 30;
+}
+
+function generateInvoiceNumber(order) {
+  // Convert order._id to a string and slice the first 6 characters
+  const orderIdString = order._id.toString(); // Convert ObjectId to string
+  const shortId = orderIdString.slice(0, 6); // Use slice on the string
+  const invoiceNumber = `INV-${shortId}-${Date.now()}`; // Create invoice number with timestamp
+  return invoiceNumber;
+}
+
+
+
+  module.exports={downloadInvoice,deleteaddress,postaddressedit, postaddressadd,get_myaccount,get_home,get_wishlist,get_cart,get_about,get_contact,get_faq,get_error,post_signup,post_login,post_verify_otp,post_resend_otp,get_ProductPage,get_singleproduct,category,getlogout, post_forgot_password, post_verify_reset_otp, post_reset_password, generateUniqueReferralCode, generateHr, generateTableRow};

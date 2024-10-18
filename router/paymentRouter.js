@@ -10,7 +10,6 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-// Create Order
 router.post('/create-order', async (req, res) => {
   try {
     const { amount, currency = 'INR' } = req.body;
@@ -49,7 +48,6 @@ router.post('/create-order', async (req, res) => {
   }
 });
 
-// Use the verifyPayment function from cartController
 router.post('/verify', cartController.verifyPayment);
 
 router.post('/retry-payment/:orderId', async (req, res) => {
