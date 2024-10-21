@@ -77,13 +77,12 @@
                                                             <% } else { %>
                                                                 <button type="button" class="btn btn-danger btn-sm"
                                                                     onclick="deleteOffer('<%= element._id %>')">Delete</button>
-                                                                <button type="button"
-                                                                    class="btn btn-outline-info btn-sm editBtn"
+                                                                    <button type="button" class="btn btn-outline-info btn-sm editBtn"
                                                                     data-offer-id="<%= element._id %>"
                                                                     data-offer-name="<%= element.offerName %>"
                                                                     data-offer-percentage="<%= element.offerPercentage %>"
-                                                                    data-offer-sdate="<%= element.offerStartDate ? new Date(element.offerStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>"
-                                                                    data-offer-edate="<%= element.offerEndDate ? new Date(element.offerEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>"
+                                                                    data-offer-sdate="<%= element.offerStartDate.toISOString().slice(0, 16) %>"
+                                                                    data-offer-edate="<%= element.offerEndDate.toISOString().slice(0, 16) %>"
                                                                     onclick="populateEditModal(this)">
                                                                     Edit
                                                                 </button>
@@ -640,24 +639,23 @@
 
 
 
-        // Function to populate the edit modal
         function populateEditModal(button) {
-            const offerId = button.getAttribute('data-offer-id');
-            const offerName = button.getAttribute('data-offer-name');
-            const offerPercentage = button.getAttribute('data-offer-percentage');
-            const offerStartDate = button.getAttribute('data-offer-sdate');
-            const offerEndDate = button.getAttribute('data-offer-edate');
+    const offerId = button.getAttribute('data-offer-id');
+    const offerName = button.getAttribute('data-offer-name');
+    const offerPercentage = button.getAttribute('data-offer-percentage');
+    const offerStartDate = button.getAttribute('data-offer-sdate');
+    const offerEndDate = button.getAttribute('data-offer-edate');
 
-            document.getElementById('editOfferId').value = offerId;
-            document.getElementById('editOfferName').value = offerName;
-            document.getElementById('editOfferPercentage').value = offerPercentage;
-            document.getElementById('editOfferStartDate').value = new Date(offerStartDate).toISOString().slice(0, 16);
-            document.getElementById('editOfferEndDate').value = new Date(offerEndDate).toISOString().slice(0, 16);
 
-            const modal = new bootstrap.Modal(document.getElementById('editOfferModal'));
-            modal.show();
-        }
+    document.getElementById('editOfferId').value = offerId;
+    document.getElementById('editOfferName').value = offerName;
+    document.getElementById('editOfferPercentage').value = offerPercentage;
+    document.getElementById('editOfferStartDate').value = offerStartDate;
+    document.getElementById('editOfferEndDate').value = offerEndDate;
 
+    const modal = new bootstrap.Modal(document.getElementById('editOfferModal'));
+    modal.show();
+}
         async function EditOffer() {
             const Toast = Swal.mixin({
                 toast: true,

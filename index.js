@@ -52,19 +52,16 @@ app.use('/auth', googleRouter)
 app.use('/admin', adminRouter)
 app.use('/brand', brandRouter)
 app.use('/profile', profileRouter)
+app.use('/wallet', walletRouter);
 app.use('/api/cart', cartRouter);
 app.use('/wishlist', wishlistRouter);
 app.use('/coupons', coupenRouter);
 app.use('/api/otp', otpRouter);
 app.use('/payments', paymentRouter);
-app.use('/wallet', walletRouter);
 app.use('/return', returnRouter);
 app.use('/admin/reports', reportRouter);
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
+
 
 app.use((req, res, next) => {
     res.locals.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
@@ -82,3 +79,4 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+

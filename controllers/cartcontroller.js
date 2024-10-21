@@ -434,7 +434,6 @@ exports.cancelOrder = async (req, res) => {
 
         // Mark the order as cancelled
         order.orderStatus = 'Cancelled';
-        order.orderStatusTimestamps.cancelled = new Date();
 
         // Process refund to wallet if payment method was Bank Transfer
         if (order.paymentMethod === 'Bank Transfer') {
@@ -635,11 +634,11 @@ exports.acceptReturn = async (req, res) => {
 exports.verifyPayment = async (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-        console.log('Received payment verification request:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
+       
 
         const order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
         if (!order) {
-            console.log('Order not found for razorpay_order_id:', razorpay_order_id);
+          
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
@@ -648,8 +647,6 @@ exports.verifyPayment = async (req, res) => {
             .update(`${razorpay_order_id}|${razorpay_payment_id}`)
             .digest('hex');
 
-        console.log('Generated signature:', generated_signature);
-        console.log('Received signature:', razorpay_signature);
 
         if (generated_signature === razorpay_signature) {
             order.paymentStatus = 'Paid';
@@ -657,13 +654,11 @@ exports.verifyPayment = async (req, res) => {
             order.razorpayPaymentId = razorpay_payment_id;
             order.razorpaySignature = razorpay_signature;
             await order.save();
-            console.log('Payment verified successfully for order:', order._id);
             res.json({ success: true, message: 'Payment verified successfully' });
         } else {
             order.paymentStatus = 'Failed';
             order.orderStatus = 'Payment Failed';
             await order.save();
-            console.log('Payment verification failed for order:', order._id);
             res.status(400).json({ success: false, message: 'Payment verification failed' });
         }
     } catch (error) {
@@ -677,11 +672,9 @@ exports.verifyPayment = async (req, res) => {
 exports.handlePaymentFailure = async (req, res) => {
     try {
         const { razorpay_order_id } = req.body;
-        console.log('Handling payment failure for order:', razorpay_order_id);
-
         const order = await Order.findOne({ razorpayOrderId: razorpay_order_id });
         if (!order) {
-            console.log('Order not found for razorpay_order_id:', razorpay_order_id);
+           
             return res.status(404).json({ success: false, message: 'Order not found' });
         }
 
@@ -690,7 +683,7 @@ exports.handlePaymentFailure = async (req, res) => {
         order.orderStatus = 'Payment Failed';
         await order.save();
 
-        console.log('Payment failure recorded for order:', order._id);
+        
         res.json({ success: true, message: 'Payment failure recorded' });
     } catch (error) {
         console.error('Error handling payment failure:', error);

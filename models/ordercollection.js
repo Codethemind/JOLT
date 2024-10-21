@@ -77,7 +77,29 @@ const orderSchema = new mongoose.Schema({
     placedAt: {
         type: Date,
         default: Date.now
+    },
+    // Add return-related fields
+    returnStatus: {
+        type: String,
+        enum: ['None', 'Pending', 'Accepted', 'Rejected'],
+        default: 'None'
+    },
+    returnRequestDate: {
+        type: Date
+    },
+    returnAcceptedDate: {
+        type: Date
+    },
+    returnRejectedDate: {
+        type: Date
+    },
+    returnReason: {
+        type: String
+    },
+    returnDescription: {
+        type: String
     }
+
 }, { timestamps: true });
 
 const Order = mongoose.model('Order', orderSchema);

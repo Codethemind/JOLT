@@ -573,7 +573,6 @@ const updateorderstatus = async (req, res) => {
   const { status } = req.body;
 
   try {
-    // Find the order by ID and populate category and brand
     const order = await Order.findById(orderId)
       .populate({
         path: 'items.product',
@@ -590,7 +589,52 @@ const updateorderstatus = async (req, res) => {
 
     // If the new status is 'Cancelled'
     if (status === 'Cancelled') {
-      // ... (existing cancellation logic)
+      // Restore stock and adjust sales counts for each item in the order
+      for (const item of order.items) {
+        const product = item.product;
+        const variant = product.variants.find(v => v._id.toString() === item.variantId.toString());
+
+        if (variant) {
+          // Restore stock
+          variant.stock += item.quantity;
+
+          // Reduce sold count for product
+          product.sold -= item.quantity;
+          if (product.sold < 0) product.sold = 0; // Ensure no negative sold count
+
+          // Reduce sales count for category
+          if (product.category_id) {
+            product.category_id.totalSales -= item.quantity;
+            if (product.category_id.totalSales < 0) product.category_id.totalSales = 0;
+            await product.category_id.save();
+          }
+
+          // Reduce sales count for brand
+          if (product.brand_id) {
+            product.brand_id.totalSales -= item.quantity;
+            if (product.brand_id.totalSales < 0) product.brand_id.totalSales = 0;
+            await product.brand_id.save();
+          }
+
+          await product.save();
+        }
+      }
+
+      // Process refund to wallet if payment method was Bank Transfer
+      if (order.paymentMethod === 'Bank Transfer') {
+        let wallet = await Wallet.findOne({ userId: order.user._id });
+        if (!wallet) {
+          wallet = new Wallet({ userId: order.user._id, balance: 0 });
+        }
+        wallet.balance += order.totalAmount;
+        wallet.transactions.push({
+          amount: order.totalAmount,
+          type: 'Credit',
+          description: `Refund for cancelled order ${order.orderId}`,
+          date: new Date()
+        });
+        await wallet.save();
+      }
     }
 
     // Update the order status
@@ -604,7 +648,7 @@ const updateorderstatus = async (req, res) => {
     // Update the timestamp for the new status
     order.orderStatusTimestamps[status.toLowerCase()] = new Date();
     
-    await order.save(); // Save the updated order
+    await order.save();
 
     return res.json({ 
       success: true, 
@@ -732,7 +776,7 @@ const generateSalesReport = async (req, res) => {
 };
 
 const downloadReport = async (req, res) => {
-  console.log('Generating sales report...');
+ 
   try {
     const { startDate, endDate } = req.body;
     
@@ -869,6 +913,8 @@ const downloadReport = async (req, res) => {
     res.status(500).json({ success: false, error: "An error occurred while generating the sales report" });
   }
 };
+
+
 
   module.exports={updateReferralBonus,updateorderstatus,ordermanagment,admin_login_page,admin_post_login,admin_get_dashboard,admin_get_usermanagment,admin_get_productmanagment,admin_get_addproduct,
     admin_get_catagorymanagment,admin_get_brandmanagment,admin_blockuser,admin_unblockuser,admin_post_addcategory,admin_put_deletcategory,admin_put_restorecategory,admin_put_updatecategory,admin_post_addproduct,admin_get_logout,admin_put_restoreproduct,admin_put_deletproduct,admin_edit_product,admin_update_product,generateSalesReport,downloadReport};

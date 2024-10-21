@@ -44,9 +44,7 @@ adminRouter.post('/update-referral-bonus', adminauth, adminController.updateRefe
 
 
 adminRouter.get('/sales-report', adminauth, adminController.generateSalesReport);
-
 adminRouter.post('/generate-sales-report', adminauth, adminController.generateSalesReport);
-
 adminRouter.post('/downloadReport', adminauth, adminController.downloadReport);
 
 module.exports=adminRouter;

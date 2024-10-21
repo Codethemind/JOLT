@@ -5,4 +5,6 @@ const reportController = require('../controllers/reportController');
 
 router.post('/generate', reportController.generateSalesReport);
 
+router.get('/api/sales-data', reportController.salesChart);
+
 module.exports = router;

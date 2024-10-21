@@ -726,7 +726,7 @@ const downloadInvoice = async (req, res) => {
         pdfDoc.pipe(writeStream);
 
         // Add logo (if exists)
-        const logoPath = path.join(__dirname, '../public/images/logo.png'); // Adjust this path to where your logo is actually located
+        const logoPath = path.join(__dirname, '../public/images/demos/demo-4/logo.png'); // Adjust this path to where your logo is actually located
         if (fs.existsSync(logoPath)) {
             pdfDoc.image(logoPath, 50, 45, { width: 50 });
         }

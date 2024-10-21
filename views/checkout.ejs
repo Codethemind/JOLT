@@ -497,7 +497,7 @@ async function placeOrder() {
                 },
                 modal: {
                     ondismiss: function() {
-                        console.log('Checkout form closed');
+                       
                         handlePaymentFailure(orderData.razorpayOrder.id);
                     }
                 }
@@ -526,7 +526,7 @@ async function placeOrder() {
 }
 
 function verifyPayment(response) {
-    console.log('Verifying payment:', response);
+   
     fetch('/payments/verify', {
         method: 'POST',
         headers: {
@@ -785,7 +785,7 @@ function retryPayment(orderId) {
                 },
                 modal: {
                     ondismiss: function() {
-                        console.log('Checkout form closed');
+                  
                         handlePaymentFailure(data.razorpayOrderId);
                     }
                 }

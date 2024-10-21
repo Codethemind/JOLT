@@ -1171,12 +1171,14 @@
 
 		
 		<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<script>
+		<script>
 document.getElementById('payButton').addEventListener('click', function(event) {
     event.preventDefault();
     const amountToAdd = parseFloat(document.getElementById('amountToAdd').value);
 
+    // Validate the amount input
     if (amountToAdd && amountToAdd > 0) {
+        // Call the backend to create a Razorpay order
         fetch("/wallet/add-funds", {
             method: "POST",
             headers: {
@@ -1186,15 +1188,17 @@ document.getElementById('payButton').addEventListener('click', function(event) {
         })
         .then(response => response.json())
         .then(data => {
+            // Initiate Razorpay payment with order details
             const options = {
-                "key": data.keyId,
-                "amount": data.amount,
-                "currency": data.currency,
+                "key": data.keyId, // Razorpay key id
+                "amount": data.amount * 100, // Convert to paise
+                "currency": "INR",
                 "name": "Your Website",
                 "description": "Wallet Recharge",
-                "order_id": data.orderId,
+                "order_id": data.orderId,  // Razorpay order ID
                 "handler": function (response) {
-                    verifyPayment(response, amountToAdd);
+                    // Handle payment response and verify payment
+                    verifyWalletPayment(response, amountToAdd);
                 },
                 "prefill": {
                     "name": "<%= User.name %>",
@@ -1224,7 +1228,10 @@ document.getElementById('payButton').addEventListener('click', function(event) {
     }
 });
 
-function verifyPayment(response, amount) {
+// Function to verify payment and update wallet balance
+function verifyWalletPayment(response, amount) {
+	console.log('hwloyhiukyu');
+	
     fetch("/wallet/verify-payment", {
         method: "POST",
         headers: {
@@ -1266,6 +1273,8 @@ function verifyPayment(response, amount) {
     });
 }
 </script>
+
+
 
 		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

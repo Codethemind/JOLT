@@ -51,13 +51,13 @@ router.post('/create-order', async (req, res) => {
 router.post('/verify', cartController.verifyPayment);
 
 router.post('/retry-payment/:orderId', async (req, res) => {
-  console.log('Retrying payment for order:', req.params.orderId);
+  
   
   try {
     const { orderId } = req.params;
 
     const order = await Order.findOne({ orderId: orderId });
-    console.log(order);
+   
     
     if (!order) {
       return res.status(404).json({ success: false, message: 'Order not found' });

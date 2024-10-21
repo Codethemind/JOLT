@@ -219,28 +219,86 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <!-- Sales Chart Script -->
+
 <script>
+  let orderChart;
+
+  // List of all months
+  const allMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+  // Initialize chart
+  function initChart() {
     var ctx = document.getElementById('salesChart').getContext('2d');
-    var salesChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June'],
-            datasets: [{
-                label: 'Sales',
-                data: [10, 20, 30, 40, 50, 60],
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+    orderChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: allMonths,  // Predefine the labels for all months
+        datasets: [{
+          label: 'Order Count',
+          data: Array(12).fill(0), // Start with zero for all months
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Number of Orders'
             }
+          }
+        },
+        plugins: {
+          title: {
+            display: true,
+            text: 'Order Count Per Month'
+          }
         }
+      }
     });
+  }
+
+  // Update chart with data
+  function updateChart(data) {
+    // Create a map of month names to order counts
+    const monthOrderMap = new Map(data.map(item => [item.month, item.orderCount]));
+
+    // Fill the order counts according to the full month list
+    const updatedOrderCounts = allMonths.map(month => monthOrderMap.get(month) || 0);
+
+    // Update the chart with the new order counts
+    orderChart.data.datasets[0].data = updatedOrderCounts;
+    orderChart.update();
+  }
+
+  // Fetch order data from backend API
+  function fetchOrderData() {
+    fetch('/admin/reports/api/sales-data')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+       
+        updateChart(data);  // Update the chart with new data
+      })
+      .catch(error => {
+        console.error('Error fetching order data:', error);
+        // Display an error message to the user
+        document.getElementById('salesChart').innerHTML = 'Error loading chart data. Please try again later.';
+      });
+  }
+
+  // Initialize the chart when the page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    initChart();
+    fetchOrderData();
+  });
 </script>
 
 <!-- Sales Report Script -->
@@ -284,7 +342,7 @@ document.getElementById('salesReportForm').addEventListener('submit', function(e
 
 
 function displayReportResults(data) {
-    console.log('Report data:', data);
+  
     
     // Create a table to display the report data
     const table = document.createElement('table');
