@@ -461,13 +461,13 @@ exports.cancelOrder = async (req, res) => {
 };
 
 
-exports.applycoupen = async (req, res) => {
+exports.applyCoupon = async (req, res) => {
     const { cartId, couponCode } = req.body;
     const userId = req.session.user;
 
     try {
         // Find the coupon by code
-        const coupon = await Coupon.findOne({ 
+        const coupon = await Coupon.findOne({
             couponCode: couponCode,
             isDeleted: false,
             couponStartDate: { $lte: new Date() },
@@ -478,9 +478,9 @@ exports.applycoupen = async (req, res) => {
             return res.status(400).json({ message: 'Invalid or expired coupon code.' });
         }
 
-        
-        const hasUsedCoupon = await Order.findOne({ 
-            user: userId, 
+        // Check if the user has already used this coupon
+        const hasUsedCoupon = await Order.findOne({
+            user: userId,
             couponCode: couponCode
         });
 
@@ -488,6 +488,7 @@ exports.applycoupen = async (req, res) => {
             return res.status(400).json({ message: 'You have already used this coupon.' });
         }
 
+        // Find the cart
         const cart = await Cart.findById(cartId).populate({
             path: 'items.product',
             populate: {
@@ -499,7 +500,7 @@ exports.applycoupen = async (req, res) => {
             return res.status(404).json({ message: 'Cart not found.' });
         }
 
-        
+        // Calculate total price of the cart
         let totalPrice = 0;
         cart.items.forEach(item => {
             const variant = item.product.variants.find(v => v._id.toString() === item.variantId);
@@ -511,21 +512,35 @@ exports.applycoupen = async (req, res) => {
             }
         });
 
-     
-        const discountAmount = (totalPrice * coupon.discountPercentage) / 100;
-        const newTotalPrice = totalPrice - discountAmount;
+        // Check if the cart meets the minimum purchase requirement (e.g., ₹10,000)
+        const minimumPurchaseAmount = 10000;  // Set minimum purchase requirement
+        if (totalPrice < minimumPurchaseAmount) {
+            return res.status(400).json({ message: `A minimum purchase of ₹${minimumPurchaseAmount} is required to use this coupon.` });
+        }
 
+        // Calculate the discount amount
+        const discountAmount = (totalPrice * coupon.discountPercentage) / 100;
+
+        // Check if a maximum discount applies
+        const maxDiscount = coupon.maxDiscount;  // Assuming maxDiscountAmount is a field in the Coupon model
+        const finalDiscount = maxDiscount && discountAmount > maxDiscount ? maxDiscount : discountAmount;
+
+        // Calculate the new total price after discount
+        const newTotalPrice = totalPrice - finalDiscount;
+
+        // Update the cart with the discounted price and applied coupon
         cart.total_price = newTotalPrice;
         cart.appliedCoupon = {
             code: couponCode,
-            discount: discountAmount
+            discount: finalDiscount
         };
         await cart.save();
 
+        // Return the response
         return res.json({
             success: true,
             message: 'Coupon applied successfully',
-            discountAmount,
+            discountAmount: finalDiscount,
             newTotalPrice,
             originalPrice: totalPrice
         });
@@ -536,19 +551,20 @@ exports.applycoupen = async (req, res) => {
     }
 };
 
+
 exports.removeCoupon = async (req, res) => {
     const { cartId } = req.body;
 
     try {
         const cart = await Cart.findById(cartId);
         if (!cart) {
-            return res.status(404).json({ message: 'Cart not found.' });
+            return res.status(404).json({ success: false, message: 'Cart not found.' });
         }
 
-      
+        // Remove the applied coupon
         cart.appliedCoupon = undefined;
         
-       
+        // Recalculate the total price without the coupon discount
         let totalPrice = 0;
         for (const item of cart.items) {
             const product = await Product.findById(item.product).populate('variants.offer');
@@ -572,7 +588,7 @@ exports.removeCoupon = async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Server error. Please try again later.' });
+        return res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
     }
 };
 
@@ -690,6 +706,25 @@ exports.handlePaymentFailure = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error handling payment failure', error: error.message });
     }
 };
+
+// Add this new method to your cartcontroller.js
+exports.getAvailableCoupons = async (req, res) => {
+    try {
+        const currentDate = new Date();
+        const coupons = await Coupon.find({
+            isDeleted: false,
+            couponStartDate: { $lte: currentDate },
+            couponEndDate: { $gte: currentDate }
+        }).select('couponCode description discountPercentage');
+
+        res.json(coupons);
+    } catch (error) {
+        console.error('Error fetching available coupons:', error);
+        res.status(500).json({ message: 'Error fetching coupons' });
+    }
+};
+
+
 
 
 

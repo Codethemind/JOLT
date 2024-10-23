@@ -11,7 +11,7 @@
     <form id="couponForm">
         <div class="row">
             <div class="col-md-3">
-                <input type="text" name="couponName" class="form-control" placeholder="Coupon Name" >
+                <input type="text" name="couponName" class="form-control" placeholder="Coupon Name">
             </div>
             <div class="col-md-3">
                 <input type="text" name="couponCode" class="form-control" placeholder="Coupon Code">
@@ -25,11 +25,16 @@
             <div class="col-md-2">
                 <input type="datetime-local" name="couponEndDate" class="form-control" >
             </div>
+            <div class="col-md-3">
+                <label for="maxDiscount" class="form-label">Maximum Discount:</label>
+                <input type="number" name="maxDiscount" class="form-control" placeholder="Max Discount" min="0" >
+            </div>
             <div class="col-md-1">
                 <button type="submit" class="btn btn-primary">Add</button>
             </div>
         </div>
     </form>
+    
 
     <!-- Coupon List -->
     <div class="row mt-4">
@@ -41,6 +46,7 @@
                             <h5 class="card-title"><%= coupon.couponName %> (<%= coupon.couponCode %>)</h5>
                             <p class="card-text">
                                 <strong>Discount:</strong> <%= coupon.discountPercentage %>%<br>
+                                <strong>Max Discount:</strong> ₹<%= coupon.maxDiscount %><br>
                                 <strong>Start Date:</strong> <%= new Date(coupon.couponStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %><br>
                                 <strong>Expiry Date:</strong> <%= new Date(coupon.couponEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) %>
                             </p>
@@ -54,8 +60,9 @@
                                             data-coupon-name="<%= coupon.couponName %>"
                                             data-coupon-code="<%= coupon.couponCode %>"
                                             data-discount-percentage="<%= coupon.discountPercentage %>"
-                                            data-start-date="<%= coupon.couponStartDate ? new Date(coupon.couponStartDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>"
-                                            data-end-date="<%= coupon.couponEndDate ? new Date(coupon.couponEndDate).toLocaleString('en-GB', { day: 'numeric', month: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }) : 'N/A' %>"
+                                            data-max-discount="<%= coupon.maxDiscount %>"
+                                            data-start-date="<%= coupon.couponStartDate ? new Date(coupon.couponStartDate).toISOString().slice(0, 16) : '' %>"
+                                            data-end-date="<%= coupon.couponEndDate ? new Date(coupon.couponEndDate).toISOString().slice(0, 16) : '' %>"
                                             onclick="populateEditModal(this)">Edit</button>
                                 <% } %>
                             </div>
@@ -77,42 +84,46 @@
 <!-- Modal for editing a coupon -->
 <div class="modal fade" id="editCouponModal" tabindex="-1" role="dialog" aria-labelledby="editCouponModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editCouponForm">
+                    <input type="hidden" id="editCouponId">
+                    <div class="form-group">
+                        <label for="editCouponName">Coupon Name</label>
+                        <input type="text" class="form-control" id="editCouponName">
+                    </div>
+                    <div class="form-group">
+                        <label for="editCouponCode">Coupon Code</label>
+                        <input type="text" class="form-control" id="editCouponCode">
+                    </div>
+                    <div class="form-group">
+                        <label for="editDiscountPercentage">Discount Percentage</label>
+                        <input type="number" class="form-control" id="editDiscountPercentage" >
+                    </div>
+                    <div class="form-group">
+                        <label for="editMaxDiscountAmount">Max Discount Amount</label>
+                        <input type="number" class="form-control" id="editMaxDiscountAmount">
+                    </div>
+                    <div class="form-group">
+                        <label for="editStartDate">Start Date</label>
+                        <input type="datetime-local" class="form-control" id="editStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEndDate">End Date</label>
+                        <input type="datetime-local" class="form-control" id="editEndDate">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </form>
+            </div>
         </div>
-        <div class="modal-body">
-          <form id="editCouponForm">
-            <input type="hidden" id="editCouponId">
-            <div class="form-group">
-              <label for="editCouponName">Coupon Name</label>
-              <input type="text" class="form-control" id="editCouponName" >
-            </div>
-            <div class="form-group">
-              <label for="editCouponCode">Coupon Code</label>
-              <input type="text" class="form-control" id="editCouponCode">
-            </div>
-            <div class="form-group">
-              <label for="editDiscountPercentage">Discount Percentage</label>
-              <input type="number" class="form-control" id="editDiscountPercentage">
-            </div>
-            <div class="form-group">
-              <label for="editStartDate">Start Date</label>
-              <input type="datetime-local" class="form-control" id="editStartDate">
-            </div>
-            <div class="form-group">
-              <label for="editEndDate">End Date</label>
-              <input type="datetime-local" class="form-control" id="editEndDate" >
-            </div>
-            <button type="submit" class="btn btn-primary">Save changes</button>
-          </form>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
   
 
 
@@ -127,131 +138,219 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.getElementById('couponForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
+ document.getElementById('couponForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
 
-        const formData = new FormData(event.target);
-        const couponCode = formData.get('couponCode');
-        const couponName = formData.get('couponName');
-        const discountPercentage = formData.get('discountPercentage');
-        const couponStartDateStr = formData.get('couponStartDate');
-        const couponEndDateStr = formData.get('couponEndDate');
+    const formData = new FormData(event.target);
+    const couponCode = formData.get('couponCode');
+    const couponName = formData.get('couponName');
+    const discountPercentage = formData.get('discountPercentage');
+    const maxDiscount = formData.get('maxDiscount');
+    const couponStartDateStr = formData.get('couponStartDate');
+    const couponEndDateStr = formData.get('couponEndDate');
 
-        // Parse date strings to Date objects
-        const couponStartDate = new Date(couponStartDateStr);
-        const couponEndDate = new Date(couponEndDateStr);
-        const today = new Date();
-        
-        // Validation checks
-        if (!couponCode || couponCode.trim() === "") {
+    const couponStartDate = new Date(couponStartDateStr);
+    const couponEndDate = new Date(couponEndDateStr);
+    const today = new Date();
+    
+    // Validation checks
+    if (!couponCode || couponCode.trim() === "" || !couponName || couponName.trim() === "" || !maxDiscount || maxDiscount.trim() === "") {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Please fill in all required fields!',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (!discountPercentage || isNaN(discountPercentage) || discountPercentage < 1 || discountPercentage > 100) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Discount',
+            text: 'Discount Percentage must be a number between 1 and 100.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (couponStartDate < today) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Start Date',
+            text: 'Coupon Start Date must be today or in the future.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (couponEndDate <= couponStartDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid End Date',
+            text: 'Coupon End Date must be after the Start Date.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (isNaN(couponStartDate.getTime()) || isNaN(couponEndDate.getTime())) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Date Format',
+            text: 'Please enter valid dates.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    const data = {
+        couponName,
+        couponCode,
+        discountPercentage,
+        maxDiscount,
+        couponStartDate: couponStartDate.toISOString(),
+        couponEndDate: couponEndDate.toISOString(),
+    };
+
+    try {
+        const response = await fetch('/coupons/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
             Swal.fire({
-                title: 'Error!',
-                text: 'Coupon Code cannot be empty.',
-                icon: 'error',
-                confirmButtonText: 'OK'
+                icon: 'success',
+                title: 'Success!',
+                text: 'Coupon created successfully.',
+                confirmButtonColor: '#3085d6',
+            }).then(() => {
+                location.reload();
             });
-            return;
-        }
-
-        if (!couponName || couponName.trim() === "") {
+        } else {
             Swal.fire({
-                title: 'Error!',
-                text: 'Coupon Name cannot be empty.',
                 icon: 'error',
-                confirmButtonText: 'OK'
+                title: 'Error!',
+                text: result.message || 'Failed to create coupon.',
+                confirmButtonColor: '#3085d6',
             });
-            return;
         }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'An unexpected error occurred.',
+            confirmButtonColor: '#3085d6',
+        });
+        console.error('Error:', error);
+    }
+});
 
-        if (!discountPercentage || isNaN(discountPercentage) || discountPercentage < 0) {
+// Edit coupon form submission
+document.getElementById('editCouponForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const couponId = document.getElementById('editCouponId').value;
+    const couponName = document.getElementById('editCouponName').value;
+    const couponCode = document.getElementById('editCouponCode').value;
+    const discountPercentage = parseFloat(document.getElementById('editDiscountPercentage').value);
+    const maxDiscount = parseFloat(document.getElementById('editMaxDiscountAmount').value);
+    const couponStartDate = new Date(document.getElementById('editStartDate').value);
+    const couponEndDate = new Date(document.getElementById('editEndDate').value);
+
+    // Validation
+    if (!couponName || couponName.trim() === "" || !couponCode || couponCode.trim() === "") {
+        Swal.fire({
+            icon: 'error',
+            title: 'Missing Information',
+            text: 'Coupon Name and Code cannot be empty.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (!discountPercentage || isNaN(discountPercentage) || discountPercentage < 1 || discountPercentage > 100) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Discount',
+            text: 'Discount Percentage must be a number between 1 and 100.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (isNaN(maxDiscount) || maxDiscount < 0) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Maximum Discount',
+            text: 'Maximum Discount must be a valid positive number.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    if (isNaN(couponStartDate) || isNaN(couponEndDate) || couponStartDate >= couponEndDate) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Invalid Dates',
+            text: 'Start date must be before the end date and both must be valid dates.',
+            confirmButtonColor: '#3085d6',
+        });
+        return;
+    }
+
+    const data = {
+        couponName,
+        couponCode,
+        discountPercentage,
+        maxDiscount,
+        couponStartDate: couponStartDate.toISOString(),
+        couponEndDate: couponEndDate.toISOString(),
+    };
+
+    try {
+        const response = await fetch(`/coupons/edit/${couponId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (response.ok) {
             Swal.fire({
-                title: 'Error!',
-                text: 'Discount Percentage must be a valid number and cannot be negative.',
-                icon: 'error',
-                confirmButtonText: 'OK'
+                icon: 'success',
+                title: 'Success!',
+                text: 'Coupon updated successfully.',
+                confirmButtonColor: '#3085d6',
+            }).then(() => {
+                location.reload();
             });
-            return;
-        }
-
-        // Check if coupon start date is today or in the future
-        if (couponStartDate < today) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Coupon Start Date must be today or in the future.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Check if coupon end date is after the start date
-        if (couponEndDate <= couponStartDate) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Coupon End Date must be after the Start Date.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        // Ensure valid date formats
-        if (isNaN(couponStartDate.getTime()) || isNaN(couponEndDate.getTime())) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Invalid date format.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        const data = {
-            couponName,
-            couponCode,
-            discountPercentage,
-            couponStartDate: couponStartDate.toISOString(), // Convert to ISO string
-            couponEndDate: couponEndDate.toISOString(),     // Convert to ISO string
-        };
-
-        try {
-            const response = await fetch('/coupons/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-
+        } else {
             const result = await response.json();
-
-            if (response.ok) {
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Coupon created successfully.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    location.reload();  // Reload the page to show updated list
-                });
-            } else {
-                Swal.fire({
-                    title: 'Error!',
-                    text: result.message || 'Failed to create coupon.',
-                    icon: 'error',
-                    confirmButtonText: 'Try Again'
-                });
-            }
-        } catch (error) {
             Swal.fire({
-                title: 'Error!',
-                text: 'An unexpected error occurred.',
                 icon: 'error',
-                confirmButtonText: 'Try Again'
+                title: 'Error!',
+                text: result.message || 'Failed to update coupon.',
+                confirmButtonColor: '#3085d6',
             });
-            console.error('Error:', error);
         }
-    });
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'An unexpected error occurred while updating the coupon.',
+            confirmButtonColor: '#3085d6',
+        });
+    }
+});
 </script>
 
 
@@ -377,6 +476,7 @@
         const couponName = button.getAttribute('data-coupon-name');
         const couponCode = button.getAttribute('data-coupon-code');
         const discountPercentage = button.getAttribute('data-discount-percentage');
+        const maxDiscount = button.getAttribute('data-max-discount'); // New line for max discount
         const startDate = button.getAttribute('data-start-date');
         const endDate = button.getAttribute('data-end-date');
 
@@ -385,120 +485,15 @@
         document.getElementById('editCouponName').value = couponName;
         document.getElementById('editCouponCode').value = couponCode;
         document.getElementById('editDiscountPercentage').value = discountPercentage;
+        document.getElementById('editMaxDiscountAmount').value = maxDiscount; // Populate max discount
         document.getElementById('editStartDate').value = startDate;
         document.getElementById('editEndDate').value = endDate;
 
         // Show the modal
         $('#editCouponModal').modal('show');
     }
-
-    document.getElementById('editCouponForm').addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const couponId = document.getElementById('editCouponId').value;
-        const couponName = document.getElementById('editCouponName').value;
-        const couponCode = document.getElementById('editCouponCode').value;
-        const discountPercentage = document.getElementById('editDiscountPercentage').value;
-        const couponStartDate = new Date(document.getElementById('editStartDate').value);
-        const couponEndDate = new Date(document.getElementById('editEndDate').value);
-
-        // Validation
-        if (!couponName || couponName.trim() === "") {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Coupon Name cannot be empty.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (!couponCode || couponCode.trim() === "") {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Coupon Code cannot be empty.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (!discountPercentage || discountPercentage <= 0) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Discount Percentage must be a positive number.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (isNaN(discountPercentage) || discountPercentage < 0) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Discount Percentage must be a valid number.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        if (isNaN(couponStartDate) || isNaN(couponEndDate) || couponStartDate >= couponEndDate) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Start date must be before the end date and both must be valid dates.',
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            return;
-        }
-
-        const data = {
-            couponName,
-            couponCode,
-            discountPercentage,
-            couponStartDate: couponStartDate.toISOString(),
-            couponEndDate: couponEndDate.toISOString(),
-        };
-
-        try {
-            const response = await fetch(`/coupons/edit/${couponId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            });
-
-            if (response.ok) {
-                Swal.fire({
-                    title: 'Success!',
-                    text: 'Coupon updated successfully.',
-                    icon: 'success',
-                    confirmButtonText: 'OK'
-                }).then(() => {
-                    location.reload(); // Reload to reflect the updates
-                });
-            } else {
-                const result = await response.json();
-                Swal.fire({
-                    title: 'Error!',
-                    text: result.message || 'Failed to update coupon.',
-                    icon: 'error',
-                    confirmButtonText: 'Try Again'
-                });
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            Swal.fire({
-                title: 'Error!',
-                text: 'An unexpected error occurred while updating the coupon.',
-                icon: 'error',
-                confirmButtonText: 'Try Again'
-            });
-        }
-    });
 </script>
+
 
 
 

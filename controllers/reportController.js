@@ -272,22 +272,67 @@ async function generateExcelReport(data) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Sales Report');
 
+    // Add summary section
     worksheet.columns = [
         { header: 'Metric', key: 'metric', width: 30 },
         { header: 'Value', key: 'value', width: 15 }
     ];
 
+    // Add summary data rows
     worksheet.addRows([
         { metric: 'Total Orders', value: data.totalOrders },
-        { metric: 'Original Total', value: data.originalTotal },
-        { metric: 'Offer Discount', value: data.offerDiscount },
-        { metric: 'Total After Offers', value: data.afterOfferTotal },
-        { metric: 'Coupon Discount', value: data.totalCouponDiscount },
-        { metric: 'Final Total', value: data.finalTotal }
+        { metric: 'Original Total', value: `Rs. ${data.originalTotal.toFixed(2)}` },
+        { metric: 'Offer Discount', value: `Rs. ${data.offerDiscount.toFixed(2)}` },
+        { metric: 'Total After Offers', value: `Rs. ${data.afterOfferTotal.toFixed(2)}` },
+        { metric: 'Coupon Discount', value: `Rs. ${data.totalCouponDiscount.toFixed(2)}` },
+        { metric: 'Final Total', value: `Rs. ${data.finalTotal.toFixed(2)}` }
     ]);
 
+    // Leave a blank row before starting the detailed orders section
+    worksheet.addRow([]);
+
+    // Add header for detailed order section
+    worksheet.addRow(['Order Details:']).font = { bold: true };
+
+    // Define columns for detailed order data
+    const detailedOrderSheet = workbook.addWorksheet('Order Details');
+    detailedOrderSheet.columns = [
+        { header: 'Order ID', key: 'orderId', width: 20 },
+        { header: 'Order Date', key: 'orderDate', width: 20 },
+        { header: 'User', key: 'userName', width: 20 },
+        { header: 'Item Name', key: 'itemName', width: 25 },
+        { header: 'Quantity', key: 'quantity', width: 10 },
+        { header: 'Unit Price', key: 'unitPrice', width: 15 },
+        { header: 'Offer Price', key: 'offerPrice', width: 15 },
+        { header: 'Line Total', key: 'lineTotal', width: 15 },
+        { header: 'Coupon', key: 'couponCode', width: 20 },
+        { header: 'Coupon Discount', key: 'couponDiscount', width: 15 },
+        { header: 'Order Total', key: 'totalAmount', width: 15 }
+    ];
+
+    // Add detailed order rows
+    data.orders.forEach(order => {
+        order.items.forEach(item => {
+            detailedOrderSheet.addRow({
+                orderId: order.orderId,
+                orderDate: new Date(order.orderDate).toLocaleDateString(),
+                userName: order.userName,
+                itemName: item.productName || 'Unknown Product',
+                quantity: item.quantity,
+                unitPrice: `Rs. ${item.unitPrice.toFixed(2)}`,
+                offerPrice: `Rs. ${item.offerPrice.toFixed(2)}`,
+                lineTotal: `Rs. ${item.lineTotal.toFixed(2)}`,
+                couponCode: order.couponCode || 'N/A',
+                couponDiscount: order.couponCode ? `Rs. ${order.couponDiscount.toFixed(2)}` : 'N/A',
+                totalAmount: `Rs. ${order.totalAmount.toFixed(2)}`
+            });
+        });
+    });
+
+    // Generate Excel buffer
     return await workbook.xlsx.writeBuffer();
 }
+
 
 
 

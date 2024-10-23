@@ -159,10 +159,31 @@
 
             
                     <!-- Promo code section -->
-                    <div class="input-group mt-5 mb-4">
-                        <input type="text" id="promoCode" class="form-control border" placeholder="Promo code">
-                        <button class="btn btn-light text-primary border" onclick="applyCoupon()">Apply</button>
+                    <div class="mt-5 mb-4">
+                        <button class="btn btn-light text-primary border w-100" onclick="showCoupons()">View Available Coupons</button>
                     </div>
+            
+                    <!-- Add this modal for coupons -->
+                   <!-- Coupons Modal -->
+<div class="modal fade" id="couponsModal" tabindex="-1" role="dialog" aria-labelledby="couponsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="couponsModalLabel">Available Coupons</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="couponsContainer">
+                <!-- Coupons will be dynamically inserted here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
             
                     <!-- Applied Coupon Section -->
                     <div id="appliedCouponSection" style="display: none;">
@@ -661,19 +682,16 @@ async function applyCoupon() {
 
 async function removeCoupon() {
     const cartId = document.getElementById('cartId').value;
-
-    try {
-        const response = await fetch('/api/cart/remove-coupon', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ cartId })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
+    fetch('/api/cart/remove-coupon', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cartId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
             updatePriceDisplay(data.newTotalPrice, 0, data.newTotalPrice);
             hideAppliedCoupon();
             Swal.fire({
@@ -683,22 +701,18 @@ async function removeCoupon() {
                 confirmButtonText: 'OK',
             });
         } else {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: data.message,
-                confirmButtonText: 'OK',
-            });
+            throw new Error(data.message || 'Failed to remove coupon');
         }
-    } catch (error) {
+    })
+    .catch(error => {
         console.error('Error removing coupon:', error);
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: 'An error occurred while removing the coupon. Please try again later.',
+            text: error.message || 'An error occurred while removing the coupon. Please try again later.',
             confirmButtonText: 'OK',
         });
-    }
+    });
 }
 
 function updatePriceDisplay(newTotalPrice, discountAmount, originalPrice) {
@@ -706,29 +720,31 @@ function updatePriceDisplay(newTotalPrice, discountAmount, originalPrice) {
     const discountElement = document.querySelector('.discount-price');
     const finalPriceElement = document.querySelector('.final-price');
 
-    if (totalPriceElement && discountElement && finalPriceElement) {
-        totalPriceElement.innerText = `₹${originalPrice.toFixed(2)}`;
-        discountElement.innerText = `₹${discountAmount.toFixed(2)}`;
-        finalPriceElement.innerText = `₹${newTotalPrice.toFixed(2)}`;
-    }
+    if (totalPriceElement) totalPriceElement.innerText = `₹${originalPrice.toFixed(2)}`;
+    if (discountElement) discountElement.innerText = `₹${discountAmount.toFixed(2)}`;
+    if (finalPriceElement) finalPriceElement.innerText = `₹${newTotalPrice.toFixed(2)}`;
 }
 
 function displayAppliedCoupon(couponCode, discountAmount) {
     const appliedCouponSection = document.getElementById('appliedCouponSection');
     const appliedCouponCode = document.getElementById('appliedCouponCode');
     const discountAmountSpan = document.getElementById('discountAmount');
+    const promoCodeInput = document.getElementById('promoCode');
 
-    appliedCouponCode.textContent = couponCode;
-    discountAmountSpan.textContent = discountAmount.toFixed(2);
-    appliedCouponSection.style.display = 'block';
-    document.getElementById('promoCode').disabled = true;
+    if (appliedCouponSection) appliedCouponSection.style.display = 'block';
+    if (appliedCouponCode) appliedCouponCode.textContent = couponCode;
+    if (discountAmountSpan) discountAmountSpan.textContent = discountAmount.toFixed(2);
+    if (promoCodeInput) promoCodeInput.disabled = true;
 }
 
 function hideAppliedCoupon() {
     const appliedCouponSection = document.getElementById('appliedCouponSection');
-    appliedCouponSection.style.display = 'none';
-    document.getElementById('promoCode').disabled = false;
-    document.getElementById('promoCode').value = '';
+    const appliedCouponCode = document.getElementById('appliedCouponCode');
+    const discountAmountSpan = document.getElementById('discountAmount');
+
+    if (appliedCouponSection) appliedCouponSection.style.display = 'none';
+    if (appliedCouponCode) appliedCouponCode.textContent = '';
+    if (discountAmountSpan) discountAmountSpan.textContent = '0';
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -804,8 +820,159 @@ function retryPayment(orderId) {
         retryButton.innerHTML = '<i class="bi bi-arrow-repeat"></i> Retry';
     });
 }
+
+function showCoupons() {
+    fetch('/api/cart/coupons/available')
+        .then(response => response.json())
+        .then(coupons => {
+            const couponsContainer = document.getElementById('couponsContainer');
+            if (couponsContainer) {
+                couponsContainer.innerHTML = '';
+                coupons.forEach(coupon => {
+                    const couponElement = document.createElement('div');
+                    couponElement.className = 'coupon-item mb-3 p-3 border rounded';
+                    couponElement.innerHTML = `
+                        <h6>${coupon.couponCode}</h6>
+                        <p>${coupon.description || ''}</p>
+                        <p>Discount: ${coupon.discountPercentage}% off</p>
+                        <button class="btn btn-sm btn-primary apply-coupon" data-coupon="${coupon.couponCode}">Apply</button>
+                    `;
+                    couponsContainer.appendChild(couponElement);
+                });
+            }
+            const modalElement = document.getElementById('couponsModal');
+            if (modalElement) {
+                if (typeof $ !== 'undefined' && $.fn.modal) {
+                    // Bootstrap 4
+                    $(modalElement).modal('show');
+                } else if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                    // Bootstrap 5
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                } else {
+                    // Fallback
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                }
+            }
+        })
+        .catch(error => console.error('Error fetching coupons:', error));
+}
+
+function showModal(modalElement) {
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        // Bootstrap 5
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    } else if (typeof $ !== 'undefined' && $.fn.modal) {
+        // Bootstrap 4 or earlier with jQuery
+        $(modalElement).modal('show');
+    } else {
+        // Fallback if Bootstrap is not available
+        modalElement.style.display = 'block';
+        modalElement.classList.add('show');
+    }
+}
+
+// Update event listeners for better accessibility
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('couponsModal');
+    
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            // Return focus to the "View Available Coupons" button when modal closes
+            const viewCouponsButton = document.querySelector('button[onclick="showCoupons()"]');
+            if (viewCouponsButton) {
+                viewCouponsButton.focus();
+            }
+        });
+    }
+
+    // Use event delegation for apply coupon buttons
+    const couponsContainer = document.getElementById('couponsContainer');
+    if (couponsContainer) {
+        couponsContainer.addEventListener('click', function(event) {
+            if (event.target.classList.contains('apply-coupon')) {
+                applyCoupon(event.target.dataset.coupon);
+            }
+        });
+    }
+});
+
+function applyCoupon(couponCode) {
+    const cartId = document.getElementById('cartId').value;
+    fetch('/api/cart/apply-coupon', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cartId, couponCode })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideModal(); // Move this here to ensure it's called regardless of success or failure
+        if (data.success) {
+            updatePriceDisplay(data.newTotalPrice, data.discountAmount, data.originalPrice);
+            displayAppliedCoupon(couponCode, data.discountAmount);
+            Swal.fire({
+                icon: 'success',
+                title: 'Coupon Applied',
+                text: data.message,
+                confirmButtonText: 'OK',
+            });
+        } else {
+            throw new Error(data.message || 'Failed to apply coupon');
+        }
+    })
+    .catch(error => {
+        console.error('Error applying coupon:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Coupon Error',
+            text: error.message || 'An error occurred while applying the coupon. Please try again later.',
+            confirmButtonText: 'OK',
+        });
+    });
+}
+
+function hideModal() {
+    const modalElement = document.getElementById('couponsModal');
+    if (typeof bootstrap !== 'undefined' && bootstrap.Modal && bootstrap.Modal.getInstance) {
+        // Bootstrap 5
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+    } else if (typeof $ !== 'undefined' && $.fn.modal) {
+        // Bootstrap 4
+        $(modalElement).modal('hide');
+    } else {
+        // Fallback if Bootstrap is not available
+        modalElement.style.display = 'none';
+        modalElement.classList.remove('show');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Move all your DOM-dependent code here
+});
  </script>
     <%- include('./partial/footer') %>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

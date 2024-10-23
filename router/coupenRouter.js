@@ -10,4 +10,5 @@ router.post('/edit/:id', couponController.updateCoupon);
 router.post('/delete/:id', couponController.deleteCoupon);
 router.post('/restore/:id', couponController.restoreCoupon);
 
+
 module.exports = router;

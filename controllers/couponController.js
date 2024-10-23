@@ -13,13 +13,35 @@ exports.getAllCoupons = async (req, res) => {
 };
 
 exports.createCoupon = async (req, res) => {
-    
-    const { couponName, couponCode, discountPercentage, couponStartDate, couponEndDate } = req.body;
- 
- 
-    // Ensure couponCode is not empty
+    const { couponName, couponCode, discountPercentage, maxDiscount, couponStartDate, couponEndDate } = req.body;
+
+    // Ensure required fields are provided
+    if (!couponName || couponName.trim() === "") {
+        return res.status(400).json({ success: false, message: 'Coupon Name is required.' });
+    }
+
     if (!couponCode || couponCode.trim() === "") {
-        return res.status(400).json({ success: false, message: 'Coupon Code is required' });
+        return res.status(400).json({ success: false, message: 'Coupon Code is required.' });
+    }
+
+    if (discountPercentage < 1 || discountPercentage > 100 || isNaN(discountPercentage)) {
+        return res.status(400).json({ success: false, message: 'Discount Percentage must be a number between 1 and 100.' });
+    }
+
+    if (maxDiscount <= 0 || isNaN(maxDiscount)) {
+        return res.status(400).json({ success: false, message: 'Maximum Discount must be a positive number.' });
+    }
+
+    const couponStartDateObj = new Date(couponStartDate);
+    const couponEndDateObj = new Date(couponEndDate);
+
+    // Validate dates
+    if (isNaN(couponStartDateObj.getTime()) || isNaN(couponEndDateObj.getTime())) {
+        return res.status(400).json({ success: false, message: 'Invalid date format.' });
+    }
+
+    if (couponStartDateObj >= couponEndDateObj) {
+        return res.status(400).json({ success: false, message: 'Start date must be before the end date.' });
     }
 
     try {
@@ -34,19 +56,18 @@ exports.createCoupon = async (req, res) => {
             couponName,
             couponCode,
             discountPercentage,
-            couponStartDate: new Date(couponStartDate),
-            couponEndDate: new Date(couponEndDate),
+            maxDiscount, // Save maxDiscount
+            couponStartDate: couponStartDateObj,
+            couponEndDate: couponEndDateObj,
         });
-
 
         // Save coupon to the database
         await newCoupon.save();
 
         // Send success response
-        res.status(200).json({ success: true, message: 'Coupon created successfully' });
+        res.status(201).json({ success: true, message: 'Coupon created successfully', coupon: newCoupon });
     } catch (error) {
         console.error('Error creating coupon:', error.message);
-
         // Send error response
         res.status(500).json({ success: false, message: `Error creating coupon: ${error.message}` });
     }
@@ -54,24 +75,65 @@ exports.createCoupon = async (req, res) => {
 
 
 
+
+
 // Edit/Update a coupon
 exports.updateCoupon = async (req, res) => {
     const { id } = req.params;
-    const { couponName, couponCode, discountPercentage, couponStartDate, couponEndDate } = req.body;
+    const { couponName, couponCode, discountPercentage, maxDiscount, couponStartDate, couponEndDate } = req.body;
+
+    // Validate input
+    if (!couponName || couponName.trim() === "") {
+        return res.status(400).json({ success: false, message: 'Coupon Name is required.' });
+    }
+
+    if (!couponCode || couponCode.trim() === "") {
+        return res.status(400).json({ success: false, message: 'Coupon Code is required.' });
+    }
+
+    if (discountPercentage < 1 || discountPercentage > 100 || isNaN(discountPercentage)) {
+        return res.status(400).json({ success: false, message: 'Discount Percentage must be a number between 1 and 100.' });
+    }
+
+    if (maxDiscount < 0 || isNaN(maxDiscount)) {
+        return res.status(400).json({ success: false, message: 'Maximum Discount must be a non-negative number.' });
+    }
+
+    const couponStartDateObj = new Date(couponStartDate);
+    const couponEndDateObj = new Date(couponEndDate);
+
+    // Validate dates
+    if (isNaN(couponStartDateObj.getTime()) || isNaN(couponEndDateObj.getTime())) {
+        return res.status(400).json({ success: false, message: 'Invalid date format.' });
+    }
+
+    if (couponStartDateObj > couponEndDateObj) {
+        return res.status(400).json({ success: false, message: 'Start date must be before or equal to the end date.' });
+    }
 
     try {
-        await Coupon.findByIdAndUpdate(id, {
+        // Update the coupon
+        const updatedCoupon = await Coupon.findByIdAndUpdate(id, {
             couponName,
             couponCode,
             discountPercentage,
-            couponStartDate,
-            couponEndDate,
-        });
-        res.redirect('/coupons');
+            maxDiscount,
+            couponStartDate: couponStartDateObj,
+            couponEndDate: couponEndDateObj,
+        }, { new: true, runValidators: true });
+
+        if (!updatedCoupon) {
+            return res.status(404).json({ success: false, message: 'Coupon not found.' });
+        }
+
+        res.status(200).json({ success: true, message: 'Coupon updated successfully', coupon: updatedCoupon });
     } catch (error) {
-        res.status(500).send('Error updating coupon');
+        console.error('Error updating coupon:', error.message);
+        res.status(500).json({ success: false, message: `Error updating coupon: ${error.message}` });
     }
 };
+
+
 
 // Soft delete a coupon (mark as deleted)
 exports.deleteCoupon = async (req, res) => {
@@ -96,3 +158,7 @@ exports.restoreCoupon = async (req, res) => {
         res.status(500).send('Error restoring coupon');
     }
 };
+
+
+
+

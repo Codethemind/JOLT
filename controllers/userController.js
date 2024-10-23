@@ -55,7 +55,7 @@ const get_home = async (req, res) => {
     const [product, categories, top, User, cameraCategory] = await Promise.all([
       Product.find(query).populate('category_id').populate('brand_id').populate('variants.offer'),
       Category.find({ isDeleted: false }),
-      Product.find({ 'variants.stock': { $lt: 4 }, isDelete: false }).populate('variants.offer'),
+      Product.find({ 'variants.stock': { $lt: 16 }, isDelete: false }).populate('variants.offer'),
       user.findOne({ _id: req.session.user }),
       Category.findOne({ name: 'Cameras' })
     ]);
@@ -359,55 +359,55 @@ const post_login = async (req, res) => {
         // Define sort logic
         switch (sortOption) {
             case 'popularity':
-                sortCriteria = { sold: -1 }; // Most sold products first
+                sortCriteria = { sold: -1 }; 
                 break;
             case 'price-low-high':
-                sortCriteria = { 'variants.price': 1 }; // Cheapest products first
+                sortCriteria = { 'variants.price': 1 }; 
                 break;
             case 'price-high-low':
-                sortCriteria = { 'variants.price': -1 }; // Most expensive products first
+                sortCriteria = { 'variants.price': -1 }; 
                 break;
             case 'ratings':
-                sortCriteria = { averageRating: -1 }; // Highest rated products first
+                sortCriteria = { averageRating: -1 }; 
                 break;
             case 'featured':
-                sortCriteria = { featured: -1, createdAt: -1 }; // Featured and newest first
+                sortCriteria = { featured: -1, createdAt: -1 }; 
                 break;
             case 'a-z':
-                sortCriteria = { product_name: 1 }; // Alphabetically A-Z
+                sortCriteria = { product_name: 1 };
                 break;
             case 'z-a':
-                sortCriteria = { product_name: -1 }; // Alphabetically Z-A
+                sortCriteria = { product_name: -1 }; 
                 break;
             default:
-                sortCriteria = { createdAt: -1 }; // Newest products first
+                sortCriteria = { createdAt: -1 };
         }
 
-        // Search filter
+       
         const searchFilter = searchQuery
-            ? { product_name: { $regex: searchQuery, $options: 'i' }, isDelete: false } // Case-insensitive search
-            : { isDelete: false }; // Show only products that aren't deleted
+            ? { product_name: { $regex: searchQuery, $options: 'i' }, isDelete: false } 
+            : { isDelete: false }; 
 
-        // Get total product count for pagination
+        
         const totalProducts = await Product.countDocuments(searchFilter).populate('variants.offer');
 
-        // Fetch products based on search, pagination, and sort
+     
         const products = await Product.find(searchFilter).populate('variants.offer')
             .sort(sortCriteria)
             .skip(skip)
             .limit(limit)
             .exec();
 
-        // Fetch all categories (if needed for filters or display)
+     
         const categories = await Category.find();
 
-        // Calculate total number of pages
+     
         const totalPages = Math.ceil(totalProducts / limit);
 
-        // Check if no products found
+  
         const noProductsFound = products.length === 0;
 
-        // Render product page with products and pagination
+    
         res.render('productpage', {
             products,
             categories,
@@ -415,7 +415,7 @@ const post_login = async (req, res) => {
             totalPages,
             searchQuery,
             sortOption,
-            noProductsFound // Pass this flag to the template
+            noProductsFound 
         });
     } catch (err) {
         console.error(err);
@@ -438,35 +438,35 @@ const post_login = async (req, res) => {
     const id = req.params.id;
     
     try {
-        const page = parseInt(req.query.page) || 1; // Get the current page number from query params, default to 1
-        const limit = 4; // Number of products per page
-        const skip = (page - 1) * limit; // Calculate how many products to skip
+        const page = parseInt(req.query.page) || 1; 
+        const limit = 4; 
+        const skip = (page - 1) * limit; 
         
-        // Fetch the total number of products for the category
+      
         const totalProducts = await Product.countDocuments({ category_id: id, isDelete: false });
         
-        // Fetch the products for the current page
+   
         const products = await Product.find({ category_id: id, isDelete: false })
                                       .skip(skip)
                                       .limit(limit)
                                       .populate('category_id')
                                       .exec();
         
-        // Fetch the category details by ID
+       
         const category = await Category.findById(id);
         
         if (!category) {
             return res.status(404).send('Category not found');
         }
         
-        // Calculate the total number of pages
+
         const totalPages = Math.ceil(totalProducts / limit);
         
         res.render('category', {
-            products,  // List of products for the current page
-            category,  // Single category object
-            currentPage: page,  // Current page number
-            totalPages: totalPages  // Total number of pages
+            products,  
+            category, 
+            currentPage: page,  
+            totalPages: totalPages  
         });
     } catch (error) {
         console.error('Error fetching category:', error);
@@ -499,7 +499,7 @@ const get_myaccount = async (req, res) => {
     }
 
     let orders = await Order.find({ user: req.session.user })
-  .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+  .sort({ createdAt: -1 }) 
   .populate({
     path: 'items.product',
     populate: {
@@ -536,10 +536,10 @@ const get_myaccount = async (req, res) => {
 
 const postaddressadd=async (req, res) => {  
   const { fullName, streetAddress, city, state, zipCode, country, phone } = req.body;
-  const userId = req.session.user; // Assuming userId is available here
+  const userId = req.session.user; 
 
   const newAddress = new Address({
-      userId, // Set the userId
+      userId, 
       fullName,
       streetAddress,
       city,
@@ -572,7 +572,7 @@ const postaddressedit=async (req, res) => {
           phone: req.body.phone,
       };
 
-      // Find the address by ID and update it
+    
       const result = await Address.findByIdAndUpdate(addressId, updatedAddress, { new: true });
 
       if (!result) {
@@ -581,7 +581,7 @@ const postaddressedit=async (req, res) => {
 
       res.json({ success: true, message: 'Address updated successfully', data: result });
   } catch (error) {
-      console.error('Edit Address Error:', error); // More descriptive logging
+      console.error('Edit Address Error:', error); 
       res.status(500).json({ success: false, message: 'Server error', error: error.message });
   }
 }
@@ -608,7 +608,7 @@ const post_forgot_password = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    // Generate OTP
+   
     const otp = otpGenerator.generate(6, {
       digits: true,
       specialChars: false,
@@ -617,11 +617,10 @@ const post_forgot_password = async (req, res) => {
       upperCaseAlphabets: false,
     });
 
-    // Save OTP to database
     const otpRecord = new OTP({ email, otp });
     await otpRecord.save();
 
-    // Send OTP email
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -630,7 +629,7 @@ const post_forgot_password = async (req, res) => {
     };
     await transporter.sendMail(mailOptions);
 
-    // Store email in session for later use
+
     req.session.resetEmail = email;
 
     res.json({ success: true });
@@ -650,7 +649,7 @@ const post_verify_reset_otp = async (req, res) => {
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
-    // OTP is valid, allow password reset
+  
     res.json({ success: true });
   } catch (error) {
     console.error("Error in OTP verification:", error);
@@ -663,13 +662,11 @@ const post_reset_password = async (req, res) => {
   const email = req.session.resetEmail;
 
   try {
-    // Hash the new password
+ 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user's password
     await user.findOneAndUpdate({ email }, { password: hashedPassword });
 
-    // Clear the session
     delete req.session.resetEmail;
 
     res.json({ success: true });
@@ -688,9 +685,9 @@ async function getReferralBonus() {
 const getOrderDetails = async (orderId) => {
   try {
       const order = await Order.findById(orderId)
-          .populate('user') // Populate user details
-          .populate('address') // Populate address details
-          .populate('items.product'); // Populate product details for each item
+          .populate('user') 
+          .populate('address') 
+          .populate('items.product'); 
 
       if (!order) {
           throw new Error('Order not found');
@@ -703,7 +700,7 @@ const getOrderDetails = async (orderId) => {
   }
 };
 
-// Controller to handle the invoice download
+
 const downloadInvoice = async (req, res) => {
     try {
         const orderId = req.params.orderId;

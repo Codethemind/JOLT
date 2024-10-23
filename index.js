@@ -21,20 +21,10 @@ const paymentRouter = require('./router/paymentRouter');
 const walletRouter = require('./router/walletRouter');
 const returnRouter = require('./router/returnRouter')
 const reportRouter = require('./router/reportRouter');
-// index.js
-
 const cartWishlistCount = require('./middleware/cartWishlistCount');
 const authMiddleware = require('./middleware/authMiddleware');
 
-// Set up session middleware
-app.use(session({
-  secret: "nothg",
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: process.env.NODE_ENV === 'production' }
-}));
-
-// Add this line right after the session middleware
+app.use(session({secret: "nothg",resave: false,saveUninitialized: false,cookie: { secure: process.env.NODE_ENV === 'production' }}));
 app.use(cartWishlistCount);
 
 mongoose.connect("mongodb://127.0.0.1:27017/JOLT")

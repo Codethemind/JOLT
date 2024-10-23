@@ -9,6 +9,7 @@ router.post('/update', cartController.updateCart);
 router.get('/checkout',cartController.getCheckout)
 router.post('/order',cartController.placeOrder)
 router.post('/cancel/:orderId',cartController.cancelOrder)
-router.post('/apply-coupon', cartController.applycoupen);
+router.post('/apply-coupon', cartController.applyCoupon);
 router.post('/remove-coupon', cartController.removeCoupon);
+router.get('/coupons/available', cartController.getAvailableCoupons);
 module.exports = router;

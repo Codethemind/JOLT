@@ -60,6 +60,7 @@
                         <% } %>
                     </div>
 
+                    <button type="button" class="btn btn-danger mt-3 remove-variant-btn">Remove Variant</button>
                     <hr>
                 </div>
             <% }); %>
@@ -176,75 +177,125 @@
     });
 
     document.getElementById('add-variant-btn').addEventListener('click', function() {
-        const index = document.querySelectorAll('.variant').length;
+        const variantsContainer = document.getElementById('variants-container');
+        const index = variantsContainer.querySelectorAll('.variant').length;
+        const productId = document.getElementById('product-form').dataset.productId;
+        
         const newVariantHTML = `
-            <div class="variant mb-4 p-3 border rounded" data-product-id="<%= product._id %>" data-index="${index}">
+            <div class="variant mb-4 p-3 border rounded" data-product-id="${productId}" data-index="${index}">
                 <div class="form-row">
                     <div class="col-md-3">
-                        <label for="price_<%= product._id %>_${index}">Price:</label>
-                        <input type="number" class="form-control" id="price_<%= product._id %>_${index}" name="variants[${index}][price]" required>
+                        <label for="price_${productId}_${index}">Price:</label>
+                        <input type="number" class="form-control" id="price_${productId}_${index}" name="variants[${index}][price]" required>
                     </div>
                     <div class="col-md-3">
-                        <label for="size_<%= product._id %>_${index}">Size:</label>
-                        <input type="text" class="form-control" id="size_<%= product._id %>_${index}" name="variants[${index}][size]" required>
+                        <label for="size_${productId}_${index}">Size:</label>
+                        <input type="text" class="form-control" id="size_${productId}_${index}" name="variants[${index}][size]" required>
                     </div>
                     <div class="col-md-3">
-                        <label for="stock_<%= product._id %>_${index}">Stock:</label>
-                        <input type="number" class="form-control" id="stock_<%= product._id %>_${index}" name="variants[${index}][stock]" required>
+                        <label for="stock_${productId}_${index}">Stock:</label>
+                        <input type="number" class="form-control" id="stock_${productId}_${index}" name="variants[${index}][stock]" required>
                     </div>
                     <div class="col-md-3">
-                        <label for="color_<%= product._id %>_${index}">Color:</label>
-                        <input type="text" class="form-control" id="color_<%= product._id %>_${index}" name="variants[${index}][color]" required>
+                        <label for="color_${productId}_${index}">Color:</label>
+                        <input type="text" class="form-control" id="color_${productId}_${index}" name="variants[${index}][color]" required>
                     </div>
                 </div>
                 <div class="form-row mt-3">
-                    <% for (let i = 0; i < 4; i++) { %>
-                    <div class="col-sm-6 mb-3">
-                        <div class="image-placeholder">
-                            <img src="/images/upload_image.jpg" style="height: 150px;" alt="placeholder" class="img-fluid" id="variant${index + 1}-image${i + 1}-preview">
-                            <input type="file" class="form-control mt-2" name="variant_images_${index + 1}[]" id="variant${index + 1}-image${i + 1}" onchange="previewImage(this, 'variant${index + 1}-image${i + 1}-preview')">
-                            <button type="button" class="btn btn-secondary mt-2" onclick="openCropperModal('variant${index + 1}-image${i + 1}-preview', 'variant${index + 1}-image${i + 1}')">Crop Image</button>
+                    ${[0, 1, 2, 3].map(i => `
+                        <div class="col-sm-6 mb-3">
+                            <div class="image-placeholder">
+                                <img src="/images/upload_image.jpg" style="height: 150px;" alt="placeholder" class="img-fluid" id="variant${index + 1}-image${i + 1}-preview">
+                                <input type="file" class="form-control mt-2" name="variant_images_${index + 1}[]" id="variant${index + 1}-image${i + 1}" onchange="previewImage(this, 'variant${index + 1}-image${i + 1}-preview')">
+                                <button type="button" class="btn btn-secondary mt-2" onclick="openCropperModal('variant${index + 1}-image${i + 1}-preview', 'variant${index + 1}-image${i + 1}')">Crop Image</button>
+                            </div>
                         </div>
-                    </div>
-                    <% } %>
+                    `).join('')}
                 </div>
+                <button type="button" class="btn btn-danger mt-3 remove-variant-btn">Remove Variant</button>
                 <hr>
             </div>
         `;
-        document.getElementById('variants-container').insertAdjacentHTML('beforeend', newVariantHTML);
+        variantsContainer.insertAdjacentHTML('beforeend', newVariantHTML);
     });
-document.getElementById('product-form').addEventListener('submit', function(event) {
-    event.preventDefault();
-    const formData = new FormData(this);
-    const productId = this.dataset.productId;
 
-    $.ajax({
-        type: 'POST',
-        url: `/admin/update-product/${productId}`,
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function(response) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: 'Product updated successfully!',
-                timer: 2000,
-                showConfirmButton: false
-            }).then(() => {
-              window.location.href = '/admin/admin_productmanagment';  // Reload the product page after the success message
-            });
-        },
-        error: function(xhr, status, error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'An error occurred while updating the product.',
-            });
+    // Function to remove a variant
+    function removeVariant(event) {
+        const variantElement = event.target.closest('.variant');
+        variantElement.remove();
+        
+        // Update the indices of remaining variants
+        const variants = document.querySelectorAll('.variant');
+        variants.forEach((variant, index) => {
+            variant.dataset.index = index;
+            updateVariantFields(variant, index);
+        });
+    }
+
+    // Function to update variant fields after removal
+    function updateVariantFields(variantElement, newIndex) {
+        const productId = variantElement.dataset.productId;
+        const fields = ['price', 'size', 'stock', 'color'];
+        
+        fields.forEach(field => {
+            const input = variantElement.querySelector(`[name^="variants["][name$="][${field}]"]`);
+            if (input) {
+                input.id = `${field}_${productId}_${newIndex}`;
+                input.name = `variants[${newIndex}][${field}]`;
+            }
+        });
+        
+        // Update image field names
+        const imageInputs = variantElement.querySelectorAll('input[type="file"]');
+        imageInputs.forEach((input, i) => {
+            input.name = `variant_images_${newIndex + 1}[]`;
+            input.id = `variant${newIndex + 1}-image${i + 1}`;
+        });
+    }
+
+    // Add event listeners to existing remove buttons
+    document.querySelectorAll('.remove-variant-btn').forEach(button => {
+        button.addEventListener('click', removeVariant);
+    });
+
+    // Add event listener for dynamically added remove buttons
+    document.getElementById('variants-container').addEventListener('click', function(event) {
+        if (event.target.classList.contains('remove-variant-btn')) {
+            removeVariant(event);
         }
     });
-});
 
+    document.getElementById('product-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const productId = this.dataset.productId;
+
+        $.ajax({
+            type: 'POST',
+            url: `/admin/update-product/${productId}`,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Product updated successfully!',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                  window.location.href = '/admin/admin_productmanagment';  // Reload the product page after the success message
+                });
+            },
+            error: function(xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while updating the product.',
+                });
+            }
+        });
+    });
 </script>
 
 

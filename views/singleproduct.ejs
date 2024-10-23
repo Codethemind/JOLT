@@ -99,28 +99,28 @@
                                         <div class="mb-">
                                             <label for="colors" class="form-label">Colours:</label>
                                             <select id="colors" class="form-select">
-                                                <option selected>
-                                                    <%= product.variants[0].color %>
-                                                </option>
-                                                <option>Black</option>
+                                                <% product.variants.forEach(function(variant) { %>
+                                                    <option value="<%= variant.color %>" <%= variant.color === product.variants[0].color ? 'selected' : '' %>>
+                                                        <%= variant.color %>
+                                                    </option>
+                                                <% }); %>
                                             </select>
                                         </div>
                                     </div><!-- End .details-filter-row -->
-                                
+                                    
                                     <div class="details-filter-row details-row-size">
                                         <label for="size">Storage:</label>
                                         <div class="select-custom">
                                             <select name="size" id="size" class="form-control">
-                                                <option value="#" selected="selected">
-                                                    <%= product.variants[0].size %>
-                                                </option>
-                                                <option value="s">Small</option>
-                                                <option value="m">Medium</option>
-                                                <option value="l">Large</option>
-                                                <option value="xl">Extra Large</option>
+                                                <% product.variants.forEach(function(variant) { %>
+                                                    <option value="<%= variant.size %>" <%= variant.size === product.variants[0].size ? 'selected' : '' %>>
+                                                        <%= variant.size %>
+                                                    </option>
+                                                <% }); %>
                                             </select>
                                         </div><!-- End .select-custom -->
                                     </div><!-- End .details-filter-row -->
+                                    
                                 
                                     <div class="product-content">
                                         <p class="<%= product.variants[0].stock > 0 ? 'text-success' : 'text-danger' %>">

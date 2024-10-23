@@ -67,6 +67,7 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
         // Update order's return status
         order.returnStatus = 'Accepted';
         order.returnAcceptedDate = new Date();
+        order.orderStatus='Returned'
 
         let refundProcessed = false;
 
@@ -151,6 +152,7 @@ router.post('/admin/accept-return/:orderId', async (req, res) => {
                 description: `Refund for returned order ${order.orderId} (Bank Transfer)`,
                 date: new Date()
             });
+
 
             // For now, we'll just refund to the wallet
             await Promise.all([order.save(), wallet.save()]);

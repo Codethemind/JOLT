@@ -67,7 +67,7 @@
                                                 <td class="quantity-col">
                                                     <div class="cart-product-quantity">
                                                         <input type="number" class="form-control" id="quantity-<%= item.product._id %>" 
-                                                               value="<%= item.quantity %>" min="1" max="10" step="1"
+                                                               value="<%= item.quantity %>"
                                                                data-stock="<%= item.product.variants[0].stock %>"> <!-- Include stock data -->
                                                     </div>
                                                     <button onclick="updateCart('<%= item.product._id %>', '<%= item.variantId %>')" class="btn btn-outline-dark-2">
@@ -234,7 +234,7 @@ async function updateCart(productId, variantId) {
     }
 
     // Check if quantity exceeds maximum limit
-    if (quantity > 10) {
+    if (quantity > 5) {
         // SweetAlert notification for maximum quantity exceedance
         Swal.fire({
             icon: 'warning',
