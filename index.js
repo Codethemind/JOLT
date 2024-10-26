@@ -27,7 +27,8 @@ const authMiddleware = require('./middleware/authMiddleware');
 app.use(session({secret: "nothg",resave: false,saveUninitialized: false,cookie: { secure: process.env.NODE_ENV === 'production' }}));
 app.use(cartWishlistCount);
 
-mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
+mongoose.connect("mongodb+srv://mhdshahid88:admin@jolt.uz5lf.mongodb.net/JOLT?")
+// mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
 app.use('/uploads',express.static('uploads'))
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
