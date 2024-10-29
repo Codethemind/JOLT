@@ -28,7 +28,18 @@ app.use(session({secret: "nothg",resave: false,saveUninitialized: false,cookie: 
 app.use(cartWishlistCount);
 
 mongoose.connect("mongodb+srv://mhdshahid88:admin@jolt.uz5lf.mongodb.net/JOLT?")
-// mongoose.connect("mongodb://127.0.0.1:27017/JOLT")
+  .then(async () => {
+    console.log("Connected to MongoDB");
+    try {
+      await mongoose.connection.collection('users').dropIndex('referralCode_1');
+    } catch (err) {
+      console.log("No existing index to drop or already dropped");
+    }
+  })
+  .catch(err => {
+    console.error("MongoDB connection error:", err);
+  });
+
 app.use('/uploads',express.static('uploads'))
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());

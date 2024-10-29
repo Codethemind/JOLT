@@ -204,7 +204,7 @@
             
                     <% if (cart && cart.items.length > 0) { %>
                         <% cart.items.forEach((element) => { %>
-                            <div class="d-flex align-items-center mb-4">
+                            <div class="d-flex align-items-center mb-4" data-product-id="<%= element.product._id %>">
                                 <% const variant = element.product.variants.find(v => v._id.toString() === element.variantId); %>
                                 <div class="me-3 position-relative">
                                     <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill badge-secondary">
@@ -481,13 +481,20 @@ async function placeOrder() {
             });
             return;
         }
+        
+        const productIds = Array.from(document.querySelectorAll('[data-product-id]'))
+            .map(element => element.dataset.productId);
 
         const response = await fetch('/api/cart/order', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ addressId, paymentMethod })
+            body: JSON.stringify({ 
+                addressId, 
+                paymentMethod,
+                productIds
+            })
         });
 
         const orderData = await response.json();

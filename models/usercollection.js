@@ -22,6 +22,7 @@ const userschema = mongoose.Schema({
   usedCoupons: [String],
   referralCode: {
     type: String,
+    sparse: true,
     unique: true
   },
   referredBy: {

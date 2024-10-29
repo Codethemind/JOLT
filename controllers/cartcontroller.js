@@ -50,7 +50,7 @@ exports.getCart = async (req, res) => {
 };
 
 
-exports.addToCart = async (req, res) => {    
+exports.addToCart = async (req, res) => {     
     const { productId, variantId, quantity } = req.body;
     try {
         // Ensure user is authenticated
@@ -67,17 +67,24 @@ exports.addToCart = async (req, res) => {
             });
         }
 
+
         const product = await Product.findById(productId).populate('variants.offer');
         const variant = product.variants.find(v => v._id == variantId);
         if (!variant) {
             return res.status(404).json({ message: 'Variant not found' });
         }
 
+        
+        
+
         const existingItemIndex = cart.items.findIndex(item => 
             item.product.toString() === productId && item.variantId === variantId
         );
 
         if (existingItemIndex > -1) {
+            if (cart.items[existingItemIndex].quantity >= 5) {
+                return res.status(400).json({ message: 'Already have in cart 5 times' });
+            }
             cart.items[existingItemIndex].quantity += parseInt(quantity);
         } else {
             cart.items.push({
@@ -97,7 +104,7 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-exports.removeFromCart = async (req, res) => {
+exports.removeFromCart = async (req, res) => {  
     try {
         const userId = req.session.user;
         const { productId, variantId } = req.body;
@@ -198,8 +205,29 @@ exports.placeOrder = async (req, res) => {
             return res.status(401).json({ message: "Unauthorized" });
         }
 
-        const { addressId, paymentMethod } = req.body;
+        const { addressId, paymentMethod, productIds } = req.body;
 
+       // First verify all products exist and are available
+       const products = await Product.find({ _id: { $in: productIds } });
+        
+       // Check if any products are missing
+       if (products.length !== productIds.length) {
+           return res.status(400).json({
+               success: false,
+               message: 'One or more products in your cart are no longer available'
+           });
+       }
+
+       // Check if any products are marked as deleted or unavailable
+       const unavailableProducts = products.filter(product => product.isDelete || product.stock <= 0);
+
+       if (unavailableProducts.length > 0) {
+           return res.status(400).json({
+               success: false,
+               message: 'Some products in your cart are no longer available',
+               unavailableProducts: unavailableProducts.map(p => p.product_name)
+           });
+       }
         // Fetch the cart for the current user, populating product variants, offers, category, and brand
         const cart = await Cart.findOne({ user: req.session.user }).populate({
             path: 'items.product',
@@ -211,10 +239,10 @@ exports.placeOrder = async (req, res) => {
                     }
                 },
                 {
-                    path: 'category_id', // Populate category
+                    path: 'category_id',
                 },
                 {
-                    path: 'brand_id' // Populate brand
+                    path: 'brand_id'
                 }
             ]
         });
@@ -232,10 +260,19 @@ exports.placeOrder = async (req, res) => {
             const product = item.product;
             const variant = product.variants.find(v => v._id.toString() === item.variantId);
 
+            // Additional check for product availability
+            if (product.isDeleted || product.stock <= 0) {
+                return res.status(400).json({ 
+                    message: `Product ${product.product_name} is no longer available` 
+                });
+            }
+
             // Ensure the variant exists and has enough stock
             if (variant) {
                 if (variant.stock < item.quantity) {
-                    return res.status(400).json({ message: `Insufficient stock for ${product.product_name}` });
+                    return res.status(400).json({ 
+                        message: `Insufficient stock for ${product.product_name}` 
+                    });
                 }
 
                 // Reduce the variant's stock based on the order quantity
@@ -273,6 +310,7 @@ exports.placeOrder = async (req, res) => {
                     await brand.save();
                 }
             }
+
         }
 
         // Apply any coupon discount
@@ -666,7 +704,7 @@ exports.verifyPayment = async (req, res) => {
 
         if (generated_signature === razorpay_signature) {
             order.paymentStatus = 'Paid';
-            order.orderStatus = 'Processing';
+            order.orderStatus = 'Pending';
             order.razorpayPaymentId = razorpay_payment_id;
             order.razorpaySignature = razorpay_signature;
             await order.save();

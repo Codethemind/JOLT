@@ -77,7 +77,7 @@ router.post('/retry-payment/:orderId', async (req, res) => {
 
     order.razorpayOrderId = newRazorpayOrder.id;
     order.paymentStatus = 'Paid';
-    order.orderStatus = 'Processing';
+    order.orderStatus = 'Pending';
     
     await order.save();
 
